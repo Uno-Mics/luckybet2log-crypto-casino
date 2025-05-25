@@ -10,6 +10,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Users, CreditCard, TrendingUp } from "lucide-react";
 
+type DepositWithProfile = {
+  id: string;
+  user_id: string;
+  amount: number;
+  payment_method: string;
+  status: string;
+  created_at: string;
+  profiles: {
+    username: string;
+  } | null;
+};
+
 const Admin = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -42,7 +54,7 @@ const Admin = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as DepositWithProfile[];
     },
   });
 
