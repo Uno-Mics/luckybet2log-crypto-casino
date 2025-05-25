@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,9 +16,7 @@ type DepositWithProfile = {
   payment_method: string;
   status: string;
   created_at: string;
-  profiles: {
-    username: string;
-  } | null;
+  username: string;
 };
 
 const Admin = () => {
@@ -40,26 +37,44 @@ const Admin = () => {
     },
   });
 
-  // Fetch pending deposits with manual join
+  // Fetch pending deposits and join with profiles manually
   const { data: deposits } = useQuery({
     queryKey: ['admin', 'deposits'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get pending deposits
+      const { data: depositsData, error: depositsError } = await supabase
         .from('deposits')
-        .select(`
-          id,
-          user_id,
-          amount,
-          payment_method,
-          status,
-          created_at,
-          profiles!inner(username)
-        `)
+        .select('id, user_id, amount, payment_method, status, created_at')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data as DepositWithProfile[];
+      if (depositsError) throw depositsError;
+      if (!depositsData || depositsData.length === 0) return [];
+
+      // Get user IDs from deposits
+      const userIds = depositsData.map(deposit => deposit.user_id);
+
+      // Get profiles for those users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, username')
+        .in('user_id', userIds);
+      
+      if (profilesError) throw profilesError;
+
+      // Create a map of user_id to username for quick lookup
+      const profilesMap = (profilesData || []).reduce((acc, profile) => {
+        acc[profile.user_id] = profile.username;
+        return acc;
+      }, {} as Record<string, string>);
+
+      // Join the data manually
+      const depositsWithProfiles: DepositWithProfile[] = depositsData.map(deposit => ({
+        ...deposit,
+        username: profilesMap[deposit.user_id] || 'Unknown User'
+      }));
+
+      return depositsWithProfiles;
     },
   });
 
@@ -196,7 +211,7 @@ const Admin = () => {
                     {deposits?.map((deposit) => (
                       <div key={deposit.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                          <p className="font-semibold">{deposit.profiles?.username || 'Unknown User'}</p>
+                          <p className="font-semibold">{deposit.username}</p>
                           <p className="text-sm text-muted-foreground">
                             ₱{Number(deposit.amount).toFixed(2)} via {deposit.payment_method}
                           </p>
