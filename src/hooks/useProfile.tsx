@@ -1,0 +1,72 @@
+
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+
+interface Profile {
+  id: string;
+  user_id: string;
+  username: string;
+  wallet_id: string;
+  php_balance: number;
+  coins: number;
+  itlog_tokens: number;
+  is_admin: boolean;
+  is_banned: boolean;
+  is_suspended: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const useProfile = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const { data: profile, isLoading, error } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data as Profile;
+    },
+    enabled: !!user,
+  });
+
+  const updateBalance = useMutation({
+    mutationFn: async ({ phpChange = 0, coinsChange = 0, itlogChange = 0 }: {
+      phpChange?: number;
+      coinsChange?: number;
+      itlogChange?: number;
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase.rpc('update_user_balance', {
+        p_user_id: user.id,
+        p_php_change: phpChange,
+        p_coins_change: coinsChange,
+        p_itlog_change: itlogChange,
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+    },
+  });
+
+  return {
+    profile,
+    isLoading,
+    error,
+    updateBalance,
+  };
+};

@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Games from "./pages/Games";
@@ -18,33 +20,85 @@ import Wallet from "./pages/Wallet";
 import Earn from "./pages/Earn";
 import Deposit from "./pages/Deposit";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/games" element={<Games />} />
-            <Route path="/games/mines" element={<Mines />} />
-            <Route path="/games/wheel" element={<WheelOfFortune />} />
-            <Route path="/games/slots" element={<FortuneReels />} />
-            <Route path="/games/blackjack" element={<Blackjack />} />
-            <Route path="/games/dice" element={<DiceRoll />} />
-            <Route path="/profile" element={<UserProfile />} />
-            <Route path="/wallet" element={<Wallet />} />
-            <Route path="/earn" element={<Earn />} />
-            <Route path="/deposit" element={<Deposit />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              } />
+              <Route path="/games" element={
+                <ProtectedRoute>
+                  <Games />
+                </ProtectedRoute>
+              } />
+              <Route path="/games/mines" element={
+                <ProtectedRoute>
+                  <Mines />
+                </ProtectedRoute>
+              } />
+              <Route path="/games/wheel" element={
+                <ProtectedRoute>
+                  <WheelOfFortune />
+                </ProtectedRoute>
+              } />
+              <Route path="/games/slots" element={
+                <ProtectedRoute>
+                  <FortuneReels />
+                </ProtectedRoute>
+              } />
+              <Route path="/games/blackjack" element={
+                <ProtectedRoute>
+                  <Blackjack />
+                </ProtectedRoute>
+              } />
+              <Route path="/games/dice" element={
+                <ProtectedRoute>
+                  <DiceRoll />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <UserProfile />
+                </ProtectedRoute>
+              } />
+              <Route path="/wallet" element={
+                <ProtectedRoute>
+                  <Wallet />
+                </ProtectedRoute>
+              } />
+              <Route path="/earn" element={
+                <ProtectedRoute>
+                  <Earn />
+                </ProtectedRoute>
+              } />
+              <Route path="/deposit" element={
+                <ProtectedRoute>
+                  <Deposit />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <Admin />
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   </ThemeProvider>
 );

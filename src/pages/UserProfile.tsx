@@ -4,20 +4,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { User, Wallet, Coins, TrendingUp } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 
 const UserProfile = () => {
-  // Mock user data
-  const userData = {
-    username: "CryptoGamer123",
-    walletId: "0x1234...5678",
-    phpBalance: 1000.00,
-    coins: 1000.00,
-    itlogTokens: 25.50,
-    level: 5,
-    totalGamesPlayed: 247,
-    totalWinnings: 15420.50,
-    joinDate: "2024-01-15"
-  };
+  const { user } = useAuth();
+  const { profile, isLoading } = useProfile();
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Profile not found</h2>
+            <p className="text-muted-foreground">Unable to load your profile data.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -39,24 +54,26 @@ const UserProfile = () => {
                   <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-gold-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <User className="w-10 h-10 text-white" />
                   </div>
-                  <CardTitle className="text-2xl">{userData.username}</CardTitle>
-                  <Badge variant="secondary" className="w-fit mx-auto">
-                    Level {userData.level}
-                  </Badge>
+                  <CardTitle className="text-2xl">{profile.username}</CardTitle>
+                  {profile.is_admin && (
+                    <Badge variant="secondary" className="w-fit mx-auto bg-gold-500 text-black">
+                      Admin
+                    </Badge>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Wallet ID</p>
-                    <p className="font-mono text-sm break-all">{userData.walletId}</p>
+                    <p className="font-mono text-sm break-all">{profile.wallet_id}</p>
                   </div>
                   <Separator />
                   <div>
-                    <p className="text-sm text-muted-foreground">Member Since</p>
-                    <p className="font-semibold">{new Date(userData.joinDate).toLocaleDateString()}</p>
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p className="font-semibold">{user?.email}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Games Played</p>
-                    <p className="font-semibold">{userData.totalGamesPlayed.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Member Since</p>
+                    <p className="font-semibold">{new Date(profile.created_at).toLocaleDateString()}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -69,7 +86,7 @@ const UserProfile = () => {
                   <CardContent className="p-6 text-center">
                     <Wallet className="w-8 h-8 mx-auto mb-2 text-green-400" />
                     <p className="text-sm text-muted-foreground mb-1">PHP Balance</p>
-                    <p className="text-2xl font-bold text-green-400">₱{userData.phpBalance.toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-green-400">₱{Number(profile.php_balance).toFixed(2)}</p>
                   </CardContent>
                 </Card>
 
@@ -77,7 +94,7 @@ const UserProfile = () => {
                   <CardContent className="p-6 text-center">
                     <Coins className="w-8 h-8 mx-auto mb-2 text-blue-400" />
                     <p className="text-sm text-muted-foreground mb-1">Coins</p>
-                    <p className="text-2xl font-bold text-blue-400">{userData.coins.toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-blue-400">{Number(profile.coins).toFixed(2)}</p>
                   </CardContent>
                 </Card>
 
@@ -87,7 +104,7 @@ const UserProfile = () => {
                       <span className="text-black font-bold text-sm">₿</span>
                     </div>
                     <p className="text-sm text-muted-foreground mb-1">$ITLOG Tokens</p>
-                    <p className="text-2xl font-bold text-gold-400">{userData.itlogTokens.toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-gold-400">{Number(profile.itlog_tokens).toFixed(2)}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -97,26 +114,34 @@ const UserProfile = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <TrendingUp className="w-5 h-5 mr-2" />
-                    Statistics
+                    Account Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <p className="text-sm text-muted-foreground">Total Winnings</p>
-                      <p className="text-2xl font-bold text-green-400">₱{userData.totalWinnings.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">Account Status</p>
+                      <p className={`text-2xl font-bold ${profile.is_banned ? 'text-red-400' : profile.is_suspended ? 'text-yellow-400' : 'text-green-400'}`}>
+                        {profile.is_banned ? 'Banned' : profile.is_suspended ? 'Suspended' : 'Active'}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Games Played</p>
-                      <p className="text-2xl font-bold">{userData.totalGamesPlayed}</p>
+                      <p className="text-sm text-muted-foreground">Account Type</p>
+                      <p className="text-2xl font-bold text-purple-400">
+                        {profile.is_admin ? 'Admin' : 'Player'}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Win Rate</p>
-                      <p className="text-2xl font-bold text-blue-400">68%</p>
+                      <p className="text-sm text-muted-foreground">Total Value</p>
+                      <p className="text-2xl font-bold text-blue-400">
+                        ₱{(Number(profile.php_balance) + Number(profile.coins) + (Number(profile.itlog_tokens) * 5000)).toFixed(2)}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Biggest Win</p>
-                      <p className="text-2xl font-bold text-purple-400">₱5,250.00</p>
+                      <p className="text-sm text-muted-foreground">Last Updated</p>
+                      <p className="text-lg font-bold">
+                        {new Date(profile.updated_at).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
