@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,15 +40,20 @@ const Admin = () => {
     },
   });
 
-  // Fetch pending deposits
+  // Fetch pending deposits with manual join
   const { data: deposits } = useQuery({
     queryKey: ['admin', 'deposits'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('deposits')
         .select(`
-          *,
-          profiles!deposits_user_id_fkey(username)
+          id,
+          user_id,
+          amount,
+          payment_method,
+          status,
+          created_at,
+          profiles!inner(username)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
