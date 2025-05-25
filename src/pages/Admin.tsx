@@ -36,7 +36,7 @@ const Admin = () => {
         .from('deposits')
         .select(`
           *,
-          profiles!inner(username)
+          profiles(username)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
@@ -179,7 +179,7 @@ const Admin = () => {
                     {deposits?.map((deposit) => (
                       <div key={deposit.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                          <p className="font-semibold">{deposit.profiles.username}</p>
+                          <p className="font-semibold">{deposit.profiles?.username || 'Unknown User'}</p>
                           <p className="text-sm text-muted-foreground">
                             ₱{Number(deposit.amount).toFixed(2)} via {deposit.payment_method}
                           </p>
