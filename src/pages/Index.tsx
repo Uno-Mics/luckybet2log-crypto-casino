@@ -9,7 +9,8 @@ import {
   Coins, 
   Crown,
   Zap,
-  Star
+  Star,
+  Wallet
 } from "lucide-react";
 
 const Index = () => {
