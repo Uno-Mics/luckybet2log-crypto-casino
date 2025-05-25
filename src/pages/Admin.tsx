@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,7 +47,7 @@ const Admin = () => {
         .from('deposits')
         .select(`
           *,
-          profiles(username)
+          profiles!deposits_user_id_fkey(username)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
