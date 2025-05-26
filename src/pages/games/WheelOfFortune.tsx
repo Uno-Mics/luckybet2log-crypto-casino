@@ -1,7 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
+import { useBannedCheck } from "@/hooks/useBannedCheck";
+import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -88,7 +89,7 @@ const WheelOfFortune = () => {
     // Generate random result with weighted probabilities
     const random = Math.random();
     let targetSectionIndex: number;
-    
+
     if (random < 0.000005) { // 0.0005% chance for $ITLOG (very low)
       targetSectionIndex = 7; // $ITLOG section
     } else if (random < 0.025) { // 2% chance for purple
@@ -123,16 +124,16 @@ const WheelOfFortune = () => {
       // Calculate the actual result based on final wheel position
       const normalizedRotation = finalRotation % 360;
       const sectionSize = 360 / wheelSections.length; // 45 degrees per section
-      
+
       // The pointer is at the top (0 degrees), so we need to find which section is at the top
       // We need to account for the wheel's rotation and find which section aligns with 0 degrees
       const pointerAngle = (360 - normalizedRotation) % 360;
-      
+
       // Find which section the pointer is pointing to
       const actualSectionIndex = Math.floor(pointerAngle / sectionSize) % wheelSections.length;
       const actualResult = wheelSections[actualSectionIndex];
       const result = actualResult.value;
-      
+
       setLastResult(result);
 
       if (result === "itlog") {
@@ -185,9 +186,11 @@ const WheelOfFortune = () => {
     setLastResult(null);
     setSelectedBet("");
   };
+    const { isBanned, reason } = useBannedCheck();
 
   return (
     <Layout>
+      {isBanned && <BannedOverlay reason={reason} />}
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
@@ -214,7 +217,7 @@ const WheelOfFortune = () => {
                     <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-20">
                       <div className="w-0 h-0 border-l-[15px] border-r-[15px] border-t-[25px] border-l-transparent border-r-transparent border-t-white drop-shadow-lg"></div>
                     </div>
-                    
+
                     {/* Wheel */}
                     <div 
                       className="w-96 h-96 mx-auto rounded-full border-8 border-white shadow-2xl relative overflow-hidden transition-transform ease-out"
@@ -227,7 +230,7 @@ const WheelOfFortune = () => {
                         const sectionAngle = 360 / wheelSections.length;
                         const sectionRotation = index * sectionAngle;
                         const isItlogSection = section.value === "itlog";
-                        
+
                         return (
                           <div
                             key={`${section.value}-${index}`}
@@ -259,7 +262,7 @@ const WheelOfFortune = () => {
                           </div>
                         );
                       })}
-                      
+
                       {/* Center circle */}
                       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full border-4 border-gray-300 z-10 shadow-lg"></div>
                     </div>

@@ -20,6 +20,7 @@ import Earn from "./pages/Earn";
 import Deposit from "./pages/Deposit";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import Appeal from "./pages/Appeal";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +92,11 @@ const App = () => (
               <Route path="/admin" element={
                 <ProtectedRoute requireAdmin={true}>
                   <Admin />
+                </ProtectedRoute>
+              } />
+              <Route path="/appeal" element={
+                <ProtectedRoute>
+                  <Appeal />
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />

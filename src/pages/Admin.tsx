@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, CreditCard, TrendingUp } from "lucide-react";
+import { Shield, Users, CreditCard, TrendingUp, MessageSquare } from "lucide-react";
 
 type DepositWithProfile = {
   id: string;
@@ -19,12 +19,40 @@ type DepositWithProfile = {
   username: string;
 };
 
+type Appeal = {
+  id: string;
+  user_id: string;
+  username: string;
+  email: string;
+  message: string;
+  status: string;
+  admin_response: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type Profile = {
+  id: string;
+  user_id: string;
+  username: string;
+  wallet_id: string;
+  php_balance: number;
+  itlog_tokens: number;
+  coins: number;
+  is_admin: boolean;
+  is_banned: boolean;
+  is_suspended: boolean;
+  ban_reason: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 const Admin = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch all users
-  const { data: users } = useQuery({
+  const { data: users } = useQuery<Profile[]>({
     queryKey: ['admin', 'users'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -33,18 +61,32 @@ const Admin = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as Profile[];
+    },
+  });
+
+  // Fetch appeals
+  const { data: appeals } = useQuery<Appeal[]>({
+    queryKey: ['admin', 'appeals'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('appeals')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as Appeal[];
     },
   });
 
   // Fetch pending deposits and join with profiles manually
-  const { data: deposits } = useQuery({
+  const { data: deposits } = useQuery<DepositWithProfile[]>({
     queryKey: ['admin', 'deposits'],
     queryFn: async () => {
       // First get pending deposits
       const { data: depositsData, error: depositsError } = await supabase
         .from('deposits')
-        .select('id, user_id, amount, payment_method, status, created_at')
+        .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
       
@@ -117,12 +159,59 @@ const Admin = () => {
     },
   });
 
+  // Process appeal mutation
+  const processAppeal = useMutation({
+    mutationFn: async ({ appealId, approve, response }: { appealId: string; approve: boolean; response?: string }) => {
+      const { error } = await supabase
+        .from('appeals')
+        .update({
+          status: approve ? 'approved' : 'rejected',
+          admin_response: response || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', appealId);
+
+      if (error) throw error;
+
+      if (approve) {
+        // Get appeal details to unban user
+        const { data: appeal } = await supabase
+          .from('appeals')
+          .select('user_id')
+          .eq('id', appealId)
+          .single();
+
+        if (appeal) {
+          // Unban the user
+          await supabase
+            .from('profiles')
+            .update({ 
+              is_banned: false, 
+              ban_reason: null 
+            })
+            .eq('user_id', appeal.user_id);
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'appeals'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      toast({
+        title: "Appeal processed",
+        description: "The appeal has been processed successfully.",
+      });
+    },
+  });
+
   // Ban/unban user mutation
   const toggleUserBan = useMutation({
     mutationFn: async ({ userId, banned }: { userId: string; banned: boolean }) => {
       const { error } = await supabase
         .from('profiles')
-        .update({ is_banned: banned })
+        .update({ 
+          is_banned: banned,
+          ban_reason: banned ? "Banned by admin" : null
+        })
         .eq('user_id', userId);
 
       if (error) throw error;
@@ -149,9 +238,10 @@ const Admin = () => {
           </div>
 
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="users">User Management</TabsTrigger>
               <TabsTrigger value="deposits">Deposit Requests</TabsTrigger>
+              <TabsTrigger value="appeals">Appeals</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
 
@@ -254,6 +344,97 @@ const Admin = () => {
               </Card>
             </TabsContent>
 
+            <TabsContent value="appeals" className="space-y-6">
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <MessageSquare className="w-5 h-5 mr-2" />
+                    Ban Appeals
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {appeals?.map((appeal) => (
+                      <div key={appeal.id} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold">{appeal.username}</p>
+                            <p className="text-sm text-muted-foreground">{appeal.email}</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge 
+                              variant={
+                                appeal.status === 'pending' ? 'default' :
+                                appeal.status === 'approved' ? 'default' : 'destructive'
+                              }
+                              className={
+                                appeal.status === 'pending' ? 'bg-yellow-600' :
+                                appeal.status === 'approved' ? 'bg-green-600' : ''
+                              }
+                            >
+                              {appeal.status}
+                            </Badge>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(appeal.created_at).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm font-medium mb-1">Appeal Message:</p>
+                          <p className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
+                            {appeal.message}
+                          </p>
+                        </div>
+
+                        {appeal.admin_response && (
+                          <div>
+                            <p className="text-sm font-medium mb-1">Admin Response:</p>
+                            <p className="text-sm text-muted-foreground bg-blue-500/10 p-2 rounded">
+                              {appeal.admin_response}
+                            </p>
+                          </div>
+                        )}
+
+                        {appeal.status === 'pending' && (
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-red-500 text-red-400"
+                              onClick={() => processAppeal.mutate({ 
+                                appealId: appeal.id, 
+                                approve: false,
+                                response: "Appeal rejected by admin."
+                              })}
+                            >
+                              Reject
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="glow-green"
+                              onClick={() => processAppeal.mutate({ 
+                                appealId: appeal.id, 
+                                approve: true,
+                                response: "Appeal approved. Account has been unbanned."
+                              })}
+                            >
+                              Approve & Unban
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {!appeals?.length && (
+                      <p className="text-center text-muted-foreground py-8">
+                        No appeals submitted
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="analytics" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
@@ -269,6 +450,16 @@ const Admin = () => {
                     <CreditCard className="w-8 h-8 mx-auto mb-2 text-blue-400" />
                     <p className="text-sm text-muted-foreground mb-1">Pending Deposits</p>
                     <p className="text-3xl font-bold text-blue-400">{deposits?.length || 0}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                  <CardContent className="p-6 text-center">
+                    <MessageSquare className="w-8 h-8 mx-auto mb-2 text-orange-400" />
+                    <p className="text-sm text-muted-foreground mb-1">Pending Appeals</p>
+                    <p className="text-3xl font-bold text-orange-400">
+                      {appeals?.filter(appeal => appeal.status === 'pending').length || 0}
+                    </p>
                   </CardContent>
                 </Card>
 

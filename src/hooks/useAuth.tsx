@@ -1,15 +1,15 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<any>;
-  signUp: (email: string, password: string, username: string) => Promise<any>;
-  signOut: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ data: any; error: AuthError | null }>;
+  signUp: (email: string, password: string, username: string) => Promise<{ data: any; error: AuthError | null }>;
+  signOut: () => Promise<{ error: AuthError | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,8 +60,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { data, error };
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const signOut = async (): Promise<{ error: AuthError | null }> => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      // Always clear the session state, even if there's an error
+      setSession(null);
+      setUser(null);
+      
+      // Clear localStorage and sessionStorage
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (storageError) {
+        console.warn('Could not clear storage:', storageError);
+      }
+      
+      // Force reload to clear any cached state
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+      
+      return { error };
+    } catch (err) {
+      console.error('Sign out error:', err);
+      
+      // Force clear state even on error
+      setSession(null);
+      setUser(null);
+      
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+      
+      return { error: err as AuthError };
+    }
   };
 
   return (
@@ -78,6 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

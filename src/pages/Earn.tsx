@@ -1,5 +1,7 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
+import { useBannedCheck } from "@/hooks/useBannedCheck";
+import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +12,7 @@ import { useFarmingSessions } from "@/hooks/useFarmingSessions";
 
 const Earn = () => {
   const [stakingAmount, setStakingAmount] = useState("");
+  const { isBanned, reason } = useBannedCheck();
   const {
     farmingSession,
     stakingSession,
@@ -40,6 +43,7 @@ const Earn = () => {
   if (loading) {
     return (
       <Layout>
+        {isBanned && <BannedOverlay reason={reason} />}
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
@@ -49,6 +53,7 @@ const Earn = () => {
 
   return (
     <Layout>
+      {isBanned && <BannedOverlay reason={reason} />}
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">

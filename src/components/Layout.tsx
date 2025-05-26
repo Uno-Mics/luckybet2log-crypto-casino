@@ -37,16 +37,25 @@ const Layout = ({ children }: LayoutProps) => {
 
   const handleLogout = async () => {
     try {
-      await signOut();
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
-      navigate("/auth");
+      const { error } = await signOut();
+      if (!error) {
+        toast({
+          title: "Logged out successfully",
+          description: "You have been logged out of your account.",
+        });
+        navigate('/auth');
+      } else {
+        toast({
+          title: "Logout failed",
+          description: "There was an error logging out. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
+      console.error('Logout error:', error);
       toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
+        title: "Logout failed",
+        description: "There was an error logging out. Please try again.",
         variant: "destructive",
       });
     }

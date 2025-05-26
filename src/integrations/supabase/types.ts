@@ -149,6 +149,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ban_reason: string | null
           coins: number
           created_at: string
           id: string
@@ -163,6 +164,7 @@ export type Database = {
           wallet_id: string
         }
         Insert: {
+          ban_reason?: string | null
           coins?: number
           created_at?: string
           id?: string
@@ -177,6 +179,7 @@ export type Database = {
           wallet_id: string
         }
         Update: {
+          ban_reason?: string | null
           coins?: number
           created_at?: string
           id?: string
@@ -189,6 +192,42 @@ export type Database = {
           user_id?: string
           username?: string
           wallet_id?: string
+        }
+        Relationships: []
+      }
+      appeals: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          status: string
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
         }
         Relationships: []
       }

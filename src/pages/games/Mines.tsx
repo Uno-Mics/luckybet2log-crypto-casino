@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Bomb, Gem, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
+import { useBannedCheck } from "@/hooks/useBannedCheck";
+import BannedOverlay from "@/components/BannedOverlay";
 
 type TileState = "hidden" | "safe" | "mine" | "itlog";
 
@@ -28,6 +30,7 @@ const Mines = () => {
   const [currentMultiplier, setCurrentMultiplier] = useState(1.0);
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
+  const { isBanned } = useBannedCheck();
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
@@ -254,6 +257,7 @@ const Mines = () => {
 
   return (
     <Layout>
+      {isBanned && <BannedOverlay />}
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">

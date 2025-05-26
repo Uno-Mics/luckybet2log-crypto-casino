@@ -1,6 +1,7 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
+import { useBannedCheck } from "@/hooks/useBannedCheck";
+import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,11 +20,12 @@ const Deposit = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<ReceiptValidationResult | null>(null);
+  const { isBanned, reason } = useBannedCheck();
   const { toast } = useToast();
   const { user } = useAuth();
 
   const predefinedAmounts = [100, 250, 500, 1000, 2500, 5000];
-  
+
   const paymentMethods = [
     { value: "gcash", label: "GCash" },
     { value: "paymaya", label: "PayMaya" },
@@ -44,10 +46,10 @@ const Deposit = () => {
         });
         return;
       }
-      
+
       setReceipt(file);
       setValidationResult(null);
-      
+
       // Only validate if we have amount and payment method
       if (amount && paymentMethod) {
         await validateReceiptFile(file);
@@ -71,11 +73,11 @@ const Deposit = () => {
     }
 
     setIsValidating(true);
-    
+
     try {
       const result = await validateReceipt(file, parseFloat(amount), paymentMethod);
       setValidationResult(result);
-      
+
       if (result.isValid) {
         toast({
           title: "Receipt validated successfully!",
@@ -102,7 +104,7 @@ const Deposit = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!amount || parseFloat(amount) <= 0) {
       toast({
         title: "Invalid amount",
@@ -192,6 +194,7 @@ const Deposit = () => {
   if (isSubmitted) {
     return (
       <Layout>
+        {isBanned && <BannedOverlay reason={reason} />}
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 flex items-center justify-center">
           <Card className="w-full max-w-md bg-card/50 backdrop-blur-sm border-green-500/30 glow-green">
             <CardContent className="p-8 text-center">
@@ -221,6 +224,7 @@ const Deposit = () => {
 
   return (
     <Layout>
+      {isBanned && <BannedOverlay reason={reason} />}
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">

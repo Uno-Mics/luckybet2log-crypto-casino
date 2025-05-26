@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 import Layout from "@/components/Layout";
+import { useBannedCheck } from "@/hooks/useBannedCheck";
+import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 
 const Wallet = () => {
+  const { isBanned } = useBannedCheck();
   const [convertAmount, setConvertAmount] = useState("");
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
@@ -95,6 +98,7 @@ const Wallet = () => {
 
   return (
     <Layout>
+      {isBanned && <BannedOverlay />}
       <div className="min-h-screen bg-background py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">

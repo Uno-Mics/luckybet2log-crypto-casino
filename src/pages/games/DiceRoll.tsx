@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
+import { useBannedCheck } from "@/hooks/useBannedCheck";
+import BannedOverlay from "@/components/BannedOverlay";
 
 const DiceRoll = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -22,6 +24,7 @@ const DiceRoll = () => {
   const [showItlogDice, setShowItlogDice] = useState(false);
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
+  const { isBanned } = useBannedCheck();
 
   useEffect(() => {
     if (profile) {
@@ -175,6 +178,7 @@ const DiceRoll = () => {
 
   return (
     <Layout>
+      {isBanned && <BannedOverlay />}
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
