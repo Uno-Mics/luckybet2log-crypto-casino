@@ -31,6 +31,21 @@ type Appeal = {
   updated_at: string;
 };
 
+type WithdrawalWithProfile = {
+  id: string;
+  user_id: string;
+  amount: number;
+  withdrawal_type: string;
+  withdrawal_method: string | null;
+  bank_name: string | null;
+  bank_account_name: string | null;
+  bank_account_number: string | null;
+  status: string;
+  created_at: string;
+  admin_response: string | null;
+  username: string;
+};
+
 type Profile = {
   id: string;
   user_id: string;
@@ -76,6 +91,47 @@ const Admin = () => {
       
       if (error) throw error;
       return data as Appeal[];
+    },
+  });
+
+  // Fetch pending withdrawals and join with profiles manually
+  const { data: withdrawals } = useQuery<WithdrawalWithProfile[]>({
+    queryKey: ['admin', 'withdrawals'],
+    queryFn: async () => {
+      // First get pending withdrawals
+      const { data: withdrawalsData, error: withdrawalsError } = await supabase
+        .from('withdrawals')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      
+      if (withdrawalsError) throw withdrawalsError;
+      if (!withdrawalsData || withdrawalsData.length === 0) return [];
+
+      // Get user IDs from withdrawals
+      const userIds = withdrawalsData.map(withdrawal => withdrawal.user_id);
+
+      // Get profiles for those users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, username')
+        .in('user_id', userIds);
+      
+      if (profilesError) throw profilesError;
+
+      // Create a map of user_id to username for quick lookup
+      const profilesMap = (profilesData || []).reduce((acc, profile) => {
+        acc[profile.user_id] = profile.username;
+        return acc;
+      }, {} as Record<string, string>);
+
+      // Join the data manually
+      const withdrawalsWithProfiles: WithdrawalWithProfile[] = withdrawalsData.map(withdrawal => ({
+        ...withdrawal,
+        username: profilesMap[withdrawal.user_id] || 'Unknown User'
+      }));
+
+      return withdrawalsWithProfiles;
     },
   });
 
@@ -159,6 +215,58 @@ const Admin = () => {
     },
   });
 
+  // Process withdrawal mutation
+  const processWithdrawal = useMutation({
+    mutationFn: async ({ withdrawalId, approve, response }: { withdrawalId: string; approve: boolean; response?: string }) => {
+      const { error } = await supabase
+        .from('withdrawals')
+        .update({
+          status: approve ? 'approved' : 'rejected',
+          admin_response: response || null,
+          processed_at: new Date().toISOString(),
+        })
+        .eq('id', withdrawalId);
+
+      if (error) throw error;
+
+      // Get withdrawal details
+      const { data: withdrawal } = await supabase
+        .from('withdrawals')
+        .select('user_id, amount')
+        .eq('id', withdrawalId)
+        .single();
+
+      if (withdrawal) {
+        if (approve) {
+          // Deduct balance from user
+          await supabase.rpc('update_user_balance', {
+            p_user_id: withdrawal.user_id,
+            p_php_change: -withdrawal.amount,
+          });
+        }
+
+        // Create notification
+        await supabase
+          .from('withdrawal_notifications')
+          .insert({
+            user_id: withdrawal.user_id,
+            withdrawal_id: withdrawalId,
+            message: approve 
+              ? `Your withdrawal of ₱${withdrawal.amount.toFixed(2)} has been approved and processed.`
+              : `Your withdrawal of ₱${withdrawal.amount.toFixed(2)} has been rejected. ${response || 'No reason provided.'}`
+          });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast({
+        title: "Withdrawal processed",
+        description: "The withdrawal has been processed successfully.",
+      });
+    },
+  });
+
   // Process appeal mutation
   const processAppeal = useMutation({
     mutationFn: async ({ appealId, approve, response }: { appealId: string; approve: boolean; response?: string }) => {
@@ -238,9 +346,10 @@ const Admin = () => {
           </div>
 
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="users">User Management</TabsTrigger>
               <TabsTrigger value="deposits">Deposit Requests</TabsTrigger>
+              <TabsTrigger value="withdrawals">Withdrawal Requests</TabsTrigger>
               <TabsTrigger value="appeals">Appeals</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
@@ -337,6 +446,76 @@ const Admin = () => {
                     {!deposits?.length && (
                       <p className="text-center text-muted-foreground py-8">
                         No pending deposits
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="withdrawals" className="space-y-6">
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Pending Withdrawals
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {withdrawals?.map((withdrawal) => (
+                      <div key={withdrawal.id} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold">{withdrawal.username}</p>
+                            <p className="text-sm text-muted-foreground">
+                              ₱{Number(withdrawal.amount).toFixed(2)} via {withdrawal.withdrawal_method || 'Bank Transfer'}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(withdrawal.created_at).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-muted/50 p-3 rounded">
+                          <p className="text-sm font-medium mb-1">Bank Details:</p>
+                          <p className="text-sm text-muted-foreground">Bank: {withdrawal.bank_name}</p>
+                          <p className="text-sm text-muted-foreground">Account Name: {withdrawal.bank_account_name}</p>
+                          <p className="text-sm text-muted-foreground">Account Number: {withdrawal.bank_account_number}</p>
+                        </div>
+
+                        {withdrawal.status === 'pending' && (
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-red-500 text-red-400"
+                              onClick={() => processWithdrawal.mutate({ 
+                                withdrawalId: withdrawal.id, 
+                                approve: false,
+                                response: "Withdrawal request rejected by admin."
+                              })}
+                            >
+                              Reject
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="glow-green"
+                              onClick={() => processWithdrawal.mutate({ 
+                                withdrawalId: withdrawal.id, 
+                                approve: true,
+                                response: "Withdrawal approved and processed."
+                              })}
+                            >
+                              Approve & Process
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {!withdrawals?.length && (
+                      <p className="text-center text-muted-foreground py-8">
+                        No pending withdrawals
                       </p>
                     )}
                   </div>
@@ -460,6 +639,14 @@ const Admin = () => {
                     <p className="text-3xl font-bold text-orange-400">
                       {appeals?.filter(appeal => appeal.status === 'pending').length || 0}
                     </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                  <CardContent className="p-6 text-center">
+                    <CreditCard className="w-8 h-8 mx-auto mb-2 text-red-400" />
+                    <p className="text-sm text-muted-foreground mb-1">Pending Withdrawals</p>
+                    <p className="text-3xl font-bold text-red-400">{withdrawals?.length || 0}</p>
                   </CardContent>
                 </Card>
 

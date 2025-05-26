@@ -7,8 +7,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ data: any; error: AuthError | null }>;
-  signUp: (email: string, password: string, username: string) => Promise<{ data: any; error: AuthError | null }>;
+  signIn: (email: string, password: string) => Promise<{ data: { user: User | null; session: Session | null } | null; error: AuthError | null }>;
+  signUp: (email: string, password: string, username: string) => Promise<{ data: { user: User | null; session: Session | null } | null; error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
 }
 
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       password,
     });
-    return { data, error };
+    return { data: data ? { user: data.user, session: data.session } : null, error };
   };
 
   const signUp = async (email: string, password: string, username: string) => {
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
       },
     });
-    return { data, error };
+    return { data: data ? { user: data.user, session: data.session } : null, error };
   };
 
   const signOut = async (): Promise<{ error: AuthError | null }> => {

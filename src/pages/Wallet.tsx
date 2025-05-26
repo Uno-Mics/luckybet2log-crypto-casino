@@ -8,15 +8,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowUpDown, Wallet as WalletIcon, Coins, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Wallet = () => {
   const { isBanned } = useBannedCheck();
   const [convertAmount, setConvertAmount] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [withdrawalMethod, setWithdrawalMethod] = useState("bank_transfer");
+  const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false);
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
+  const { user } = useAuth();
 
   if (!profile) return null;
 
@@ -94,6 +104,96 @@ const Wallet = () => {
     }
 
     setConvertAmount("");
+  };
+
+  const handleWithdrawalSubmit = async () => {
+    const amount = parseFloat(withdrawAmount);
+    
+    if (!amount || amount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid withdrawal amount.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (amount > profile.php_balance) {
+      toast({
+        title: "Insufficient balance",
+        description: "You don't have enough PHP balance for this withdrawal.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (amount < 100) {
+      toast({
+        title: "Minimum withdrawal",
+        description: "Minimum withdrawal amount is ₱100.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!bankName || !accountName || !accountNumber) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all bank account details.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to make a withdrawal.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmittingWithdrawal(true);
+
+    try {
+      const { error } = await supabase
+        .from('withdrawals')
+        .insert({
+          user_id: user.id,
+          amount: amount,
+          withdrawal_type: 'php',
+          withdrawal_method: withdrawalMethod,
+          bank_name: bankName,
+          bank_account_name: accountName,
+          bank_account_number: accountNumber,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Withdrawal request submitted",
+        description: "Your withdrawal request has been submitted for admin approval. You will be notified once processed."
+      });
+
+      // Reset form
+      setWithdrawAmount("");
+      setBankName("");
+      setAccountName("");
+      setAccountNumber("");
+      setWithdrawalMethod("bank_transfer");
+
+    } catch (error) {
+      console.error('Withdrawal submission error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit withdrawal request. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmittingWithdrawal(false);
+    }
   };
 
   return (
@@ -223,6 +323,9 @@ const Wallet = () => {
                     <p className="text-sm text-muted-foreground">
                       Withdraw your PHP balance to your bank account
                     </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Available balance: ₱{profile.php_balance.toFixed(2)}
+                    </p>
                   </div>
                   <div className="space-y-4">
                     <div>
@@ -231,22 +334,64 @@ const Wallet = () => {
                         id="withdraw-amount"
                         type="number"
                         step="0.01"
-                        placeholder="Enter withdrawal amount"
-                        value={convertAmount}
-                        onChange={(e) => setConvertAmount(e.target.value)}
+                        min="100"
+                        max={profile.php_balance}
+                        placeholder="Minimum ₱100"
+                        value={withdrawAmount}
+                        onChange={(e) => setWithdrawAmount(e.target.value)}
                       />
                     </div>
+                    
+                    <div>
+                      <Label htmlFor="withdrawal-method">Withdrawal Method</Label>
+                      <Select value={withdrawalMethod} onValueChange={setWithdrawalMethod}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select withdrawal method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                          <SelectItem value="gcash">GCash</SelectItem>
+                          <SelectItem value="paymaya">PayMaya</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="bank-name">Bank Name</Label>
+                      <Input
+                        id="bank-name"
+                        placeholder="e.g., BPI, BDO, Metrobank"
+                        value={bankName}
+                        onChange={(e) => setBankName(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="account-name">Account Holder Name</Label>
+                      <Input
+                        id="account-name"
+                        placeholder="Full name as registered"
+                        value={accountName}
+                        onChange={(e) => setAccountName(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="account-number">Account Number</Label>
+                      <Input
+                        id="account-number"
+                        placeholder="Enter account number"
+                        value={accountNumber}
+                        onChange={(e) => setAccountNumber(e.target.value)}
+                      />
+                    </div>
+
                     <Button 
-                      onClick={() => {
-                        toast({
-                          title: "Withdrawal request submitted",
-                          description: "Your withdrawal will be processed within 24 hours."
-                        });
-                        setConvertAmount("");
-                      }}
+                      onClick={handleWithdrawalSubmit}
+                      disabled={isSubmittingWithdrawal || !withdrawAmount || !bankName || !accountName || !accountNumber}
                       className="w-full glow-purple"
                     >
-                      Submit Withdrawal Request
+                      {isSubmittingWithdrawal ? "Submitting..." : "Submit Withdrawal Request"}
                     </Button>
                   </div>
                 </TabsContent>

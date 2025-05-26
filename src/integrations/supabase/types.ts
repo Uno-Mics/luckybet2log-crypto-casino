@@ -285,6 +285,11 @@ export type Database = {
           status: string
           user_id: string
           withdrawal_type: string
+          withdrawal_method: string | null
+          admin_response: string | null
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_name: string | null
         }
         Insert: {
           amount: number
@@ -295,6 +300,11 @@ export type Database = {
           status?: string
           user_id: string
           withdrawal_type: string
+          withdrawal_method?: string | null
+          admin_response?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
         }
         Update: {
           amount?: number
@@ -305,8 +315,48 @@ export type Database = {
           status?: string
           user_id?: string
           withdrawal_type?: string
+          withdrawal_method?: string | null
+          admin_response?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
         }
         Relationships: []
+      }
+      withdrawal_notifications: {
+        Row: {
+          id: string
+          user_id: string
+          withdrawal_id: string
+          message: string
+          is_read: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          withdrawal_id: string
+          message: string
+          is_read?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          withdrawal_id?: string
+          message?: string
+          is_read?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_notifications_withdrawal_id_fkey"
+            columns: ["withdrawal_id"]
+            isOneToOne: false
+            referencedRelation: "withdrawals"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

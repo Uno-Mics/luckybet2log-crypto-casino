@@ -1,18 +1,10 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Home,
-  Gamepad2,
-  User,
-  Wallet,
-  TrendingUp,
-  LogOut,
-  CreditCard,
-  Shield
-} from "lucide-react";
+import { Bell, User, LogOut, Settings, Home, Gamepad2, TrendingUp, CreditCard, Wallet, Shield, BellRing } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
+import NotificationBell from "@/components/NotificationBell";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,6 +16,7 @@ const Layout = ({ children }: LayoutProps) => {
   const { signOut } = useAuth();
   const { toast } = useToast();
   const { profile } = useProfile();
+  
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -111,6 +104,7 @@ const Layout = ({ children }: LayoutProps) => {
                   </span>
                 </div>
               </div>
+              <NotificationBell />
               <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut className="w-4 h-4" />
               </Button>
