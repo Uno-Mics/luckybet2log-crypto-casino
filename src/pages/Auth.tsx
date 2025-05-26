@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
@@ -18,7 +18,7 @@ const Auth = () => {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerUsername, setRegisterUsername] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
+
   const { toast } = useToast();
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -33,22 +33,38 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const { data, error } = await signIn(loginEmail, loginPassword);
-      
+
       if (error) {
         toast({
           title: "Login failed",
           description: error.message,
           variant: "destructive",
         });
-      } else if (data.user) {
+      } else {
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        navigate("/");
+
+        // Check if user is admin and redirect accordingly
+        if (data.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('user_id', data.user.id)
+            .single();
+
+          if (profile?.is_admin) {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
+        } else {
+          navigate("/");
+        }
       }
     } catch (error) {
       toast({
@@ -63,7 +79,7 @@ const Auth = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (registerPassword !== confirmPassword) {
       toast({
         title: "Registration failed",
@@ -74,10 +90,10 @@ const Auth = () => {
     }
 
     setIsLoading(true);
-    
+
     try {
       const { data, error } = await signUp(registerEmail, registerPassword, registerUsername);
-      
+
       if (error) {
         toast({
           title: "Registration failed",
@@ -125,7 +141,7 @@ const Auth = () => {
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
@@ -159,7 +175,7 @@ const Auth = () => {
                 </Button>
               </form>
             </TabsContent>
-            
+
             <TabsContent value="register">
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">

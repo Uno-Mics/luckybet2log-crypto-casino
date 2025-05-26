@@ -7,7 +7,8 @@ import {
   Wallet,
   TrendingUp,
   LogOut,
-  CreditCard
+  CreditCard,
+  Shield
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,7 @@ const Layout = ({ children }: LayoutProps) => {
     { name: "Wallet", href: "/wallet", icon: Wallet },
     { name: "Deposit", href: "/deposit", icon: CreditCard },
     { name: "Earn", href: "/earn", icon: TrendingUp },
+    ...(profile?.is_admin ? [{ name: "Admin", href: "/admin", icon: Shield }] : []),
   ];
 
   const handleLogout = async () => {

@@ -1,4 +1,3 @@
-
 import Tesseract from 'tesseract.js';
 
 export interface ReceiptValidationResult {
@@ -117,40 +116,40 @@ const PAYMENT_PATTERNS: Record<string, PaymentPattern> = {
     amountPattern: [
       // HIGHEST PRIORITY: Large amounts with proper comma formatting (10k+)
       /(?:^|\s)(\d{2,3},\d{3}(?:,\d{3})*\.\d{2})(?:\s|$)/gm,
-      
+
       // HIGH PRIORITY: 5-digit amounts (10,000-99,999) - most common deposit range
       /(?:^|\s)(\d{2},\d{3}\.\d{2})(?:\s|$)/gm,
-      
+
       // PRIORITY: 4-digit amounts (1,000-9,999) with word boundaries
       /(?:^|\s)(\d{1},\d{3}\.\d{2})(?:\s|$)/gm,
-      
+
       // CONTEXT PRIORITY: Amount in transaction line with Metrobank reference format
       /\d{3}-\d-\d{8}-\d.*?(\d{1,3}(?:,\d{3})+\.\d{2})/i,
-      
+
       // CONTEXT PRIORITY: PHP followed by large amounts (strict word boundaries)
       /php\s+(\d{2,3},\d{3}(?:,\d{3})*\.\d{2})/i,
-      
+
       // CONTEXT PRIORITY: CS (Cash) followed by large amounts
       /cs\s+(\d{2,3},\d{3}(?:,\d{3})*\.\d{2})/i,
-      
+
       // CONTEXT: Total deposit amounts with strict matching
       /total\s*(?:deposit|cash\s*deposit)\s*(\d{1,3}(?:,\d{3})+\.\d{2})/i,
-      
+
       // CONTEXT: DEP ON (Deposit On) with amount
       /dep\s+on.*?(\d{1,3}(?:,\d{3})+\.\d{2})/i,
-      
+
       // MEDIUM PRIORITY: Amount in transaction timestamp line
       /\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}.*?(\d{1,3}(?:,\d{3})+\.\d{2})/i,
-      
+
       // LOWER PRIORITY: PHP followed by any properly formatted amount
       /php\s+(\d{1,3}(?:,\d{3})*\.\d{2})/i,
-      
+
       // LOWER PRIORITY: CS followed by any amount
       /cs\s+(\d{1,3}(?:,\d{3})*\.\d{2})/i,
-      
+
       // FALLBACK: Any amount with proper formatting (but lower score)
       /(?:^|\s)(\d{3,4}\.\d{2})(?:\s|$)/gm,
-      
+
       // LAST RESORT: Broad match with very low score
       /(\d{1,3}(?:,\d{3})*\.\d{2})/g
     ],
@@ -187,11 +186,7 @@ export const validateReceipt = async (
   try {
     // Extract text from image using Tesseract with enhanced preprocessing
     const result = await Tesseract.recognize(imageFile, 'eng', {
-      logger: (m) => console.log(m),
-      // Enhanced OCR settings for better number recognition
-      tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,:-/$₱',
-      tessedit_pageseg_mode: '6', // Assume uniform block of text
-      preserve_interword_spaces: '1',
+      logger: (m: { status: string; progress: number; userJobId?: string }) => console.log(m),
     });
 
     const extractedText = result.data.text.toLowerCase();
@@ -239,7 +234,7 @@ export const validateReceipt = async (
     }
 
     console.log('Amount matches found:', allMatches);
-    
+
     // Enhanced logging for Metrobank
     if (expectedMethod === 'metrobank') {
       console.log('=== METROBANK DEBUGGING ===');
@@ -285,50 +280,50 @@ export const validateReceipt = async (
           if (parsedAmount < 100) score -= 30;
         } else if (expectedMethod === 'metrobank') {
           // Enhanced Metrobank scoring system
-          
+
           // HIGHEST PRIORITY: Pattern-based scoring (what regex matched)
           if (/(?:^|\s)(\d{2,3},\d{3}(?:,\d{3})*\.\d{2})(?:\s|$)/.test(match[0])) score += 500; // Large amounts pattern
           if (/(?:^|\s)(\d{2},\d{3}\.\d{2})(?:\s|$)/.test(match[0])) score += 450; // 5-digit pattern
           if (/(?:^|\s)(\d{1},\d{3}\.\d{2})(?:\s|$)/.test(match[0])) score += 400; // 4-digit pattern
           if (/\d{3}-\d-\d{8}-\d.*?(\d{1,3}(?:,\d{3})+\.\d{2})/.test(match[0])) score += 350; // Reference line
-          
+
           // Amount size scoring - heavily favor larger deposits
           if (parsedAmount >= 50000) score += 300; // 50k+
           if (parsedAmount >= 20000) score += 250; // 20k+
           if (parsedAmount >= 10000) score += 200; // 10k+
           if (parsedAmount >= 5000) score += 150; // 5k+
           if (parsedAmount >= 1000) score += 100; // 1k+
-          
+
           // Expected amount proximity - MAJOR boost for close matches
           const tolerance = expectedAmount * 0.05; // 5% tolerance
           if (Math.abs(parsedAmount - expectedAmount) <= tolerance) score += 800;
-          
+
           const mediumTolerance = expectedAmount * 0.15; // 15% tolerance
           if (Math.abs(parsedAmount - expectedAmount) <= mediumTolerance) score += 400;
-          
+
           const largeTolerance = expectedAmount * 0.30; // 30% tolerance for OCR errors
           if (Math.abs(parsedAmount - expectedAmount) <= largeTolerance) score += 200;
-          
+
           // Context-based scoring
           if (/php\s+\d{2,3},\d{3}/.test(context)) score += 180; // PHP with large amount
           if (/cs\s+\d{2,3},\d{3}/.test(context)) score += 170; // CS with large amount
           if (/total\s*(?:deposit|depost|cash\s*deposit)/.test(context)) score += 160;
           if (/dep\s+on.*\d+/.test(context)) score += 150;
           if (/\d{2}\/\d{2}\/\d{4}.*\d{2}:\d{2}:\d{2}/.test(match[0])) score += 140;
-          
+
           // Format validation bonuses
           if (/^\d{2},\d{3}\.\d{2}$/.test(amountStr)) score += 120; // Perfect 5-digit format
           if (/^\d{1},\d{3}\.\d{2}$/.test(amountStr)) score += 100; // Perfect 4-digit format
           if (/^\d{3,4}\.\d{2}$/.test(amountStr)) score += 80; // 3-4 digit without comma
-          
+
           // Word boundary bonuses (prevent partial matches)
           if (/(?:^|\s)\d/.test(match[0]) && /\d(?:\s|$)/.test(match[0])) score += 150;
-          
+
           // Severe penalties for problematic amounts
           if (parsedAmount < 100) score -= 500; // Tiny amounts are likely errors
           if (parsedAmount < 500) score -= 300;
           if (parsedAmount < 1000) score -= 100;
-          
+
           // Penalize if amount is way off from expected
           if (expectedAmount > 0) {
             const ratio = Math.max(parsedAmount / expectedAmount, expectedAmount / parsedAmount);
@@ -365,7 +360,7 @@ export const validateReceipt = async (
           context: match[0],
           pattern: pattern
         });
-        
+
         // Enhanced logging for debugging
         if (expectedMethod === 'metrobank') {
           console.log(`Found amount: ₱${parsedAmount} | Score: ${score} | Context: "${match[0]}" | Pattern: ${pattern.substring(0, 50)}...`);
@@ -430,10 +425,11 @@ export const validateReceipt = async (
             if (parsedAmount >= 5000) score += 15;
             if (parsedAmount >= 10000) score += 10;
 
-            validAmounts.push({ 
-              amount: parsedAmount, 
-              score, 
-              context: `fallback-${fallbackPattern.source}: ${match[0]}` 
+            validAmounts.push({
+              amount: parsedAmount,
+              score,
+              context: `fallback ${fallbackPattern.source}: ${match[0]}`,
+              pattern: fallbackPattern.source,
             });
           }
         }
@@ -448,7 +444,7 @@ export const validateReceipt = async (
     if (validAmounts.length > 0) {
       extractedAmount = validAmounts[0].amount;
       console.log('Selected amount:', extractedAmount, 'from context:', validAmounts[0].context);
-      
+
       // Enhanced Metrobank logging
       if (expectedMethod === 'metrobank') {
         console.log('=== FINAL SELECTION ===');
