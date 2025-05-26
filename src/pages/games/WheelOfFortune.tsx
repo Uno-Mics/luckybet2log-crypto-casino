@@ -9,41 +9,44 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
 const WheelOfFortune = () => {
-  const [currentBet, setCurrentBet] = useState("1.00");
+  const [currentBet, setCurrentBet] = useState("1");
   const [selectedBet, setSelectedBet] = useState("");
   const [isSpinning, setIsSpinning] = useState(false);
   const [lastResult, setLastResult] = useState<string | null>(null);
   const { profile, updateBalance } = useProfile();
   const [balance, setBalance] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [gameEnded, setGameEnded] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (profile) {
-      setBalance(profile.php_balance);
+      setBalance(profile.coins);
     }
   }, [profile]);
-  const [rotation, setRotation] = useState(0);
-  const { toast } = useToast();
 
-  const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
+  const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
 
   const wheelSections = [
-    { label: "Red 2x", value: "red", multiplier: 2, color: "bg-red-500" },
-    { label: "Black 2x", value: "black", multiplier: 2, color: "bg-gray-800" },
-    { label: "Green 5x", value: "green", multiplier: 5, color: "bg-green-500" },
-    { label: "Gold 10x", value: "gold", multiplier: 10, color: "bg-yellow-500" },
-    { label: "Purple 25x", value: "purple", multiplier: 25, color: "bg-purple-500" },
-    { label: "$ITLOG", value: "itlog", multiplier: 0, color: "bg-gradient-to-r from-yellow-400 to-orange-500" }
+    { label: "Red", value: "red", multiplier: 2, color: "bg-red-500", angle: 0 },
+    { label: "Black", value: "black", multiplier: 2, color: "bg-gray-800", angle: 45 },
+    { label: "Green", value: "green", multiplier: 5, color: "bg-green-500", angle: 90 },
+    { label: "Gold", value: "gold", multiplier: 10, color: "bg-yellow-500", angle: 135 },
+    { label: "Purple", value: "purple", multiplier: 25, color: "bg-purple-500", angle: 180 },
+    { label: "Red", value: "red", multiplier: 2, color: "bg-red-500", angle: 225 },
+    { label: "Black", value: "black", multiplier: 2, color: "bg-gray-800", angle: 270 },
+    { label: "$ITLOG", value: "itlog", multiplier: 500, color: "bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-500", angle: 315 }
   ];
 
   const betOptions = [
-    { label: "Red (2x)", value: "red", multiplier: 2 },
-    { label: "Black (2x)", value: "black", multiplier: 2 },
-    { label: "Green (5x)", value: "green", multiplier: 5 },
-    { label: "Gold (10x)", value: "gold", multiplier: 10 },
-    { label: "Purple (25x)", value: "purple", multiplier: 25 },
+    { label: "Red (2x)", value: "red", multiplier: 2, color: "bg-red-500" },
+    { label: "Black (2x)", value: "black", multiplier: 2, color: "bg-gray-800" },
+    { label: "Green (5x)", value: "green", multiplier: 5, color: "bg-green-500" },
+    { label: "Gold (10x)", value: "gold", multiplier: 10, color: "bg-yellow-500" },
+    { label: "Purple (25x)", value: "purple", multiplier: 25, color: "bg-purple-500" },
   ];
 
-  const spinWheel = () => {
+  const spinWheel = async () => {
     if (!selectedBet) {
       toast({
         title: "Select a bet",
@@ -63,55 +66,110 @@ const WheelOfFortune = () => {
     }
 
     setIsSpinning(true);
-    setBalance(prev => prev - parseFloat(currentBet));
+    setGameEnded(false);
+    const betAmount = parseFloat(currentBet);
+
+    // Update balance immediately and in database
+    try {
+      await updateBalance.mutateAsync({
+        coinsChange: -betAmount
+      });
+      setBalance(prev => prev - betAmount);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to place bet. Please try again.",
+        variant: "destructive"
+      });
+      setIsSpinning(false);
+      return;
+    }
 
     // Generate random result with weighted probabilities
     const random = Math.random();
-    let result: string;
+    let targetSectionIndex: number;
     
-    if (random < 0.02) { // 2% chance for $ITLOG
-      result = "itlog";
-    } else if (random < 0.05) { // 3% chance for purple
-      result = "purple";
-    } else if (random < 0.15) { // 10% chance for gold
-      result = "gold";
-    } else if (random < 0.35) { // 20% chance for green
-      result = "green";
-    } else if (random < 0.675) { // 32.5% chance for red
-      result = "red";
-    } else { // 32.5% chance for black
-      result = "black";
+    if (random < 0.000005) { // 0.0005% chance for $ITLOG (very low)
+      targetSectionIndex = 7; // $ITLOG section
+    } else if (random < 0.025) { // 2% chance for purple
+      targetSectionIndex = 4; // Purple section
+    } else if (random < 0.075) { // 5% chance for gold
+      targetSectionIndex = 3; // Gold section
+    } else if (random < 0.175) { // 10% chance for green
+      targetSectionIndex = 2; // Green section
+    } else if (random < 0.5875) { // 41.25% chance for red
+      targetSectionIndex = Math.random() < 0.5 ? 0 : 5; // Red sections (0 or 5)
+    } else { // 41.25% chance for black
+      targetSectionIndex = Math.random() < 0.5 ? 1 : 6; // Black sections (1 or 6)
     }
 
-    // Calculate wheel rotation
-    const sectionIndex = wheelSections.findIndex(section => section.value === result);
-    const sectionAngle = 360 / wheelSections.length;
-    const targetAngle = sectionIndex * sectionAngle + (sectionAngle / 2);
+    const resultSection = wheelSections[targetSectionIndex];
+
+    // Calculate wheel rotation to land on the result section
+    // The pointer points down at 0 degrees (top), so we need to adjust
+    const targetAngle = resultSection.angle;
     const spins = 5 + Math.random() * 3; // 5-8 full spins
-    const finalRotation = rotation + (spins * 360) + targetAngle;
+    // Since the pointer is at the top (0 degrees) and points down, 
+    // we need the target section to be at the top when the wheel stops
+    const finalRotation = rotation + (spins * 360) + (360 - targetAngle);
 
     setRotation(finalRotation);
 
-    // Handle results after animation
-    setTimeout(() => {
+    // Handle results after 5 seconds of spinning
+    setTimeout(async () => {
       setIsSpinning(false);
+      setGameEnded(true);
+
+      // Calculate the actual result based on final wheel position
+      const normalizedRotation = finalRotation % 360;
+      const sectionSize = 360 / wheelSections.length; // 45 degrees per section
+      
+      // The pointer is at the top (0 degrees), so we need to find which section is at the top
+      // We need to account for the wheel's rotation and find which section aligns with 0 degrees
+      const pointerAngle = (360 - normalizedRotation) % 360;
+      
+      // Find which section the pointer is pointing to
+      const actualSectionIndex = Math.floor(pointerAngle / sectionSize) % wheelSections.length;
+      const actualResult = wheelSections[actualSectionIndex];
+      const result = actualResult.value;
+      
       setLastResult(result);
 
       if (result === "itlog") {
-        const betMultiplier = parseFloat(currentBet) * 10000;
-        const reward = Math.min(betMultiplier, 1000000);
-        toast({
-          title: "🎉 $ITLOG TOKEN WON! 🎉",
-          description: `You hit the exclusive $ITLOG token and won ${reward.toLocaleString()} tokens!`,
-        });
+        const itlogReward = betAmount * 50; // 500x $ITLOG tokens
+        try {
+          await updateBalance.mutateAsync({
+            itlogChange: itlogReward
+          });
+          toast({
+            title: "🎉 $ITLOG TOKEN WON! 🎉",
+            description: `You hit the exclusive $ITLOG token and won ${itlogReward.toLocaleString()} $ITLOG tokens!`,
+          });
+        } catch (error) {
+          toast({
+            title: "Error updating $ITLOG balance",
+            description: "Please contact support.",
+            variant: "destructive"
+          });
+        }
       } else if (result === selectedBet) {
-        const section = wheelSections.find(s => s.value === result);
-        const winnings = parseFloat(currentBet) * (section?.multiplier || 1);
-        setBalance(prev => prev + winnings);
-        toast({
-          title: "Congratulations!",
-          description: `You won ₱${winnings.toFixed(2)} with ${section?.multiplier}x multiplier!`
-        });
+        const winnings = betAmount * actualResult.multiplier;
+        try {
+          await updateBalance.mutateAsync({
+            coinsChange: winnings
+          });
+          setBalance(prev => prev + winnings);
+          toast({
+            title: "Congratulations!",
+            description: `You won ${winnings.toFixed(2)} coins with ${actualResult.multiplier}x multiplier!`
+          });
+        } catch (error) {
+          toast({
+            title: "Error updating balance",
+            description: "Please contact support.",
+            variant: "destructive"
+          });
+        }
       } else {
         toast({
           title: "Better luck next time!",
@@ -119,7 +177,13 @@ const WheelOfFortune = () => {
           variant: "destructive"
         });
       }
-    }, 3000);
+    }, 5000);
+  };
+
+  const resetGame = () => {
+    setGameEnded(false);
+    setLastResult(null);
+    setSelectedBet("");
   };
 
   return (
@@ -146,43 +210,64 @@ const WheelOfFortune = () => {
                 </CardHeader>
                 <CardContent className="text-center">
                   <div className="relative inline-block">
+                    {/* Pointer (Arrow pointing down at the top) */}
+                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-20">
+                      <div className="w-0 h-0 border-l-[15px] border-r-[15px] border-t-[25px] border-l-transparent border-r-transparent border-t-white drop-shadow-lg"></div>
+                    </div>
+                    
                     {/* Wheel */}
                     <div 
-                      className="w-80 h-80 mx-auto rounded-full border-4 border-primary relative overflow-hidden transition-transform duration-3000 ease-out"
-                      style={{ transform: `rotate(${rotation}deg)` }}
+                      className="w-96 h-96 mx-auto rounded-full border-8 border-white shadow-2xl relative overflow-hidden transition-transform ease-out"
+                      style={{ 
+                        transform: `rotate(${rotation}deg)`,
+                        transitionDuration: isSpinning ? "5000ms" : "0ms"
+                      }}
                     >
                       {wheelSections.map((section, index) => {
                         const sectionAngle = 360 / wheelSections.length;
-                        const rotation = index * sectionAngle;
+                        const sectionRotation = index * sectionAngle;
+                        const isItlogSection = section.value === "itlog";
+                        
                         return (
                           <div
-                            key={section.value}
-                            className={`absolute w-full h-full ${section.color} flex items-center justify-center text-white font-bold text-sm`}
+                            key={`${section.value}-${index}`}
+                            className={`absolute w-full h-full ${isItlogSection ? '' : section.color} border-r border-white/30`}
                             style={{
-                              transform: `rotate(${rotation}deg)`,
-                              clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.cos((sectionAngle * Math.PI) / 180)}% ${50 - 50 * Math.sin((sectionAngle * Math.PI) / 180)}%)`
+                              transform: `rotate(${sectionRotation}deg)`,
+                              clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.cos((sectionAngle * Math.PI) / 180)}% ${50 - 50 * Math.sin((sectionAngle * Math.PI) / 180)}%)`,
+                              background: isItlogSection ? 'linear-gradient(135deg, #fbbf24 0%, #fb923c 50%, #ec4899 100%)' : undefined
                             }}
                           >
-                            <span 
-                              className="transform -rotate-45 text-xs"
-                              style={{ transform: `rotate(${-rotation + sectionAngle/2}deg)` }}
+                            <div 
+                              className="absolute flex items-center justify-center w-full h-full"
+                              style={{ 
+                                transform: `rotate(${sectionAngle/2}deg)`,
+                              }}
                             >
-                              {section.label}
-                            </span>
+                              <span 
+                                className="text-sm font-bold text-white drop-shadow-lg absolute"
+                                style={{ 
+                                  top: "25%",
+                                  left: "50%",
+                                  transform: `translate(-50%, -50%) rotate(${-sectionRotation - sectionAngle/2}deg)`,
+                                  textShadow: "2px 2px 4px rgba(0,0,0,0.8)"
+                                }}
+                              >
+                                {section.label}
+                              </span>
+                            </div>
                           </div>
                         );
                       })}
-                    </div>
-                    
-                    {/* Pointer */}
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2">
-                      <div className="w-0 h-0 border-l-4 border-r-4 border-b-8 border-l-transparent border-r-transparent border-b-primary"></div>
+                      
+                      {/* Center circle */}
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full border-4 border-gray-300 z-10 shadow-lg"></div>
                     </div>
                   </div>
 
                   {lastResult && (
                     <div className="mt-6">
-                      <Badge variant="secondary" className="text-lg px-4 py-2">
+                      <Badge variant="secondary" className="text-lg px-6 py-3">
                         Last Result: {lastResult.toUpperCase()}
                       </Badge>
                     </div>
@@ -194,10 +279,10 @@ const WheelOfFortune = () => {
             {/* Controls */}
             <div className="space-y-6">
               {/* Balance */}
-              <Card className="bg-card/50 backdrop-blur-sm border-green-500/30">
+              <Card className="bg-card/50 backdrop-blur-sm border-blue-500/30">
                 <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Balance</p>
-                  <p className="text-2xl font-bold text-green-400">₱{balance.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">Coins Balance</p>
+                  <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
                 </CardContent>
               </Card>
 
@@ -215,14 +300,14 @@ const WheelOfFortune = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {betAmounts.map(amount => (
-                          <SelectItem key={amount} value={amount}>₱{amount}</SelectItem>
+                          <SelectItem key={amount} value={amount}>{amount} coins</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Bet On</label>
+                    <label className="text-sm font-medium mb-2 block">Bet On Color</label>
                     <Select value={selectedBet} onValueChange={setSelectedBet} disabled={isSpinning}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select bet option" />
@@ -230,20 +315,32 @@ const WheelOfFortune = () => {
                       <SelectContent>
                         {betOptions.map(option => (
                           <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                            <div className="flex items-center gap-2">
+                              <div className={`w-4 h-4 rounded ${option.color}`}></div>
+                              {option.label}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <Button 
-                    onClick={spinWheel} 
-                    className="w-full glow-purple"
-                    disabled={isSpinning || !selectedBet}
-                  >
-                    {isSpinning ? "Spinning..." : "Spin Wheel"}
-                  </Button>
+                  {!gameEnded ? (
+                    <Button 
+                      onClick={spinWheel} 
+                      className="w-full glow-purple"
+                      disabled={isSpinning || !selectedBet}
+                    >
+                      {isSpinning ? "Spinning..." : "Spin Wheel"}
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={resetGame} 
+                      className="w-full glow-green"
+                    >
+                      Start New Game
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 
@@ -253,11 +350,14 @@ const WheelOfFortune = () => {
                   <CardTitle>Payout Table</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-3 text-sm">
                     {betOptions.map(option => (
-                      <div key={option.value} className="flex justify-between">
-                        <span>{option.label}</span>
-                        <span className="text-green-400">{option.multiplier}x</span>
+                      <div key={option.value} className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded ${option.color}`}></div>
+                          <span>{option.label.split(' ')[0]}</span>
+                        </div>
+                        <span className="text-green-400 font-bold">{option.multiplier}x</span>
                       </div>
                     ))}
                   </div>
@@ -272,7 +372,7 @@ const WheelOfFortune = () => {
                   </div>
                   <p className="text-sm font-semibold mb-1">$ITLOG Token</p>
                   <p className="text-xs text-muted-foreground">
-                    2% chance! Win 10,000-1M tokens even if you bet on something else!
+                    0.5% chance! Win 500x your bet in $ITLOG tokens regardless of your bet choice!
                   </p>
                 </CardContent>
               </Card>

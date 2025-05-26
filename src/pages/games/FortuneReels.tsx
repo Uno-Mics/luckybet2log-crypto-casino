@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,29 +9,37 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
 const FortuneReels = () => {
-  const [currentBet, setCurrentBet] = useState("1.00");
+  const [currentBet, setCurrentBet] = useState("1");
   const [isSpinning, setIsSpinning] = useState(false);
   const [reels, setReels] = useState(["🍒", "🍒", "🍒"]);
-  const [balance, setBalance] = useState(1000.00);
   const [lastWin, setLastWin] = useState(0);
+  const [gameEnded, setGameEnded] = useState(false);
+  const { profile, updateBalance } = useProfile();
+  const [balance, setBalance] = useState(0);
   const { toast } = useToast();
 
-  const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
+  useEffect(() => {
+    if (profile) {
+      setBalance(profile.coins);
+    }
+  }, [profile]);
 
-  const symbols = ["🍒", "🍋", "🍊", "🔔", "💎", "⭐", "7️⃣", "🪙"];
+  const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
+
+  const symbols = ["🍒", "🍋", "🍑", "🔔", "💎", "⭐", "7️⃣", "🪙"];
   
   const payTable = {
-    "🍒🍒🍒": 5,
-    "🍋🍋🍋": 10,
-    "🍊🍊🍊": 15,
-    "🔔🔔🔔": 25,
-    "💎💎💎": 50,
-    "⭐⭐⭐": 100,
-    "7️⃣7️⃣7️⃣": 500,
-    "🪙🪙🪙": 0, // Special $ITLOG case
+    "🍒🍒🍒": 5,      // Cherries - 5x
+    "🍋🍋🍋": 10,     // Lemons - 10x
+    "🍑🍑🍑": 15,     // Peaches - 15x
+    "🔔🔔🔔": 25,     // Bells - 25x
+    "💎💎💎": 50,     // Diamonds - 50x
+    "⭐⭐⭐": 100,     // Stars - 100x
+    "7️⃣7️⃣7️⃣": 500,    // Sevens - 500x
+    "🪙🪙🪙": 0,      // $ITLOG Jackpot
   };
 
-  const spin = () => {
+  const spin = async () => {
     if (parseFloat(currentBet) > balance) {
       toast({
         title: "Insufficient balance",
@@ -41,8 +50,25 @@ const FortuneReels = () => {
     }
 
     setIsSpinning(true);
-    setBalance(prev => prev - parseFloat(currentBet));
+    setGameEnded(false);
     setLastWin(0);
+    const betAmount = parseFloat(currentBet);
+
+    // Update balance immediately and in database
+    try {
+      await updateBalance.mutateAsync({
+        coinsChange: -betAmount
+      });
+      setBalance(prev => prev - betAmount);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to place bet. Please try again.",
+        variant: "destructive"
+      });
+      setIsSpinning(false);
+      return;
+    }
 
     // Simulate spinning animation
     const spinDuration = 2000;
@@ -61,28 +87,28 @@ const FortuneReels = () => {
       if (elapsed >= spinDuration) {
         clearInterval(animate);
         
-        // Generate final result with weighted probabilities
-        const random = Math.random();
+        // Generate final result with weighted probabilities based on your image
+        const random = Math.random() * 100; // Convert to percentage for easier comparison
         let finalReels: string[];
         
-        if (random < 0.01) { // 1% chance for $ITLOG jackpot
+        if (random < 0.1) { // 0.1% chance for $ITLOG jackpot
           finalReels = ["🪙", "🪙", "🪙"];
-        } else if (random < 0.02) { // 1% chance for 7s
+        } else if (random < 1.1) { // 1% chance for sevens (1.1 - 0.1 = 1%)
           finalReels = ["7️⃣", "7️⃣", "7️⃣"];
-        } else if (random < 0.05) { // 3% chance for stars
+        } else if (random < 2.6) { // 1.5% chance for stars (2.6 - 1.1 = 1.5%)
           finalReels = ["⭐", "⭐", "⭐"];
-        } else if (random < 0.1) { // 5% chance for diamonds
+        } else if (random < 4.6) { // 2% chance for diamonds (4.6 - 2.6 = 2%)
           finalReels = ["💎", "💎", "💎"];
-        } else if (random < 0.2) { // 10% chance for bells
+        } else if (random < 7.1) { // 2.5% chance for bells (7.1 - 4.6 = 2.5%)
           finalReels = ["🔔", "🔔", "🔔"];
-        } else if (random < 0.35) { // 15% chance for oranges
-          finalReels = ["🍊", "🍊", "🍊"];
-        } else if (random < 0.5) { // 15% chance for lemons
+        } else if (random < 10.1) { // 3% chance for peaches (10.1 - 7.1 = 3%)
+          finalReels = ["🍑", "🍑", "🍑"];
+        } else if (random < 14.1) { // 4% chance for lemons (14.1 - 10.1 = 4%)
           finalReels = ["🍋", "🍋", "🍋"];
-        } else if (random < 0.7) { // 20% chance for cherries
+        } else if (random < 20.1) { // 6% chance for cherries (20.1 - 14.1 = 6%)
           finalReels = ["🍒", "🍒", "🍒"];
         } else {
-          // Random non-matching combination
+          // 80.9% chance for no match - generate random non-matching combination
           finalReels = [
             symbols[Math.floor(Math.random() * symbols.length)],
             symbols[Math.floor(Math.random() * symbols.length)],
@@ -96,25 +122,51 @@ const FortuneReels = () => {
         
         setReels(finalReels);
         setIsSpinning(false);
+        setGameEnded(true);
         
         // Check for wins
         const combination = finalReels.join("");
         const key = combination as keyof typeof payTable;
         
         if (key === "🪙🪙🪙") {
-          const betMultiplier = parseFloat(currentBet) * 10000;
-          const reward = Math.min(betMultiplier, 1000000);
-          toast({
-            title: "🎉 $ITLOG JACKPOT! 🎉",
-            description: `Three $ITLOG symbols! You won ${reward.toLocaleString()} tokens!`,
+          // $ITLOG Jackpot: 10,000 to 1,000,000 tokens based on bet amount
+          const baseReward = 10000;
+          const maxReward = 1000000;
+          const betMultiplier = betAmount * 1000; // Scale with bet amount
+          const reward = Math.min(baseReward + betMultiplier, maxReward);
+          
+          updateBalance.mutateAsync({
+            itlogChange: reward
+          }).then(() => {
+            toast({
+              title: "🎉 $ITLOG JACKPOT! 🎉",
+              description: `Three $ITLOG symbols! You won ${reward.toLocaleString()} $ITLOG tokens!`,
+            });
+          }).catch(() => {
+            toast({
+              title: "Error updating $ITLOG balance",
+              description: "Please contact support.",
+              variant: "destructive"
+            });
           });
         } else if (payTable[key]) {
-          const winnings = parseFloat(currentBet) * payTable[key];
-          setBalance(prev => prev + winnings);
+          const winnings = betAmount * payTable[key];
           setLastWin(winnings);
-          toast({
-            title: "Winner!",
-            description: `You won ₱${winnings.toFixed(2)} with ${payTable[key]}x multiplier!`
+          
+          updateBalance.mutateAsync({
+            coinsChange: winnings
+          }).then(() => {
+            setBalance(prev => prev + winnings);
+            toast({
+              title: "Winner!",
+              description: `You won ${winnings.toFixed(2)} coins with ${payTable[key]}x multiplier!`
+            });
+          }).catch(() => {
+            toast({
+              title: "Error updating balance",
+              description: "Please contact support.",
+              variant: "destructive"
+            });
           });
         } else {
           toast({
@@ -125,6 +177,11 @@ const FortuneReels = () => {
         }
       }
     }, spinInterval);
+  };
+
+  const resetGame = () => {
+    setGameEnded(false);
+    setLastWin(0);
   };
 
   return (
@@ -170,20 +227,30 @@ const FortuneReels = () => {
                   {lastWin > 0 && (
                     <div className="text-center mb-6">
                       <Badge variant="secondary" className="text-2xl px-6 py-3 glow-green">
-                        Won: ₱{lastWin.toFixed(2)}
+                        Won: {lastWin.toFixed(2)} coins
                       </Badge>
                     </div>
                   )}
 
                   {/* Spin Button */}
-                  <Button 
-                    onClick={spin} 
-                    className="w-full glow-purple text-xl py-6"
-                    disabled={isSpinning}
-                    size="lg"
-                  >
-                    {isSpinning ? "Spinning..." : `Spin (₱${currentBet})`}
-                  </Button>
+                  {!gameEnded ? (
+                    <Button 
+                      onClick={spin} 
+                      className="w-full glow-purple text-xl py-6"
+                      disabled={isSpinning}
+                      size="lg"
+                    >
+                      {isSpinning ? "Spinning..." : `Spin (${currentBet} coins)`}
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={resetGame} 
+                      className="w-full glow-green text-xl py-6"
+                      size="lg"
+                    >
+                      Start New Game
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -191,10 +258,10 @@ const FortuneReels = () => {
             {/* Controls and Info */}
             <div className="space-y-6">
               {/* Balance */}
-              <Card className="bg-card/50 backdrop-blur-sm border-green-500/30">
+              <Card className="bg-card/50 backdrop-blur-sm border-blue-500/30">
                 <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Balance</p>
-                  <p className="text-2xl font-bold text-green-400">₱{balance.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">Coins Balance</p>
+                  <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
                 </CardContent>
               </Card>
 
@@ -210,7 +277,7 @@ const FortuneReels = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {betAmounts.map(amount => (
-                        <SelectItem key={amount} value={amount}>₱{amount}</SelectItem>
+                        <SelectItem key={amount} value={amount}>{amount} coins</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -226,35 +293,35 @@ const FortuneReels = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center">
                       <span>🍒🍒🍒</span>
-                      <span className="text-green-400">5x</span>
+                      <span className="text-green-400">5x (6%)</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>🍋🍋🍋</span>
-                      <span className="text-green-400">10x</span>
+                      <span className="text-green-400">10x (4%)</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span>🍊🍊🍊</span>
-                      <span className="text-green-400">15x</span>
+                      <span>🍑🍑🍑</span>
+                      <span className="text-green-400">15x (3%)</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>🔔🔔🔔</span>
-                      <span className="text-green-400">25x</span>
+                      <span className="text-green-400">25x (2.5%)</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>💎💎💎</span>
-                      <span className="text-green-400">50x</span>
+                      <span className="text-green-400">50x (2%)</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>⭐⭐⭐</span>
-                      <span className="text-green-400">100x</span>
+                      <span className="text-green-400">100x (1.5%)</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>7️⃣7️⃣7️⃣</span>
-                      <span className="text-green-400">500x</span>
+                      <span className="text-green-400">500x (1%)</span>
                     </div>
                     <div className="flex justify-between items-center border-t pt-2">
                       <span>🪙🪙🪙</span>
-                      <span className="text-gold-400 font-bold">JACKPOT!</span>
+                      <span className="text-gold-400 font-bold">JACKPOT! (0.1%)</span>
                     </div>
                   </div>
                 </CardContent>
@@ -268,7 +335,7 @@ const FortuneReels = () => {
                   </div>
                   <p className="text-sm font-semibold mb-1">$ITLOG Jackpot</p>
                   <p className="text-xs text-muted-foreground">
-                    Get 3 🪙 symbols for the ultimate jackpot of 10,000-1M tokens!
+                    Get 3 🪙 symbols for 10,000-1M $ITLOG tokens based on your bet!
                   </p>
                 </CardContent>
               </Card>

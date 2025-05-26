@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,22 +7,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Bomb, Gem, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
 
 type TileState = "hidden" | "safe" | "mine" | "itlog";
 
+interface GameState {
+  board: TileState[];
+  minePositions: Set<number>;
+  itlogPosition: number;
+}
+
 const Mines = () => {
   const [gameBoard, setGameBoard] = useState<TileState[]>(Array(25).fill("hidden"));
+  const [gameState, setGameState] = useState<GameState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [currentBet, setCurrentBet] = useState("1.00");
   const [minesCount, setMinesCount] = useState("5");
   const [tilesRevealed, setTilesRevealed] = useState(0);
   const [currentMultiplier, setCurrentMultiplier] = useState(1.0);
-  const [balance, setBalance] = useState(1000.00);
   const { toast } = useToast();
+  const { profile, updateBalance } = useProfile();
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
+
+  // Get coins balance from profile or default to 0
+  const balance = profile?.coins || 0;
 
   const calculateMultiplier = (revealed: number, mines: number) => {
     const safeTiles = 25 - mines;
@@ -30,7 +41,49 @@ const Mines = () => {
     return 1 + (revealed / safeTiles) * 2;
   };
 
-  const startGame = () => {
+  const generateRandomGameState = (mineCount: number): GameState => {
+    // Create array of all positions
+    const allPositions = Array.from({ length: 25 }, (_, i) => i);
+    
+    // Shuffle array using Fisher-Yates algorithm for true randomness
+    for (let i = allPositions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allPositions[i], allPositions[j]] = [allPositions[j], allPositions[i]];
+    }
+
+    // Take first mineCount positions for mines
+    const minePositions = new Set(allPositions.slice(0, mineCount));
+
+    // 5% chance for $ITLOG token
+    const hasItlog = Math.random() < 0.05;
+    let itlogPosition = -1;
+    
+    if (hasItlog) {
+      // Find a safe position for $ITLOG
+      const safePositions = allPositions.slice(mineCount);
+      if (safePositions.length > 0) {
+        itlogPosition = safePositions[Math.floor(Math.random() * safePositions.length)];
+      }
+    }
+
+    // Create the actual board state
+    const board: TileState[] = Array(25).fill("safe");
+    minePositions.forEach(pos => {
+      board[pos] = "mine";
+    });
+
+    if (hasItlog && itlogPosition !== -1) {
+      board[itlogPosition] = "itlog";
+    }
+
+    return {
+      board,
+      minePositions,
+      itlogPosition
+    };
+  };
+
+  const startGame = async () => {
     if (parseFloat(currentBet) > balance) {
       toast({
         title: "Insufficient balance",
@@ -40,74 +93,89 @@ const Mines = () => {
       return;
     }
 
-    // Create new game board with mines and itlog
-    const newBoard: TileState[] = Array(25).fill("safe");
-    const mineCount = parseInt(minesCount);
-    
-    // Place mines
-    const minePositions = new Set<number>();
-    while (minePositions.size < mineCount) {
-      minePositions.add(Math.floor(Math.random() * 25));
+    try {
+      // Deduct bet amount from user's coins balance
+      await updateBalance.mutateAsync({
+        coinsChange: -parseFloat(currentBet)
+      });
+
+      // Generate new random game state
+      const newGameState = generateRandomGameState(parseInt(minesCount));
+      setGameState(newGameState);
+
+      // Reset game board to all hidden
+      setGameBoard(Array(25).fill("hidden"));
+      setGameStarted(true);
+      setGameOver(false);
+      setTilesRevealed(0);
+      setCurrentMultiplier(1.0);
+
+      toast({
+        title: "Game Started!",
+        description: `Bet placed: ${parseFloat(currentBet).toFixed(2)} coins`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start game. Please try again.",
+        variant: "destructive"
+      });
     }
-
-    // 5% chance for $ITLOG token
-    const hasItlog = Math.random() < 0.05;
-    let itlogPosition = -1;
-    
-    if (hasItlog) {
-      // Place $ITLOG in a safe spot
-      do {
-        itlogPosition = Math.floor(Math.random() * 25);
-      } while (minePositions.has(itlogPosition));
-    }
-
-    minePositions.forEach(pos => {
-      newBoard[pos] = "mine";
-    });
-
-    if (hasItlog) {
-      newBoard[itlogPosition] = "itlog";
-    }
-
-    setGameBoard(newBoard.map(() => "hidden"));
-    setGameStarted(true);
-    setGameOver(false);
-    setTilesRevealed(0);
-    setCurrentMultiplier(1.0);
-    setBalance(prev => prev - parseFloat(currentBet));
   };
 
   const revealTile = (index: number) => {
-    if (!gameStarted || gameOver || gameBoard[index] !== "hidden") return;
+    if (!gameStarted || gameOver || gameBoard[index] !== "hidden" || !gameState) return;
 
     const newBoard = [...gameBoard];
-    const actualTileState = getActualTileState(index);
+    const actualTileState = gameState.board[index];
     newBoard[index] = actualTileState;
 
     if (actualTileState === "mine") {
-      setGameOver(true);
+      // Reveal all tiles
       newBoard.forEach((tile, i) => {
         if (tile === "hidden") {
-          newBoard[i] = getActualTileState(i);
+          newBoard[i] = gameState.board[i];
         }
       });
+      
+      // Reset game state to allow new settings
+      setGameOver(false);
+      setGameStarted(false);
+      setGameState(null);
+      setTilesRevealed(0);
+      setCurrentMultiplier(1.0);
+      
       toast({
         title: "Game Over!",
         description: "You hit a mine! Better luck next time.",
         variant: "destructive"
       });
     } else if (actualTileState === "itlog") {
-      const betMultiplier = parseFloat(currentBet) * 10000;
+      const betMultiplier = parseFloat(currentBet) * 5000;
       const reward = Math.min(betMultiplier, 1000000);
-      setGameOver(true);
+      
+      // Add ITLOG tokens to user's balance
+      updateBalance.mutateAsync({
+        itlogChange: reward
+      });
+
+      // Reveal all tiles
+      newBoard.forEach((tile, i) => {
+        if (tile === "hidden") {
+          newBoard[i] = gameState.board[i];
+        }
+      });
+      
+      // Reset game state to allow new settings
+      setGameOver(false);
+      setGameStarted(false);
+      setGameState(null);
+      setTilesRevealed(0);
+      setCurrentMultiplier(1.0);
+
       toast({
         title: "🎉 $ITLOG TOKEN WON! 🎉",
         description: `You found the exclusive $ITLOG token and won ${reward.toLocaleString()} tokens!`,
-      });
-      newBoard.forEach((tile, i) => {
-        if (tile === "hidden") {
-          newBoard[i] = getActualTileState(i);
-        }
       });
     } else {
       const newRevealed = tilesRevealed + 1;
@@ -118,44 +186,36 @@ const Mines = () => {
     setGameBoard(newBoard);
   };
 
-  const getActualTileState = (index: number): TileState => {
-    // This would normally come from the server/backend
-    // For demo, we'll simulate it
-    const mineCount = parseInt(minesCount);
-    const minePositions = new Set<number>();
-    
-    // Generate consistent mine positions based on game state
-    let seed = 12345; // In real app, this would be from server
-    for (let i = 0; i < mineCount; i++) {
-      seed = (seed * 9301 + 49297) % 233280;
-      minePositions.add(seed % 25);
-    }
-
-    // Check for $ITLOG (5% chance)
-    const itlogSeed = (seed * 7) % 100;
-    if (itlogSeed < 5) {
-      let itlogPos = (seed * 13) % 25;
-      while (minePositions.has(itlogPos)) {
-        itlogPos = (itlogPos + 1) % 25;
-      }
-      if (index === itlogPos) return "itlog";
-    }
-
-    return minePositions.has(index) ? "mine" : "safe";
-  };
-
-  const cashOut = () => {
+  const cashOut = async () => {
     if (!gameStarted || gameOver) return;
     
-    const winnings = parseFloat(currentBet) * currentMultiplier;
-    setBalance(prev => prev + winnings);
-    setGameStarted(false);
-    setGameOver(true);
-    
-    toast({
-      title: "Cashed out successfully!",
-      description: `You won ₱${winnings.toFixed(2)} with a ${currentMultiplier.toFixed(2)}x multiplier!`
-    });
+    try {
+      const winnings = parseFloat(currentBet) * currentMultiplier;
+      
+      // Add winnings to user's coins balance
+      await updateBalance.mutateAsync({
+        coinsChange: winnings
+      });
+
+      // Reset game state to allow new settings
+      setGameStarted(false);
+      setGameOver(false);
+      setGameState(null);
+      setGameBoard(Array(25).fill("hidden"));
+      setTilesRevealed(0);
+      setCurrentMultiplier(1.0);
+      
+      toast({
+        title: "Cashed out successfully!",
+        description: `You won ${winnings.toFixed(2)} coins with a ${currentMultiplier.toFixed(2)}x multiplier!`
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cash out. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const renderTile = (index: number) => {
@@ -233,7 +293,7 @@ const Mines = () => {
                       size="lg"
                     >
                       <DollarSign className="w-4 h-4 mr-2" />
-                      Cash Out ₱{(parseFloat(currentBet) * currentMultiplier).toFixed(2)}
+                      Cash Out {(parseFloat(currentBet) * currentMultiplier).toFixed(2)} coins
                     </Button>
                   )}
                 </CardContent>
@@ -243,10 +303,10 @@ const Mines = () => {
             {/* Game Controls */}
             <div className="space-y-6">
               {/* Balance */}
-              <Card className="bg-card/50 backdrop-blur-sm border-green-500/30">
+              <Card className="bg-card/50 backdrop-blur-sm border-blue-500/30">
                 <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Balance</p>
-                  <p className="text-2xl font-bold text-green-400">₱{balance.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">Coins Balance</p>
+                  <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
                 </CardContent>
               </Card>
 
@@ -264,7 +324,7 @@ const Mines = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {betAmounts.map(amount => (
-                          <SelectItem key={amount} value={amount}>₱{amount}</SelectItem>
+                          <SelectItem key={amount} value={amount}>{amount} coins</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -287,9 +347,9 @@ const Mines = () => {
                   <Button 
                     onClick={startGame} 
                     className="w-full glow-purple"
-                    disabled={gameStarted && !gameOver}
+                    disabled={gameStarted}
                   >
-                    {gameStarted && !gameOver ? "Game in Progress" : "Start New Game"}
+                    {gameStarted ? "Game in Progress" : "Start New Game"}
                   </Button>
                 </CardContent>
               </Card>
@@ -324,7 +384,7 @@ const Mines = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Potential Win</span>
-                      <span className="text-green-400">₱{(parseFloat(currentBet) * currentMultiplier).toFixed(2)}</span>
+                      <span className="text-green-400">{(parseFloat(currentBet) * currentMultiplier).toFixed(2)} coins</span>
                     </div>
                   </CardContent>
                 </Card>

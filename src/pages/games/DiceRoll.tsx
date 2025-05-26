@@ -1,26 +1,35 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
 
 const DiceRoll = () => {
-  const [currentBet, setCurrentBet] = useState("1.00");
+  const [currentBet, setCurrentBet] = useState("1");
   const [prediction, setPrediction] = useState("over");
   const [targetNumber, setTargetNumber] = useState(50);
   const [isRolling, setIsRolling] = useState(false);
   const [lastRoll, setLastRoll] = useState<number | null>(null);
-  const [balance, setBalance] = useState(1000.00);
+  const [balance, setBalance] = useState(0);
   const [multiplier, setMultiplier] = useState(1.98);
+  const [gameEnded, setGameEnded] = useState(false);
+  const [showItlogDice, setShowItlogDice] = useState(false);
   const { toast } = useToast();
+  const { profile, updateBalance } = useProfile();
 
-  const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
+  useEffect(() => {
+    if (profile) {
+      setBalance(profile.coins);
+    }
+  }, [profile]);
+
+  const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
 
   // Calculate multiplier based on win chance
   const calculateMultiplier = (target: number, isOver: boolean) => {
@@ -33,7 +42,7 @@ const DiceRoll = () => {
     setMultiplier(mult);
   };
 
-  const rollDice = () => {
+  const rollDice = async () => {
     if (parseFloat(currentBet) > balance) {
       toast({
         title: "Insufficient balance",
@@ -44,7 +53,33 @@ const DiceRoll = () => {
     }
 
     setIsRolling(true);
-    setBalance(prev => prev - parseFloat(currentBet));
+    setGameEnded(false);
+    setShowItlogDice(false);
+    const betAmount = parseFloat(currentBet);
+
+    // Update balance immediately and in database
+    try {
+      await updateBalance.mutateAsync({
+        coinsChange: -betAmount
+      });
+      setBalance(prev => prev - betAmount);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to place bet. Please try again.",
+        variant: "destructive"
+      });
+      setIsRolling(false);
+      return;
+    }
+
+    // Check for 0.1% chance of $ITLOG dice
+    const itlogChance = Math.random();
+    const isItlogRoll = itlogChance < 0.001; // 0.1% chance
+
+    if (isItlogRoll) {
+      setShowItlogDice(true);
+    }
 
     // Simulate rolling animation
     const rollDuration = 2000;
@@ -61,9 +96,7 @@ const DiceRoll = () => {
         // Generate final result
         let finalRoll = Math.floor(Math.random() * 100) + 1;
         
-        // 2% chance for $ITLOG token (special case)
-        const itlogChance = Math.random();
-        if (itlogChance < 0.02) {
+        if (isItlogRoll) {
           // Force a winning roll for $ITLOG
           if (prediction === "over") {
             finalRoll = Math.max(targetNumber + 1, Math.floor(Math.random() * (100 - targetNumber)) + targetNumber + 1);
@@ -71,32 +104,57 @@ const DiceRoll = () => {
             finalRoll = Math.min(targetNumber - 1, Math.floor(Math.random() * targetNumber) + 1);
           }
           
-          const betMultiplier = parseFloat(currentBet) * 10000;
-          const reward = Math.min(betMultiplier, 1000000);
+          // Calculate $ITLOG reward based on bet amount (10,000 to 1,000,000)
+          const baseReward = 10000;
+          const maxReward = 1000000;
+          const betMultiplier = betAmount * 1000;
+          const reward = Math.min(baseReward + betMultiplier, maxReward);
           
           setLastRoll(finalRoll);
           setIsRolling(false);
+          setGameEnded(true);
           
-          toast({
-            title: "🎉 $ITLOG TOKEN WON! 🎉",
-            description: `You rolled ${finalRoll} and won ${reward.toLocaleString()} $ITLOG tokens!`,
+          updateBalance.mutateAsync({
+            itlogChange: reward
+          }).then(() => {
+            toast({
+              title: "🎉 $ITLOG TOKEN WON! 🎉",
+              description: `You rolled ${finalRoll} and won ${reward.toLocaleString()} $ITLOG tokens!`,
+            });
+          }).catch(() => {
+            toast({
+              title: "Error updating $ITLOG balance",
+              description: "Please contact support.",
+              variant: "destructive"
+            });
           });
           return;
         }
         
         setLastRoll(finalRoll);
         setIsRolling(false);
+        setGameEnded(true);
         
         // Check for win
         const isWin = (prediction === "over" && finalRoll > targetNumber) || 
                      (prediction === "under" && finalRoll < targetNumber);
         
         if (isWin) {
-          const winnings = parseFloat(currentBet) * multiplier;
-          setBalance(prev => prev + winnings);
-          toast({
-            title: "Winner!",
-            description: `You rolled ${finalRoll} and won ₱${winnings.toFixed(2)}!`
+          const winnings = betAmount * multiplier;
+          updateBalance.mutateAsync({
+            coinsChange: winnings
+          }).then(() => {
+            setBalance(prev => prev + winnings);
+            toast({
+              title: "Winner!",
+              description: `You rolled ${finalRoll} and won ${winnings.toFixed(2)} coins!`
+            });
+          }).catch(() => {
+            toast({
+              title: "Error updating balance",
+              description: "Please contact support.",
+              variant: "destructive"
+            });
           });
         } else {
           toast({
@@ -107,6 +165,12 @@ const DiceRoll = () => {
         }
       }
     }, rollInterval);
+  };
+
+  const resetGame = () => {
+    setGameEnded(false);
+    setLastRoll(null);
+    setShowItlogDice(false);
   };
 
   return (
@@ -134,10 +198,22 @@ const DiceRoll = () => {
                 <CardContent className="text-center">
                   {/* Dice Display */}
                   <div className="mb-8">
-                    <div className={`w-32 h-32 mx-auto rounded-lg border-4 border-primary flex items-center justify-center text-6xl font-bold transition-all duration-200 ${
-                      isRolling ? "animate-bounce bg-yellow-400/20" : "bg-white"
+                    <div className={`w-32 h-32 mx-auto rounded-lg border-4 flex items-center justify-center text-6xl font-bold transition-all duration-200 ${
+                      isRolling 
+                        ? "animate-bounce bg-yellow-400/20 border-yellow-400" 
+                        : showItlogDice 
+                        ? "bg-gradient-to-r from-gold-500 to-amber-500 border-gold-400 glow-gold"
+                        : "bg-white border-primary"
                     }`}>
-                      {lastRoll || "?"}
+                      {showItlogDice ? (
+                        <div className="w-12 h-12 itlog-token rounded-full flex items-center justify-center">
+                          <span className="text-black font-bold text-2xl">₿</span>
+                        </div>
+                      ) : (
+                        <span className={showItlogDice ? "text-black" : "text-black"}>
+                          {lastRoll || "?"}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -163,14 +239,44 @@ const DiceRoll = () => {
                     </div>
                   </div>
 
+                  {/* Game Result */}
+                  {gameEnded && lastRoll && (
+                    <div className="mb-6">
+                      <Badge 
+                        variant="secondary" 
+                        className={`text-lg px-6 py-3 ${
+                          showItlogDice
+                            ? "glow-gold bg-gradient-to-r from-gold-500 to-amber-500 text-black"
+                            : ((prediction === "over" && lastRoll > targetNumber) || 
+                               (prediction === "under" && lastRoll < targetNumber))
+                            ? "glow-green" 
+                            : "glow-red"
+                        }`}
+                      >
+                        {showItlogDice 
+                          ? "$ITLOG TOKEN WON!" 
+                          : ((prediction === "over" && lastRoll > targetNumber) || 
+                             (prediction === "under" && lastRoll < targetNumber))
+                          ? "Winner!" 
+                          : "Try Again!"
+                        }
+                      </Badge>
+                    </div>
+                  )}
+
                   {/* Roll Button */}
                   <Button 
-                    onClick={rollDice} 
-                    className="w-full glow-purple text-xl py-6"
+                    onClick={gameEnded ? resetGame : rollDice} 
+                    className={`w-full text-xl py-6 ${gameEnded ? "glow-blue" : "glow-purple"}`}
                     disabled={isRolling}
                     size="lg"
                   >
-                    {isRolling ? "Rolling..." : `Roll Dice (₱${currentBet})`}
+                    {isRolling 
+                      ? "Rolling..." 
+                      : gameEnded 
+                      ? "Roll Again" 
+                      : `Roll Dice (${currentBet} coins)`
+                    }
                   </Button>
                 </CardContent>
               </Card>
@@ -179,10 +285,10 @@ const DiceRoll = () => {
             {/* Controls */}
             <div className="space-y-6">
               {/* Balance */}
-              <Card className="bg-card/50 backdrop-blur-sm border-green-500/30">
+              <Card className="bg-card/50 backdrop-blur-sm border-blue-500/30">
                 <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Balance</p>
-                  <p className="text-2xl font-bold text-green-400">₱{balance.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">Coins Balance</p>
+                  <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
                 </CardContent>
               </Card>
 
@@ -201,7 +307,7 @@ const DiceRoll = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {betAmounts.map(amount => (
-                          <SelectItem key={amount} value={amount}>₱{amount}</SelectItem>
+                          <SelectItem key={amount} value={amount}>{amount} coins</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -264,7 +370,7 @@ const DiceRoll = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Payout on Win:</span>
-                      <span className="text-green-400">₱{(parseFloat(currentBet) * multiplier).toFixed(2)}</span>
+                      <span className="text-green-400">{(parseFloat(currentBet) * multiplier).toFixed(2)} coins</span>
                     </div>
                   </div>
                 </CardContent>
@@ -278,7 +384,7 @@ const DiceRoll = () => {
                   </div>
                   <p className="text-sm font-semibold mb-1">$ITLOG Token</p>
                   <p className="text-xs text-muted-foreground">
-                    2% chance to win 10,000-1M tokens on any winning roll!
+                    0.1% chance for $ITLOG dice to appear and win 10,000-1M tokens on winning roll!
                   </p>
                 </CardContent>
               </Card>
@@ -293,8 +399,10 @@ const DiceRoll = () => {
                     <div className="text-center">
                       <div className="text-4xl font-bold mb-2">{lastRoll}</div>
                       <div className="text-sm text-muted-foreground">
-                        {((prediction === "over" && lastRoll > targetNumber) || 
-                          (prediction === "under" && lastRoll < targetNumber)) 
+                        {showItlogDice 
+                          ? "$ITLOG Token Won!"
+                          : ((prediction === "over" && lastRoll > targetNumber) || 
+                             (prediction === "under" && lastRoll < targetNumber)) 
                           ? "Winner!" 
                           : "Try again!"
                         }

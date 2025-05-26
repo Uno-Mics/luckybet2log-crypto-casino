@@ -29,6 +29,7 @@ const Layout = ({ children }: LayoutProps) => {
     { name: "Games", href: "/games", icon: Gamepad2 },
     { name: "Profile", href: "/profile", icon: User },
     { name: "Wallet", href: "/wallet", icon: Wallet },
+    { name: "Deposit", href: "/deposit", icon: CreditCard },
     { name: "Earn", href: "/earn", icon: TrendingUp },
   ];
 

@@ -143,7 +143,7 @@ const Earn = () => {
                     <Coins className="w-8 h-8 text-white" />
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Stake PHP to earn $ITLOG tokens (50% of stake)
+                    Stake PHP to earn $ITLOG tokens (0.0005% of stake)
                   </p>
                   <p className="text-lg font-semibold">
                     Status: {stakingSession ? `Staking ₱${stakingSession.stake_amount?.toFixed(2)}` : 'Inactive'}

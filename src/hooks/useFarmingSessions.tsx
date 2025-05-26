@@ -184,18 +184,23 @@ export const useFarmingSessions = () => {
 
       if (historyError) throw historyError;
 
-      // Reset session
+      // Update session with tokens earned and restart with new timestamp
       const { error: sessionError } = await supabase
         .from("farming_sessions")
         .update({
-          is_active: false,
           tokens_earned: tokensEarned,
+          started_at: new Date().toISOString(), // Restart with new timestamp
         })
         .eq("id", farmingSession.id);
 
       if (sessionError) throw sessionError;
 
-      setFarmingSession(null);
+      // Update local state to restart progress
+      setFarmingSession({
+        ...farmingSession,
+        started_at: new Date().toISOString(),
+        tokens_earned: tokensEarned,
+      });
       setFarmingProgress(0);
       loadEarningHistory();
 
@@ -204,7 +209,7 @@ export const useFarmingSessions = () => {
 
       toast({
         title: "Farming reward harvested!",
-        description: `You earned ${tokensEarned} $ITLOG tokens!`,
+        description: `You earned ${tokensEarned} $ITLOG tokens! Farming continues...`,
       });
     } catch (error) {
       console.error("Error harvesting farming reward:", error);
@@ -321,12 +326,12 @@ export const useFarmingSessions = () => {
 
     try {
       const stakeAmount = stakingSession.stake_amount || 0;
-      const tokensEarned = stakeAmount * 0.5; // 50% of staked amount as ITLOG tokens
+      const tokensEarned = stakeAmount * 0.000005; // 0.000005 of staked amount as ITLOG tokens
 
-      // Update user's itlog tokens and return stake using the database function
+      // Update user's itlog tokens (but don't return stake since we continue staking)
       const { error: updateError } = await supabase.rpc("update_user_balance", {
         p_user_id: user.id,
-        p_php_change: stakeAmount,
+        p_php_change: 0, // Don't return stake since we continue staking
         p_itlog_change: tokensEarned,
       });
 
@@ -344,18 +349,23 @@ export const useFarmingSessions = () => {
 
       if (historyError) throw historyError;
 
-      // Reset session
+      // Update session with tokens earned and restart with new timestamp
       const { error: sessionError } = await supabase
         .from("farming_sessions")
         .update({
-          is_active: false,
           tokens_earned: tokensEarned,
+          started_at: new Date().toISOString(), // Restart with new timestamp
         })
         .eq("id", stakingSession.id);
 
       if (sessionError) throw sessionError;
 
-      setStakingSession(null);
+      // Update local state to restart progress
+      setStakingSession({
+        ...stakingSession,
+        started_at: new Date().toISOString(),
+        tokens_earned: tokensEarned,
+      });
       setStakingProgress(0);
       loadEarningHistory();
 
@@ -364,7 +374,7 @@ export const useFarmingSessions = () => {
 
       toast({
         title: "Staking reward claimed!",
-        description: `You earned ${tokensEarned.toFixed(4)} $ITLOG tokens!`,
+        description: `You earned ${tokensEarned.toFixed(4)} $ITLOG tokens! Staking continues...`,
       });
     } catch (error) {
       console.error("Error claiming staking reward:", error);

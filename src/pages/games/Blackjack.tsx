@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
 
 type CardType = {
   suit: string;
@@ -14,18 +15,25 @@ type CardType = {
 };
 
 const Blackjack = () => {
-  const [currentBet, setCurrentBet] = useState("1.00");
+  const [currentBet, setCurrentBet] = useState("1");
   const [gameStarted, setGameStarted] = useState(false);
   const [playerCards, setPlayerCards] = useState<CardType[]>([]);
   const [dealerCards, setDealerCards] = useState<CardType[]>([]);
   const [playerTotal, setPlayerTotal] = useState(0);
   const [dealerTotal, setDealerTotal] = useState(0);
   const [gameResult, setGameResult] = useState<string | null>(null);
-  const [balance, setBalance] = useState(1000.00);
+  const [balance, setBalance] = useState(0);
   const [showDealerCards, setShowDealerCards] = useState(false);
   const { toast } = useToast();
+  const { profile, updateBalance } = useProfile();
 
-  const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
+  useEffect(() => {
+    if (profile) {
+      setBalance(profile.coins);
+    }
+  }, [profile]);
+
+  const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
 
   const suits = ["♠", "♥", "♦", "♣"];
   const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
@@ -81,7 +89,7 @@ const Blackjack = () => {
     return [card!, newDeck];
   };
 
-  const startNewGame = () => {
+  const startNewGame = async () => {
     if (parseFloat(currentBet) > balance) {
       toast({
         title: "Insufficient balance",
@@ -91,7 +99,24 @@ const Blackjack = () => {
       return;
     }
 
-    let deck = createDeck();
+    const betAmount = parseFloat(currentBet);
+
+    // Update balance immediately and in database
+    try {
+      await updateBalance.mutateAsync({
+        coinsChange: -betAmount
+      });
+      setBalance(prev => prev - betAmount);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to place bet. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const deck = createDeck();
     
     // Deal initial cards
     const [playerCard1, deck1] = dealCard(deck);
@@ -109,7 +134,6 @@ const Blackjack = () => {
     setGameStarted(true);
     setGameResult(null);
     setShowDealerCards(false);
-    setBalance(prev => prev - parseFloat(currentBet));
 
     // Check for natural blackjack
     const playerBJ = calculateTotal(initialPlayerCards) === 21;
@@ -119,18 +143,38 @@ const Blackjack = () => {
       setShowDealerCards(true);
       if (playerBJ && dealerBJ) {
         setGameResult("push");
-        setBalance(prev => prev + parseFloat(currentBet));
-        toast({
-          title: "Push!",
-          description: "Both have blackjack. Bet returned."
+        updateBalance.mutateAsync({
+          coinsChange: betAmount
+        }).then(() => {
+          setBalance(prev => prev + betAmount);
+          toast({
+            title: "Push!",
+            description: "Both have blackjack. Bet returned."
+          });
+        }).catch(() => {
+          toast({
+            title: "Error updating balance",
+            description: "Please contact support.",
+            variant: "destructive"
+          });
         });
       } else if (playerBJ) {
-        const winnings = parseFloat(currentBet) * 2.5; // 3:2 payout
+        const winnings = betAmount * 2.5; // 3:2 payout
         setGameResult("blackjack");
-        setBalance(prev => prev + winnings);
-        toast({
-          title: "Blackjack!",
-          description: `You won ₱${winnings.toFixed(2)} with a natural blackjack!`
+        updateBalance.mutateAsync({
+          coinsChange: winnings
+        }).then(() => {
+          setBalance(prev => prev + winnings);
+          toast({
+            title: "Blackjack!",
+            description: `You won ${winnings.toFixed(2)} coins with a natural blackjack!`
+          });
+        }).catch(() => {
+          toast({
+            title: "Error updating balance",
+            description: "Please contact support.",
+            variant: "destructive"
+          });
         });
       } else {
         setGameResult("dealer_blackjack");
@@ -186,21 +230,42 @@ const Blackjack = () => {
     setDealerTotal(currentDealerTotal);
 
     // Determine winner
+    const betAmount = parseFloat(currentBet);
     if (currentDealerTotal > 21) {
       setGameResult("dealer_bust");
-      const winnings = parseFloat(currentBet) * 2;
-      setBalance(prev => prev + winnings);
-      toast({
-        title: "Dealer Bust!",
-        description: `Dealer went over 21. You won ₱${winnings.toFixed(2)}!`
+      const winnings = betAmount * 2;
+      updateBalance.mutateAsync({
+        coinsChange: winnings
+      }).then(() => {
+        setBalance(prev => prev + winnings);
+        toast({
+          title: "Dealer Bust!",
+          description: `Dealer went over 21. You won ${winnings.toFixed(2)} coins!`
+        });
+      }).catch(() => {
+        toast({
+          title: "Error updating balance",
+          description: "Please contact support.",
+          variant: "destructive"
+        });
       });
     } else if (playerTotal > currentDealerTotal) {
       setGameResult("win");
-      const winnings = parseFloat(currentBet) * 2;
-      setBalance(prev => prev + winnings);
-      toast({
-        title: "You Win!",
-        description: `You beat the dealer! Won ₱${winnings.toFixed(2)}!`
+      const winnings = betAmount * 2;
+      updateBalance.mutateAsync({
+        coinsChange: winnings
+      }).then(() => {
+        setBalance(prev => prev + winnings);
+        toast({
+          title: "You Win!",
+          description: `You beat the dealer! Won ${winnings.toFixed(2)} coins!`
+        });
+      }).catch(() => {
+        toast({
+          title: "Error updating balance",
+          description: "Please contact support.",
+          variant: "destructive"
+        });
       });
     } else if (playerTotal < currentDealerTotal) {
       setGameResult("lose");
@@ -211,10 +276,20 @@ const Blackjack = () => {
       });
     } else {
       setGameResult("push");
-      setBalance(prev => prev + parseFloat(currentBet));
-      toast({
-        title: "Push!",
-        description: "Same total. Bet returned."
+      updateBalance.mutateAsync({
+        coinsChange: betAmount
+      }).then(() => {
+        setBalance(prev => prev + betAmount);
+        toast({
+          title: "Push!",
+          description: "Same total. Bet returned."
+        });
+      }).catch(() => {
+        toast({
+          title: "Error updating balance",
+          description: "Please contact support.",
+          variant: "destructive"
+        });
       });
     }
 
@@ -326,7 +401,7 @@ const Blackjack = () => {
                         className="glow-purple px-8 py-3"
                         size="lg"
                       >
-                        Deal Cards (₱{currentBet})
+                        Deal Cards ({currentBet} coins)
                       </Button>
                     ) : (
                       <>
@@ -353,10 +428,10 @@ const Blackjack = () => {
             {/* Controls and Info */}
             <div className="space-y-6">
               {/* Balance */}
-              <Card className="bg-card/50 backdrop-blur-sm border-green-500/30">
+              <Card className="bg-card/50 backdrop-blur-sm border-blue-500/30">
                 <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Balance</p>
-                  <p className="text-2xl font-bold text-green-400">₱{balance.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">Coins Balance</p>
+                  <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
                 </CardContent>
               </Card>
 
@@ -372,7 +447,7 @@ const Blackjack = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {betAmounts.map(amount => (
-                        <SelectItem key={amount} value={amount}>₱{amount}</SelectItem>
+                        <SelectItem key={amount} value={amount}>{amount} coins</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
