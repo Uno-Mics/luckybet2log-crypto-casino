@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,14 @@ const WheelOfFortune = () => {
   const [selectedBet, setSelectedBet] = useState("");
   const [isSpinning, setIsSpinning] = useState(false);
   const [lastResult, setLastResult] = useState<string | null>(null);
-  const [balance, setBalance] = useState(1000.00);
+  const { profile, updateBalance } = useProfile();
+  const [balance, setBalance] = useState(0);
+
+  useEffect(() => {
+    if (profile) {
+      setBalance(profile.php_balance);
+    }
+  }, [profile]);
   const [rotation, setRotation] = useState(0);
   const { toast } = useToast();
 

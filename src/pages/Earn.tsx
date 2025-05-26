@@ -1,137 +1,51 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Play, Pause, Coins } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { TrendingUp, Play, Pause, Coins, Clock, Trophy, Gift } from "lucide-react";
+import { useFarmingSessions } from "@/hooks/useFarmingSessions";
 
 const Earn = () => {
-  const [farmingActive, setFarmingActive] = useState(false);
-  const [stakingActive, setStakingActive] = useState(false);
-  const [farmingProgress, setFarmingProgress] = useState(0);
-  const [stakingProgress, setStakingProgress] = useState(0);
   const [stakingAmount, setStakingAmount] = useState("");
-  const [farmingTokens, setFarmingTokens] = useState(0);
-  const [stakingTokens, setStakingTokens] = useState(0);
-  const { toast } = useToast();
+  const {
+    farmingSession,
+    stakingSession,
+    farmingProgress,
+    stakingProgress,
+    earningHistory,
+    loading,
+    startFarming,
+    stopFarming,
+    harvestFarming,
+    startStaking,
+    stopStaking,
+    claimStaking
+  } = useFarmingSessions();
 
-  // Farming timer (5 minutes = 300 seconds)
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (farmingActive) {
-      interval = setInterval(() => {
-        setFarmingProgress(prev => {
-          if (prev >= 100) {
-            setFarmingTokens(prevTokens => prevTokens + 0.002);
-            toast({
-              title: "Farming reward earned!",
-              description: "You earned 0.002 $ITLOG tokens!"
-            });
-            return 0;
-          }
-          return prev + (100 / 300); // 300 seconds = 5 minutes
-        });
-      }, 1000);
-    }
-
-    return () => clearInterval(interval);
-  }, [farmingActive, toast]);
-
-  // Staking timer (5 minutes = 300 seconds)
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (stakingActive && stakingAmount) {
-      const stakingValue = parseFloat(stakingAmount);
-      const tokensPerCycle = (stakingValue / 1000) * 0.01; // Example calculation
-      
-      interval = setInterval(() => {
-        setStakingProgress(prev => {
-          if (prev >= 100) {
-            setStakingTokens(prevTokens => prevTokens + tokensPerCycle);
-            toast({
-              title: "Staking reward earned!",
-              description: `You earned ${tokensPerCycle.toFixed(4)} $ITLOG tokens!`
-            });
-            return 0;
-          }
-          return prev + (100 / 300); // 300 seconds = 5 minutes
-        });
-      }, 1000);
-    }
-
-    return () => clearInterval(interval);
-  }, [stakingActive, stakingAmount, toast]);
-
-  const toggleFarming = () => {
-    setFarmingActive(!farmingActive);
-    if (!farmingActive) {
-      setFarmingProgress(0);
-      toast({
-        title: "Token farming activated!",
-        description: "You will earn 0.002 $ITLOG every 5 minutes."
-      });
-    } else {
-      toast({
-        title: "Token farming stopped",
-        description: "Farming has been deactivated."
-      });
-    }
-  };
-
-  const startStaking = () => {
+  const handleStartStaking = () => {
     const amount = parseFloat(stakingAmount);
     if (!amount || amount <= 0) {
-      toast({
-        title: "Invalid amount",
-        description: "Please enter a valid staking amount.",
-        variant: "destructive"
-      });
       return;
     }
-
-    setStakingActive(true);
-    setStakingProgress(0);
-    toast({
-      title: "Staking activated!",
-      description: `Staking ₱${amount.toFixed(2)} - earning rewards every 5 minutes.`
-    });
+    startStaking(amount);
+    setStakingAmount("");
   };
 
-  const stopStaking = () => {
-    setStakingActive(false);
-    setStakingProgress(0);
-    toast({
-      title: "Staking stopped",
-      description: "Staking has been deactivated."
-    });
-  };
+  const canHarvest = farmingSession && farmingProgress >= 100;
+  const canClaim = stakingSession && stakingProgress >= 100;
 
-  const cashoutEarnings = () => {
-    const totalEarnings = farmingTokens + stakingTokens;
-    if (totalEarnings <= 0) {
-      toast({
-        title: "No earnings to cash out",
-        description: "You don't have any earned tokens to cash out.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Reset earnings
-    setFarmingTokens(0);
-    setStakingTokens(0);
-    
-    toast({
-      title: "Earnings cashed out!",
-      description: `${totalEarnings.toFixed(4)} $ITLOG tokens have been added to your wallet.`
-    });
-  };
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -148,28 +62,6 @@ const Earn = () => {
             </p>
           </div>
 
-          {/* Earnings Summary */}
-          <Card className="bg-gradient-to-r from-gold-600/10 to-amber-600/10 border-gold-500/30 mb-8">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-2xl font-bold mb-2">Total Earned</h3>
-                  <p className="text-3xl font-bold text-gold-400">
-                    {(farmingTokens + stakingTokens).toFixed(4)} $ITLOG
-                  </p>
-                </div>
-                <Button 
-                  onClick={cashoutEarnings}
-                  className="glow-gold bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-semibold"
-                  disabled={farmingTokens + stakingTokens <= 0}
-                >
-                  <Coins className="w-4 h-4 mr-2" />
-                  Cash Out
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Token Farming */}
             <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
@@ -185,14 +77,14 @@ const Earn = () => {
                     <span className="text-black font-bold text-xl">₿</span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Earn 0.002 $ITLOG every 5 minutes
+                    Earn 0.02 $ITLOG every 5 minutes
                   </p>
                   <p className="text-lg font-semibold">
-                    Farmed: {farmingTokens.toFixed(4)} $ITLOG
+                    Status: {farmingSession ? 'Active' : 'Inactive'}
                   </p>
                 </div>
 
-                {farmingActive && (
+                {farmingSession && (
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Progress</span>
@@ -200,28 +92,40 @@ const Earn = () => {
                     </div>
                     <Progress value={farmingProgress} className="h-2" />
                     <p className="text-xs text-muted-foreground text-center">
-                      Next reward in {Math.ceil((100 - farmingProgress) * 3)} seconds
+                      {farmingProgress >= 100 ? 'Ready to harvest!' : `Next reward in ${Math.ceil((100 - farmingProgress) * 3)} seconds`}
                     </p>
                   </div>
                 )}
 
-                <Button 
-                  onClick={toggleFarming}
-                  className={`w-full ${farmingActive ? "glow-green" : "glow-purple"}`}
-                  variant={farmingActive ? "default" : "outline"}
-                >
-                  {farmingActive ? (
-                    <>
-                      <Pause className="w-4 h-4 mr-2" />
-                      Stop Farming
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 mr-2" />
-                      Start Farming
-                    </>
-                  )}
-                </Button>
+                {canHarvest ? (
+                  <Button 
+                    onClick={harvestFarming}
+                    className="w-full glow-gold bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-semibold"
+                  >
+                    <Gift className="w-4 h-4 mr-2" />
+                    Harvest Now
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <Button 
+                      onClick={farmingSession ? stopFarming : startFarming}
+                      className={`w-full ${farmingSession ? "border-red-500 text-red-400 hover:bg-red-500/10" : "glow-purple"}`}
+                      variant={farmingSession ? "outline" : "default"}
+                    >
+                      {farmingSession ? (
+                        <>
+                          <Pause className="w-4 h-4 mr-2" />
+                          Stop Farming
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4 mr-2" />
+                          Start Farming
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -239,14 +143,35 @@ const Earn = () => {
                     <Coins className="w-8 h-8 text-white" />
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Stake PHP to earn $ITLOG tokens
+                    Stake PHP to earn $ITLOG tokens (50% of stake)
                   </p>
                   <p className="text-lg font-semibold">
-                    Staked: {stakingTokens.toFixed(4)} $ITLOG
+                    Status: {stakingSession ? `Staking ₱${stakingSession.stake_amount?.toFixed(2)}` : 'Inactive'}
                   </p>
                 </div>
 
-                {!stakingActive ? (
+                {stakingSession && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Progress</span>
+                      <span>{stakingProgress.toFixed(1)}%</span>
+                    </div>
+                    <Progress value={stakingProgress} className="h-2" />
+                    <p className="text-xs text-muted-foreground text-center">
+                      {stakingProgress >= 100 ? 'Ready to claim!' : `Next reward in ${Math.ceil((100 - stakingProgress) * 3)} seconds`}
+                    </p>
+                  </div>
+                )}
+
+                {canClaim ? (
+                  <Button 
+                    onClick={claimStaking}
+                    className="w-full glow-gold bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-semibold"
+                  >
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Claim Now
+                  </Button>
+                ) : !stakingSession ? (
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="stake-amount">Stake Amount (PHP)</Label>
@@ -260,7 +185,7 @@ const Earn = () => {
                       />
                     </div>
                     <Button 
-                      onClick={startStaking}
+                      onClick={handleStartStaking}
                       className="w-full glow-green"
                     >
                       <Play className="w-4 h-4 mr-2" />
@@ -268,35 +193,70 @@ const Earn = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground">
-                        Currently staking: ₱{stakingAmount}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Progress</span>
-                        <span>{stakingProgress.toFixed(1)}%</span>
-                      </div>
-                      <Progress value={stakingProgress} className="h-2" />
-                      <p className="text-xs text-muted-foreground text-center">
-                        Next reward in {Math.ceil((100 - stakingProgress) * 3)} seconds
-                      </p>
-                    </div>
-                    <Button 
-                      onClick={stopStaking}
-                      variant="outline"
-                      className="w-full border-red-500 text-red-400 hover:bg-red-500/10"
-                    >
-                      <Pause className="w-4 h-4 mr-2" />
-                      Stop Staking
-                    </Button>
-                  </div>
+                  <Button 
+                    onClick={stopStaking}
+                    variant="outline"
+                    className="w-full border-red-500 text-red-400 hover:bg-red-500/10"
+                  >
+                    <Pause className="w-4 h-4 mr-2" />
+                    Stop Staking
+                  </Button>
                 )}
               </CardContent>
             </Card>
           </div>
+
+          {/* Token Earning History */}
+          <Card className="bg-card/50 backdrop-blur-sm border-primary/20 mt-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Clock className="w-5 h-5 mr-2" />
+                Token Earning History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {earningHistory.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No earnings yet. Start farming or staking to begin earning $ITLOG tokens!
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {earningHistory.map((earning) => (
+                    <div key={earning.id} className="flex items-center justify-between p-3 bg-background/50 rounded-lg border">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          earning.session_type === 'farming' 
+                            ? 'bg-purple-500' 
+                            : 'bg-green-500'
+                        }`}>
+                          {earning.session_type === 'farming' ? 
+                            <TrendingUp className="w-4 h-4 text-white" /> : 
+                            <Coins className="w-4 h-4 text-white" />
+                          }
+                        </div>
+                        <div>
+                          <p className="font-semibold capitalize">{earning.session_type}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(earning.created_at).toLocaleString()}
+                          </p>
+                          {earning.stake_amount && (
+                            <p className="text-xs text-muted-foreground">
+                              Staked: ₱{earning.stake_amount.toFixed(2)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gold-400">
+                          +{earning.tokens_earned.toFixed(4)} $ITLOG
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Info Section */}
           <Card className="bg-card/50 backdrop-blur-sm border-primary/20 mt-8">
@@ -307,15 +267,15 @@ const Earn = () => {
               <div>
                 <h4 className="font-semibold mb-2">Token Farming</h4>
                 <p className="text-sm text-muted-foreground">
-                  Activate farming to automatically earn 0.002 $ITLOG tokens every 5 minutes. 
-                  No staking required, just activate and let it run in the background.
+                  Activate farming to automatically earn 0.02 $ITLOG tokens every 5 minutes. 
+                  No staking required, just activate and let it run. Your progress is saved even if you navigate away.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Token Staking</h4>
                 <p className="text-sm text-muted-foreground">
-                  Stake your PHP balance to earn $ITLOG tokens. The more you stake, the more you earn. 
-                  Rewards are calculated based on your staked amount and distributed every 5 minutes.
+                  Stake your PHP balance to earn $ITLOG tokens. You'll earn 50% of your staked amount as $ITLOG tokens every 5 minutes. 
+                  Your staked amount will be returned when you claim your rewards.
                 </p>
               </div>
             </CardContent>

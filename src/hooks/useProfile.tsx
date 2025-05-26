@@ -1,8 +1,7 @@
-
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./useAuth";
 
 interface Profile {
   id: string;
@@ -23,15 +22,19 @@ export const useProfile = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: profile, isLoading, error } = useQuery({
-    queryKey: ['profile', user?.id],
+  const {
+    data: profile,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["profile", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      
+
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
         .single();
 
       if (error) throw error;
@@ -41,14 +44,18 @@ export const useProfile = () => {
   });
 
   const updateBalance = useMutation({
-    mutationFn: async ({ phpChange = 0, coinsChange = 0, itlogChange = 0 }: {
+    mutationFn: async ({
+      phpChange = 0,
+      coinsChange = 0,
+      itlogChange = 0,
+    }: {
       phpChange?: number;
       coinsChange?: number;
       itlogChange?: number;
     }) => {
-      if (!user) throw new Error('User not authenticated');
+      if (!user) throw new Error("User not authenticated");
 
-      const { data, error } = await supabase.rpc('update_user_balance', {
+      const { data, error } = await supabase.rpc("update_user_balance", {
         p_user_id: user.id,
         p_php_change: phpChange,
         p_coins_change: coinsChange,
@@ -59,7 +66,7 @@ export const useProfile = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
     },
   });
 

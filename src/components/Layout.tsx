@@ -1,15 +1,17 @@
-
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  Home, 
-  Gamepad2, 
-  User, 
-  Wallet, 
+import {
+  Home,
+  Gamepad2,
+  User,
+  Wallet,
   TrendingUp,
-  CreditCard,
-  LogOut
+  LogOut,
+  CreditCard
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,15 +19,35 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
-  
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
+  const { toast } = useToast();
+  const { profile } = useProfile();
+
   const navigation = [
     { name: "Home", href: "/", icon: Home },
     { name: "Games", href: "/games", icon: Gamepad2 },
     { name: "Profile", href: "/profile", icon: User },
     { name: "Wallet", href: "/wallet", icon: Wallet },
     { name: "Earn", href: "/earn", icon: TrendingUp },
-    { name: "Deposit", href: "/deposit", icon: CreditCard },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+      navigate("/auth");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,8 +72,8 @@ const Layout = ({ children }: LayoutProps) => {
                     key={item.name}
                     to={item.href}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-                      isActive 
-                        ? "bg-primary text-primary-foreground glow-purple" 
+                      isActive
+                        ? "bg-primary text-primary-foreground glow-purple"
                         : "text-muted-foreground hover:text-foreground hover:bg-accent"
                     }`}
                   >
@@ -63,11 +85,21 @@ const Layout = ({ children }: LayoutProps) => {
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="text-muted-foreground">Balance:</span>
-                <span className="font-semibold text-green-400">₱1,000.00</span>
+              <div className="flex items-center space-x-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <span className="text-muted-foreground">PHP:</span>
+                  <span className="font-semibold text-green-400">
+                    ₱{profile?.php_balance.toFixed(2) || "0.00"}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-muted-foreground">$ITLOG:</span>
+                  <span className="font-semibold text-gold-400">
+                    {profile?.itlog_tokens?.toFixed(4) || "0.0000"}
+                  </span>
+                </div>
               </div>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -88,9 +120,7 @@ const Layout = ({ children }: LayoutProps) => {
                 key={item.name}
                 to={item.href}
                 className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
-                  isActive 
-                    ? "text-primary" 
-                    : "text-muted-foreground"
+                  isActive ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 <Icon className="w-5 h-5" />

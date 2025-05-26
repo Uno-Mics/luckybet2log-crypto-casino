@@ -45,6 +45,33 @@ export type Database = {
         }
         Relationships: []
       }
+      earning_history: {
+        Row: {
+          created_at: string
+          id: string
+          session_type: string
+          stake_amount: number | null
+          tokens_earned: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_type: string
+          stake_amount?: number | null
+          tokens_earned?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_type?: string
+          stake_amount?: number | null
+          tokens_earned?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       farming_sessions: {
         Row: {
           id: string
