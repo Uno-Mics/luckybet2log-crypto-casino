@@ -6,15 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CreditCard, Upload, CheckCircle } from "lucide-react";
+import { CreditCard, Upload, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { validateReceipt, ReceiptValidationResult } from "@/lib/receiptValidator";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const Deposit = () => {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [receipt, setReceipt] = useState<File | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<ReceiptValidationResult | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const predefinedAmounts = [100, 250, 500, 1000, 2500, 5000];
   
@@ -27,7 +33,7 @@ const Deposit = () => {
     { value: "metrobank", label: "Metrobank" }
   ];
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
@@ -38,15 +44,63 @@ const Deposit = () => {
         });
         return;
       }
+      
       setReceipt(file);
-      toast({
-        title: "Receipt uploaded",
-        description: `Uploaded: ${file.name}`
-      });
+      setValidationResult(null);
+      
+      // Only validate if we have amount and payment method
+      if (amount && paymentMethod) {
+        await validateReceiptFile(file);
+      } else {
+        toast({
+          title: "Receipt uploaded",
+          description: "Please enter amount and select payment method to validate receipt."
+        });
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateReceiptFile = async (file: File) => {
+    if (!amount || !paymentMethod) {
+      toast({
+        title: "Missing information",
+        description: "Please enter amount and select payment method first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsValidating(true);
+    
+    try {
+      const result = await validateReceipt(file, parseFloat(amount), paymentMethod);
+      setValidationResult(result);
+      
+      if (result.isValid) {
+        toast({
+          title: "Receipt validated successfully!",
+          description: `Amount: ₱${result.extractedAmount}, Method: ${result.extractedMethod}`,
+        });
+      } else {
+        toast({
+          title: "Receipt validation failed",
+          description: result.errors.join(', '),
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+      toast({
+        title: "Validation error",
+        description: "Failed to validate receipt. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!amount || parseFloat(amount) <= 0) {
@@ -76,11 +130,63 @@ const Deposit = () => {
       return;
     }
 
-    setIsSubmitted(true);
-    toast({
-      title: "Deposit request submitted!",
-      description: "Your deposit will be processed within 24 hours after verification."
-    });
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to make a deposit.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Create deposit record
+      const { data: depositData, error: depositError } = await supabase
+        .from('deposits')
+        .insert({
+          user_id: user.id,
+          amount: parseFloat(amount),
+          payment_method: paymentMethod,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (depositError) throw depositError;
+
+      // Save validation result if available
+      if (validationResult && depositData) {
+        const { error: validationError } = await supabase
+          .from('receipt_validations')
+          .insert({
+            deposit_id: depositData.id,
+            extracted_amount: validationResult.extractedAmount,
+            extracted_method: validationResult.extractedMethod,
+            confidence_score: validationResult.confidence,
+            validation_errors: validationResult.errors,
+            is_valid: validationResult.isValid
+          });
+
+        if (validationError) {
+          console.error('Failed to save validation result:', validationError);
+        }
+      }
+
+      setIsSubmitted(true);
+      toast({
+        title: "Deposit request submitted!",
+        description: validationResult?.isValid 
+          ? "Receipt validated successfully! Processing will be faster."
+          : "Your deposit will be processed within 24 hours after verification."
+      });
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        title: "Submission failed",
+        description: "Failed to submit deposit request. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isSubmitted) {
@@ -223,15 +329,73 @@ const Deposit = () => {
                       )}
                     </label>
                   </div>
+
+                  {/* Validation Button */}
+                  {receipt && amount && paymentMethod && !validationResult && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => validateReceiptFile(receipt)}
+                      disabled={isValidating}
+                      className="w-full"
+                    >
+                      {isValidating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Validating Receipt...
+                        </>
+                      ) : (
+                        "Validate Receipt"
+                      )}
+                    </Button>
+                  )}
+
+                  {/* Validation Results */}
+                  {validationResult && (
+                    <Card className={`${validationResult.isValid ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center mb-2">
+                          {validationResult.isValid ? (
+                            <CheckCircle className="w-5 h-5 text-green-400 mr-2" />
+                          ) : (
+                            <AlertTriangle className="w-5 h-5 text-red-400 mr-2" />
+                          )}
+                          <h4 className="font-semibold">
+                            {validationResult.isValid ? 'Receipt Validated' : 'Validation Failed'}
+                          </h4>
+                        </div>
+                        {validationResult.extractedAmount && (
+                          <p className="text-sm mb-1">
+                            Extracted Amount: ₱{validationResult.extractedAmount.toFixed(2)}
+                          </p>
+                        )}
+                        <p className="text-sm mb-1">
+                          Confidence: {validationResult.confidence.toFixed(1)}%
+                        </p>
+                        {validationResult.errors.length > 0 && (
+                          <div className="text-sm text-muted-foreground">
+                            Issues: {validationResult.errors.join(', ')}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
 
                 {/* Submit Button */}
                 <Button 
                   type="submit" 
-                  className="w-full glow-purple"
-                  disabled={!amount || !paymentMethod || !receipt}
+                  className={`w-full ${validationResult?.isValid ? 'glow-green' : 'glow-purple'}`}
+                  disabled={!amount || !paymentMethod || !receipt || isValidating}
                 >
-                  Submit Deposit Request
+                  {validationResult?.isValid ? (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Submit Validated Deposit
+                    </>
+                  ) : (
+                    "Submit Deposit Request"
+                  )}
                 </Button>
               </form>
             </CardContent>

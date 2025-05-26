@@ -192,6 +192,50 @@ export type Database = {
         }
         Relationships: []
       }
+      receipt_validations: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          deposit_id: string | null
+          extracted_amount: number | null
+          extracted_method: string | null
+          extracted_text: string | null
+          id: string
+          is_valid: boolean | null
+          validation_errors: string[] | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          deposit_id?: string | null
+          extracted_amount?: number | null
+          extracted_method?: string | null
+          extracted_text?: string | null
+          id?: string
+          is_valid?: boolean | null
+          validation_errors?: string[] | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          deposit_id?: string | null
+          extracted_amount?: number | null
+          extracted_method?: string | null
+          extracted_text?: string | null
+          id?: string
+          is_valid?: boolean | null
+          validation_errors?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_validations_deposit_id_fkey"
+            columns: ["deposit_id"]
+            isOneToOne: false
+            referencedRelation: "deposits"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       withdrawals: {
         Row: {
           amount: number
