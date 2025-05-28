@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import BannedOverlay from "@/components/BannedOverlay";
-import { useActivityTracker } from "@/hooks/useActivityTracker";
-import { useAuth } from "@/hooks/useAuth";
 
 type TileState = "hidden" | "safe" | "mine" | "itlog";
 
@@ -32,10 +31,6 @@ const Mines = () => {
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
   const { isBanned } = useBannedCheck();
-  const { user } = useAuth();
-  const { trackGamePlay, trackBet, trackGameWin, trackGameLoss, trackGameSession } = useActivityTracker();
-  const [sessionId] = useState(`mines_session_${Date.now()}`);
-  const [sessionStartTime] = useState(Date.now());
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
@@ -52,7 +47,7 @@ const Mines = () => {
   const generateRandomGameState = (mineCount: number): GameState => {
     // Create array of all positions
     const allPositions = Array.from({ length: 25 }, (_, i) => i);
-
+    
     // Shuffle array using Fisher-Yates algorithm for true randomness
     for (let i = allPositions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -65,7 +60,7 @@ const Mines = () => {
     // 5% chance for $ITLOG token
     const hasItlog = Math.random() < 0.05;
     let itlogPosition = -1;
-
+    
     if (hasItlog) {
       // Find a safe position for $ITLOG
       const safePositions = allPositions.slice(mineCount);
@@ -107,9 +102,6 @@ const Mines = () => {
         coinsChange: -parseFloat(currentBet)
       });
 
-      // Track the bet placement
-      trackBet('mines', parseFloat(currentBet), sessionId);
-
       // Generate new random game state
       const newGameState = generateRandomGameState(parseInt(minesCount));
       setGameState(newGameState);
@@ -148,17 +140,14 @@ const Mines = () => {
           newBoard[i] = gameState.board[i];
         }
       });
-
+      
       // Reset game state to allow new settings
       setGameOver(false);
       setGameStarted(false);
       setGameState(null);
       setTilesRevealed(0);
       setCurrentMultiplier(1.0);
-
-      // Track loss
-      trackGameLoss('mines', parseFloat(currentBet), sessionId);
-
+      
       toast({
         title: "Game Over!",
         description: "You hit a mine! Better luck next time.",
@@ -167,7 +156,7 @@ const Mines = () => {
     } else if (actualTileState === "itlog") {
       const betMultiplier = parseFloat(currentBet) * 5000;
       const reward = Math.min(betMultiplier, 1000000);
-
+      
       // Add ITLOG tokens to user's balance
       updateBalance.mutateAsync({
         itlogChange: reward
@@ -179,7 +168,7 @@ const Mines = () => {
           newBoard[i] = gameState.board[i];
         }
       });
-
+      
       // Reset game state to allow new settings
       setGameOver(false);
       setGameStarted(false);
@@ -202,10 +191,10 @@ const Mines = () => {
 
   const cashOut = async () => {
     if (!gameStarted || gameOver) return;
-
+    
     try {
       const winnings = parseFloat(currentBet) * currentMultiplier;
-
+      
       // Add winnings to user's coins balance
       await updateBalance.mutateAsync({
         coinsChange: winnings
@@ -218,10 +207,7 @@ const Mines = () => {
       setGameBoard(Array(25).fill("hidden"));
       setTilesRevealed(0);
       setCurrentMultiplier(1.0);
-
-      // Track win
-      trackGameWin('mines', winnings, sessionId);
-
+      
       toast({
         title: "Cashed out successfully!",
         description: `You won ${winnings.toFixed(2)} coins with a ${currentMultiplier.toFixed(2)}x multiplier!`
@@ -269,25 +255,6 @@ const Mines = () => {
     );
   };
 
-  // Balance is directly accessed from profile.coins, no need for local state
-
-  // Track game play on component mount
-  useEffect(() => {
-    if (user) {
-      trackGamePlay('mines', sessionId);
-    }
-  }, [user, trackGamePlay, sessionId]);
-
-  // Track session duration on unmount
-  useEffect(() => {
-    return () => {
-      if (user) {
-        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
-        trackGameSession('mines', sessionDuration, sessionId);
-      }
-    };
-  }, [user, trackGameSession, sessionId, sessionStartTime]);
-
   return (
     <Layout>
       {isBanned && <BannedOverlay />}
@@ -322,7 +289,7 @@ const Mines = () => {
                   <div className="grid grid-cols-5 gap-2 mb-6">
                     {Array.from({ length: 25 }, (_, i) => renderTile(i))}
                   </div>
-
+                  
                   {gameStarted && !gameOver && (
                     <Button 
                       onClick={cashOut}

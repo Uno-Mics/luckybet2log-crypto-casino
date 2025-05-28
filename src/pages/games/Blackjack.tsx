@@ -196,10 +196,8 @@ const Blackjack = () => {
       }
       setGameStarted(false);
     } else {
-      if (user?.id) {
-        trackBet(user.id, betAmount, 'blackjack', sessionId);
-        trackGamePlay(user.id, 'blackjack', sessionId);
-      }
+      trackBet('blackjack', betAmount, sessionId);
+      trackGamePlay('blackjack', sessionId);
     }
   };
 
@@ -339,16 +337,13 @@ const Blackjack = () => {
   };
 
   useEffect(() => {
-    // Track game session when the component mounts
-    if (user?.id) {
-      trackGameSession(user.id, 'blackjack', sessionId, sessionStartTime, Date.now());
-    }
-     return () => {
-            if (user?.id) {
-                trackGameSession(user.id, 'blackjack', sessionId, sessionStartTime, Date.now());
-            }
-        };
-  }, [user?.id, trackGameSession, sessionId, sessionStartTime]);
+    return () => {
+      if (user) {
+        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
+        trackGameSession('blackjack', sessionDuration, sessionId);
+      }
+    };
+  }, [user, trackGameSession, sessionId, sessionStartTime]);
 
   return (
     <Layout>

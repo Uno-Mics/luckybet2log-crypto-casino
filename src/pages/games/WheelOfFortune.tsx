@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
+import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
+import { useBannedCheck } from "@/hooks/useBannedCheck";
+import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useProfile } from "@/hooks/useProfile";
-import { useBannedCheck } from "@/hooks/useBannedCheck";
-import BannedOverlay from "@/components/BannedOverlay";
-import { useActivityTracker } from "@/hooks/useActivityTracker";
-import { useAuth } from "@/hooks/useAuth";
 
 const WheelOfFortune = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -21,34 +19,12 @@ const WheelOfFortune = () => {
   const [rotation, setRotation] = useState(0);
   const [gameEnded, setGameEnded] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
-  const { trackGamePlay, trackBet, trackGameWin, trackGameLoss, trackGameSession } = useActivityTracker();
-  const [sessionId] = useState(`wheel_session_${Date.now()}`);
-  const [sessionStartTime] = useState(Date.now());
-
 
   useEffect(() => {
     if (profile) {
       setBalance(profile.coins);
     }
   }, [profile]);
-
-    // Track game play on component mount
-  useEffect(() => {
-    if (user) {
-      trackGamePlay('wheel-of-fortune', sessionId);
-    }
-  }, [user, trackGamePlay, sessionId]);
-
-  // Track session duration on unmount
-  useEffect(() => {
-    return () => {
-      if (user) {
-        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
-        trackGameSession('wheel-of-fortune', sessionDuration, sessionId);
-      }
-    };
-  }, [user, trackGameSession, sessionId, sessionStartTime]);
 
   const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
 
@@ -93,9 +69,6 @@ const WheelOfFortune = () => {
     setIsSpinning(true);
     setGameEnded(false);
     const betAmount = parseFloat(currentBet);
-
-        // Track the bet placement
-    trackBet('wheel-of-fortune', betAmount, sessionId);
 
     // Update balance immediately and in database
     try {
@@ -187,10 +160,6 @@ const WheelOfFortune = () => {
             coinsChange: winnings
           });
           setBalance(prev => prev + winnings);
-
-                    // Track win or loss
-            trackGameWin('wheel-of-fortune', winnings, sessionId);
-
           toast({
             title: "Congratulations!",
             description: `You won ${winnings.toFixed(2)} coins with ${actualResult.multiplier}x multiplier!`
@@ -203,8 +172,6 @@ const WheelOfFortune = () => {
           });
         }
       } else {
-             // Track win or loss
-             trackGameLoss('wheel-of-fortune', betAmount, sessionId);
         toast({
           title: "Better luck next time!",
           description: `The wheel landed on ${result.toUpperCase()}. Try again!`,

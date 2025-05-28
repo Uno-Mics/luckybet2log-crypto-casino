@@ -358,6 +358,140 @@ export type Database = {
           }
         ]
       }
+      user_activities: {
+        Row: {
+          id: string
+          user_id: string
+          activity_type: string
+          activity_value: number
+          game_type: string | null
+          metadata: Json
+          session_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          activity_type: string
+          activity_value?: number
+          game_type?: string | null
+          metadata?: Json
+          session_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          activity_type?: string
+          activity_value?: number
+          game_type?: string | null
+          metadata?: Json
+          session_id?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      quest_definitions: {
+        Row: {
+          id: number
+          title: string
+          description: string
+          difficulty_tier: string
+          task_type: string
+          target_value: number
+          reward_min: number
+          reward_max: number
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          title: string
+          description: string
+          difficulty_tier: string
+          task_type: string
+          target_value?: number
+          reward_min: number
+          reward_max: number
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          title?: string
+          description?: string
+          difficulty_tier?: string
+          task_type?: string
+          target_value?: number
+          reward_min?: number
+          reward_max?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      daily_quests: {
+        Row: {
+          id: string
+          user_id: string
+          quest_definition_id: number
+          date: string
+          progress: number
+          is_completed: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          quest_definition_id: number
+          date?: string
+          progress?: number
+          is_completed?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          quest_definition_id?: number
+          date?: string
+          progress?: number
+          is_completed?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_quests_quest_definition_id_fkey"
+            columns: ["quest_definition_id"]
+            isOneToOne: false
+            referencedRelation: "quest_definitions"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      quest_rewards_claimed: {
+        Row: {
+          id: string
+          user_id: string
+          date: string
+          total_reward: number
+          quest_ids: string[]
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          date?: string
+          total_reward: number
+          quest_ids: string[]
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          date?: string
+          total_reward?: number
+          quest_ids?: string[]
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -371,6 +505,34 @@ export type Database = {
           p_itlog_change?: number
         }
         Returns: boolean
+      }
+      update_quest_progress: {
+        Args: {
+          p_user_id: string
+          p_activity_type: string
+          p_activity_value?: number
+          p_game_type?: string
+          p_metadata?: Json
+        }
+        Returns: undefined
+      }
+      check_balance_quests: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      claim_quest_rewards: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      assign_daily_quests: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

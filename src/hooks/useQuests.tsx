@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -56,18 +57,38 @@ export const useQuests = () => {
           quest_definition_id,
           progress,
           is_completed,
-          quest_definition:quest_definitions(*)
+          quest_definitions!inner(
+            id,
+            title,
+            description,
+            difficulty_tier,
+            task_type,
+            target_value,
+            reward_min,
+            reward_max
+          )
         `)
         .eq('user_id', user.id)
         .eq('date', new Date().toISOString().split('T')[0]);
 
       if (error) throw error;
 
-      setDailyQuests(quests || []);
+      // Transform the data to match our interface
+      const transformedQuests = (quests || []).map(quest => ({
+        id: quest.id,
+        quest_definition_id: quest.quest_definition_id,
+        progress: quest.progress,
+        is_completed: quest.is_completed,
+        quest_definition: Array.isArray(quest.quest_definitions) 
+          ? quest.quest_definitions[0] 
+          : quest.quest_definitions
+      }));
+
+      setDailyQuests(transformedQuests);
 
       // Check if all quests are completed
-      const allCompleted = quests?.every(quest => quest.is_completed) || false;
-      setCanClaimRewards(allCompleted && quests?.length === 3);
+      const allCompleted = transformedQuests?.every(quest => quest.is_completed) || false;
+      setCanClaimRewards(allCompleted && transformedQuests?.length === 3);
 
       // Check if rewards already claimed today
       const { data: claimed } = await supabase

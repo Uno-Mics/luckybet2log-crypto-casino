@@ -9,8 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useActivityTracker } from "@/hooks/useActivityTracker";
-import { useAuth } from "@/hooks/useAuth";
 
 const FortuneReels = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -22,10 +20,6 @@ const FortuneReels = () => {
   const [balance, setBalance] = useState(0);
   const { toast } = useToast();
   const { isBanned } = useBannedCheck();
-  const { user } = useAuth();
-  const { trackGamePlay, trackBet, trackGameWin, trackGameLoss, trackGameSession } = useActivityTracker();
-  const [sessionId] = useState(`fortune-reels_session_${Date.now()}`);
-  const [sessionStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (profile) {
@@ -33,27 +27,10 @@ const FortuneReels = () => {
     }
   }, [profile]);
 
-  // Track game play on component mount
-  useEffect(() => {
-    if (user) {
-      trackGamePlay('fortune-reels', sessionId);
-    }
-  }, [user, trackGamePlay, sessionId]);
-
-  // Track session duration on unmount
-  useEffect(() => {
-    return () => {
-      if (user) {
-        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
-        trackGameSession('fortune-reels', sessionDuration, sessionId);
-      }
-    };
-  }, [user, trackGameSession, sessionId, sessionStartTime]);
-
   const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
 
   const symbols = ["🍒", "🍋", "🍑", "🔔", "💎", "⭐", "7️⃣", "🪙"];
-
+  
   const payTable = {
     "🍒🍒🍒": 5,      // Cherries - 5x
     "🍋🍋🍋": 10,     // Lemons - 10x
@@ -79,9 +56,6 @@ const FortuneReels = () => {
     setGameEnded(false);
     setLastWin(0);
     const betAmount = parseFloat(currentBet);
-
-    // Track the bet placement
-    trackBet('fortune-reels', betAmount, sessionId);
 
     // Update balance immediately and in database
     try {
@@ -110,16 +84,16 @@ const FortuneReels = () => {
         symbols[Math.floor(Math.random() * symbols.length)],
         symbols[Math.floor(Math.random() * symbols.length)]
       ]);
-
+      
       elapsed += spinInterval;
-
+      
       if (elapsed >= spinDuration) {
         clearInterval(animate);
-
+        
         // Generate final result with weighted probabilities based on your image
         const random = Math.random() * 100; // Convert to percentage for easier comparison
         let finalReels: string[];
-
+        
         if (random < 0.1) { // 0.1% chance for $ITLOG jackpot
           finalReels = ["🪙", "🪙", "🪙"];
         } else if (random < 1.1) { // 1% chance for sevens (1.1 - 0.1 = 1%)
@@ -148,22 +122,22 @@ const FortuneReels = () => {
             finalReels[2] = symbols[Math.floor(Math.random() * symbols.length)];
           }
         }
-
+        
         setReels(finalReels);
         setIsSpinning(false);
         setGameEnded(true);
-
+        
         // Check for wins
         const combination = finalReels.join("");
         const key = combination as keyof typeof payTable;
-
+        
         if (key === "🪙🪙🪙") {
           // $ITLOG Jackpot: 10,000 to 1,000,000 tokens based on bet amount
           const baseReward = 10000;
           const maxReward = 1000000;
           const betMultiplier = betAmount * 1000; // Scale with bet amount
           const reward = Math.min(baseReward + betMultiplier, maxReward);
-
+          
           updateBalance.mutateAsync({
             itlogChange: reward
           }).then(() => {
@@ -181,15 +155,11 @@ const FortuneReels = () => {
         } else if (payTable[key]) {
           const winnings = betAmount * payTable[key];
           setLastWin(winnings);
-
+          
           updateBalance.mutateAsync({
             coinsChange: winnings
           }).then(() => {
             setBalance(prev => prev + winnings);
-
-            // Track win
-            trackGameWin('fortune-reels', winnings, sessionId);
-
             toast({
               title: "Winner!",
               description: `You won ${winnings.toFixed(2)} coins with ${payTable[key]}x multiplier!`
@@ -202,9 +172,6 @@ const FortuneReels = () => {
             });
           });
         } else {
-          // Track loss
-          trackGameLoss('fortune-reels', betAmount, sessionId);
-
           toast({
             title: "No match",
             description: "Better luck next time!",

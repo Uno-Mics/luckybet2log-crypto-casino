@@ -11,8 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import BannedOverlay from "@/components/BannedOverlay";
-import { useActivityTracker } from "@/hooks/useActivityTracker";
-import { useAuth } from "@/hooks/useAuth";
 
 const DiceRoll = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -27,33 +25,12 @@ const DiceRoll = () => {
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
   const { isBanned } = useBannedCheck();
-  const { user } = useAuth();
-  const { trackGamePlay, trackBet, trackGameWin, trackGameLoss, trackGameSession } = useActivityTracker();
-  const [sessionId] = useState(`dice-roll_session_${Date.now()}`);
-  const [sessionStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (profile) {
       setBalance(profile.coins);
     }
   }, [profile]);
-
-  // Track game play on component mount
-  useEffect(() => {
-    if (user) {
-      trackGamePlay('dice-roll', sessionId);
-    }
-  }, [user, trackGamePlay, sessionId]);
-
-  // Track session duration on unmount
-  useEffect(() => {
-    return () => {
-      if (user) {
-        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
-        trackGameSession('dice-roll', sessionDuration, sessionId);
-      }
-    };
-  }, [user, trackGameSession, sessionId, sessionStartTime]);
 
   const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
 
@@ -82,9 +59,6 @@ const DiceRoll = () => {
     setGameEnded(false);
     setShowItlogDice(false);
     const betAmount = parseFloat(currentBet);
-
-    // Track the bet placement
-    trackBet('dice-roll', betAmount, sessionId);
 
     // Update balance immediately and in database
     try {
@@ -118,13 +92,13 @@ const DiceRoll = () => {
     const animate = setInterval(() => {
       setLastRoll(Math.floor(Math.random() * 100) + 1);
       elapsed += rollInterval;
-
+      
       if (elapsed >= rollDuration) {
         clearInterval(animate);
-
+        
         // Generate final result
         let finalRoll = Math.floor(Math.random() * 100) + 1;
-
+        
         if (isItlogRoll) {
           // Force a winning roll for $ITLOG
           if (prediction === "over") {
@@ -132,17 +106,17 @@ const DiceRoll = () => {
           } else {
             finalRoll = Math.min(targetNumber - 1, Math.floor(Math.random() * targetNumber) + 1);
           }
-
+          
           // Calculate $ITLOG reward based on bet amount (10,000 to 1,000,000)
           const baseReward = 10000;
           const maxReward = 1000000;
           const betMultiplier = betAmount * 1000;
           const reward = Math.min(baseReward + betMultiplier, maxReward);
-
+          
           setLastRoll(finalRoll);
           setIsRolling(false);
           setGameEnded(true);
-
+          
           updateBalance.mutateAsync({
             itlogChange: reward
           }).then(() => {
@@ -159,25 +133,21 @@ const DiceRoll = () => {
           });
           return;
         }
-
+        
         setLastRoll(finalRoll);
         setIsRolling(false);
         setGameEnded(true);
-
+        
         // Check for win
         const isWin = (prediction === "over" && finalRoll > targetNumber) || 
                      (prediction === "under" && finalRoll < targetNumber);
-
+        
         if (isWin) {
           const winnings = betAmount * multiplier;
           updateBalance.mutateAsync({
             coinsChange: winnings
           }).then(() => {
             setBalance(prev => prev + winnings);
-
-            // Track win
-            trackGameWin('dice-roll', winnings, sessionId);
-
             toast({
               title: "Winner!",
               description: `You rolled ${finalRoll} and won ${winnings.toFixed(2)} coins!`
@@ -190,9 +160,6 @@ const DiceRoll = () => {
             });
           });
         } else {
-          // Track loss
-          trackGameLoss('dice-roll', betAmount, sessionId);
-
           toast({
             title: "Better luck next time!",
             description: `You rolled ${finalRoll}. Try again!`,

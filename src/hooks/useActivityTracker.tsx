@@ -1,182 +1,289 @@
-
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import type { Database, Json } from '@/integrations/supabase/types';
 
 export interface ActivityData {
   activityType: string;
   activityValue?: number;
   gameType?: string;
-  metadata?: Record<string, any>;
+  metadata?: Json;
   sessionId?: string;
 }
 
 export const useActivityTracker = () => {
   const { user } = useAuth();
 
-  const trackActivity = useCallback(async (data: ActivityData) => {
-    if (!user) return;
-
-    try {
-      await supabase.from('user_activities').insert({
-        user_id: user.id,
-        activity_type: data.activityType,
-        activity_value: data.activityValue || 1,
-        game_type: data.gameType,
-        metadata: data.metadata || {},
-        session_id: data.sessionId || `session_${Date.now()}`
-      });
-
-      // Trigger quest progress update
-      await updateQuestProgress(data);
-    } catch (error) {
-      console.error('Error tracking activity:', error);
+  const updateQuestProgress = useCallback(async (data: ActivityData): Promise<void> => {
+    if (!user) {
+      console.warn('Cannot update quest progress: user not authenticated');
+      return;
     }
-  }, [user]);
-
-  const updateQuestProgress = useCallback(async (data: ActivityData) => {
-    if (!user) return;
 
     try {
-      // Call the quest progress update function
-      await supabase.rpc('update_quest_progress', {
+      const { error } = await supabase.rpc('update_quest_progress', {
         p_user_id: user.id,
         p_activity_type: data.activityType,
         p_activity_value: data.activityValue || 1,
-        p_game_type: data.gameType,
-        p_metadata: data.metadata || {}
+        p_game_type: data.gameType || null,
+        p_metadata: (data.metadata || {}) as Json
       });
+
+      if (error) {
+        console.error('Quest progress update error:', error);
+        throw error;
+      }
     } catch (error) {
       console.error('Error updating quest progress:', error);
+      throw error;
     }
   }, [user]);
 
-  // Specific tracking functions for different activities
-  const trackGamePlay = useCallback((gameType: string, sessionId: string) => {
-    trackActivity({
+  const trackActivity = useCallback(async (data: ActivityData): Promise<void> => {
+    if (!user) {
+      console.warn('Cannot track activity: user not authenticated');
+      return;
+    }
+
+    try {
+      // Insert activity record matching the database schema
+      const { error: insertError } = await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: data.activityType,
+          activity_value: data.activityValue || 1,
+          game_type: data.gameType || null,
+          metadata: data.metadata || {},
+          session_id: data.sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        });
+
+      if (insertError) {
+        console.error('Activity insertion error:', insertError);
+        throw insertError;
+      }
+
+      // Update quest progress
+      await updateQuestProgress(data);
+    } catch (error) {
+      console.error('Error tracking activity:', error);
+      throw error;
+    }
+  }, [user, updateQuestProgress]);
+
+  // Game-specific tracking functions
+  const trackGamePlay = useCallback((gameType: string, sessionId?: string): Promise<void> => {
+    return trackActivity({
       activityType: 'play_game',
       gameType,
-      sessionId,
-      metadata: { timestamp: new Date().toISOString() }
+      sessionId: sessionId || `game_${gameType}_${Date.now()}`,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        game: gameType
+      }
     });
   }, [trackActivity]);
 
-  const trackGameWin = useCallback((gameType: string, winAmount: number, sessionId: string) => {
-    trackActivity({
+  const trackGameWin = useCallback((gameType: string, winAmount: number, sessionId?: string): Promise<void> => {
+    return trackActivity({
       activityType: 'win_game',
       activityValue: winAmount,
       gameType,
-      sessionId,
-      metadata: { winAmount, timestamp: new Date().toISOString() }
+      sessionId: sessionId || `win_${gameType}_${Date.now()}`,
+      metadata: {
+        winAmount,
+        timestamp: new Date().toISOString(),
+        game: gameType
+      }
     });
   }, [trackActivity]);
 
-  const trackGameLoss = useCallback((gameType: string, lossAmount: number, sessionId: string) => {
-    trackActivity({
+  const trackGameLoss = useCallback((gameType: string, lossAmount: number, sessionId?: string): Promise<void> => {
+    return trackActivity({
       activityType: 'lose_game',
       activityValue: lossAmount,
       gameType,
-      sessionId,
-      metadata: { lossAmount, timestamp: new Date().toISOString() }
+      sessionId: sessionId || `loss_${gameType}_${Date.now()}`,
+      metadata: {
+        lossAmount,
+        timestamp: new Date().toISOString(),
+        game: gameType
+      }
     });
   }, [trackActivity]);
 
-  const trackBet = useCallback((betAmount: number, gameType: string, sessionId: string) => {
-    trackActivity({
+  const trackBet = useCallback((gameType: string, betAmount: number, sessionId?: string): Promise<void> => {
+    return trackActivity({
       activityType: 'place_bet',
       activityValue: betAmount,
       gameType,
-      sessionId,
-      metadata: { betAmount, timestamp: new Date().toISOString() }
+      sessionId: sessionId || `bet_${gameType}_${Date.now()}`,
+      metadata: {
+        betAmount,
+        timestamp: new Date().toISOString(),
+        game: gameType
+      }
     });
   }, [trackActivity]);
 
-  const trackDeposit = useCallback((amount: number, status: string) => {
-    trackActivity({
+  // Financial tracking functions
+  const trackDeposit = useCallback((amount: number, status: string = 'completed'): Promise<void> => {
+    return trackActivity({
       activityType: 'deposit',
       activityValue: amount,
-      metadata: { amount, status, timestamp: new Date().toISOString() }
+      metadata: {
+        amount,
+        status,
+        timestamp: new Date().toISOString()
+      }
     });
   }, [trackActivity]);
 
-  const trackWithdrawal = useCallback((amount: number, status: string) => {
-    trackActivity({
+  const trackWithdrawal = useCallback((amount: number, status: string = 'completed'): Promise<void> => {
+    return trackActivity({
       activityType: 'withdraw',
       activityValue: amount,
-      metadata: { amount, status, timestamp: new Date().toISOString() }
+      metadata: {
+        amount,
+        status,
+        timestamp: new Date().toISOString()
+      }
     });
   }, [trackActivity]);
 
-  const trackFarmingClaim = useCallback((amount: number) => {
-    trackActivity({
+  // Earning and farming functions
+  const trackFarmingClaim = useCallback((amount: number): Promise<void> => {
+    return trackActivity({
       activityType: 'claim_farming',
       activityValue: amount,
-      metadata: { amount, timestamp: new Date().toISOString() }
+      metadata: {
+        amount,
+        timestamp: new Date().toISOString(),
+        source: 'farming'
+      }
     });
   }, [trackActivity]);
 
-  const trackStaking = useCallback((amount: number) => {
-    trackActivity({
+  const trackStaking = useCallback((amount: number): Promise<void> => {
+    return trackActivity({
       activityType: 'stake_php',
       activityValue: amount,
-      metadata: { amount, timestamp: new Date().toISOString() }
+      metadata: {
+        amount,
+        timestamp: new Date().toISOString(),
+        action: 'stake'
+      }
     });
   }, [trackActivity]);
 
-  const trackCurrencyConversion = useCallback((amount: number, fromCurrency: string, toCurrency: string) => {
-    trackActivity({
+  // Currency and exchange functions
+  const trackCurrencyConversion = useCallback((amount: number, fromCurrency: string, toCurrency: string): Promise<void> => {
+    return trackActivity({
       activityType: 'convert_currency',
       activityValue: amount,
-      metadata: { amount, fromCurrency, toCurrency, timestamp: new Date().toISOString() }
+      metadata: {
+        amount,
+        fromCurrency,
+        toCurrency,
+        timestamp: new Date().toISOString()
+      }
     });
   }, [trackActivity]);
 
-  const trackItlogExchange = useCallback((amount: number) => {
-    trackActivity({
+  const trackItlogExchange = useCallback((amount: number): Promise<void> => {
+    return trackActivity({
       activityType: 'exchange_itlog',
       activityValue: amount,
-      metadata: { amount, timestamp: new Date().toISOString() }
+      metadata: {
+        amount,
+        timestamp: new Date().toISOString(),
+        currency: 'ITLOG'
+      }
     });
   }, [trackActivity]);
 
-  const trackGameSession = useCallback((gameType: string, duration: number, sessionId: string) => {
-    trackActivity({
+  // Session tracking
+  const trackGameSession = useCallback((gameType: string, duration: number, sessionId?: string): Promise<void> => {
+    return trackActivity({
       activityType: 'game_session',
       activityValue: duration,
       gameType,
-      sessionId,
-      metadata: { duration, timestamp: new Date().toISOString() }
+      sessionId: sessionId || `session_${gameType}_${Date.now()}`,
+      metadata: {
+        duration,
+        durationMinutes: Math.round(duration / 60),
+        timestamp: new Date().toISOString(),
+        game: gameType
+      }
     });
   }, [trackActivity]);
 
-  const checkBalanceQuests = useCallback(async () => {
-    if (!user) return;
+  // Balance quest checker
+  const checkBalanceQuests = useCallback(async (): Promise<void> => {
+    if (!user) {
+      console.warn('Cannot check balance quests: user not authenticated');
+      return;
+    }
 
     try {
-      // Call the function to check balance-based quests
       const { error } = await supabase.rpc('check_balance_quests', {
         p_user_id: user.id
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Balance quest check error:', error);
+        throw error;
+      }
     } catch (error) {
       console.error('Error checking balance quests:', error);
+      throw error;
     }
   }, [user]);
 
+  // Batch activity tracking for multiple activities
+  const trackMultipleActivities = useCallback(async (activities: ActivityData[]): Promise<void> => {
+    if (!user) {
+      console.warn('Cannot track multiple activities: user not authenticated');
+      return;
+    }
+
+    try {
+      const promises = activities.map(activity => trackActivity(activity));
+      await Promise.all(promises);
+    } catch (error) {
+      console.error('Error tracking multiple activities:', error);
+      throw error;
+    }
+  }, [user, trackActivity]);
+
   return {
+    // Core functions
     trackActivity,
+    updateQuestProgress,
+    
+    // Game tracking
     trackGamePlay,
     trackGameWin,
     trackGameLoss,
     trackBet,
+    trackGameSession,
+    
+    // Financial tracking
     trackDeposit,
     trackWithdrawal,
+    
+    // Earning functions
     trackFarmingClaim,
     trackStaking,
+    
+    // Exchange functions
     trackCurrencyConversion,
     trackItlogExchange,
-    trackGameSession,
-    checkBalanceQuests
+    
+    // Quest functions
+    checkBalanceQuests,
+    
+    // Utility functions
+    trackMultipleActivities
   };
 };
