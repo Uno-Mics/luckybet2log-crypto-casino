@@ -18,7 +18,7 @@ type CardType = {
 };
 
 const Blackjack = () => {
-  const [currentBet, setCurrentBet] = useState<number>(10);
+  const [currentBet, setCurrentBet] = useState("10");
   const [gameStarted, setGameStarted] = useState(false);
   const [playerCards, setPlayerCards] = useState<CardType[]>([]);
   const [dealerCards, setDealerCards] = useState<CardType[]>([]);
@@ -41,7 +41,7 @@ const Blackjack = () => {
     }
   }, [profile]);
 
-  const betAmounts = [10, 25, 50, 100, 250, 500];
+  const betAmounts = ["10", "25", "50", "100", "250", "500"];
 
   const suits = ["♠", "♥", "♦", "♣"];
   const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
@@ -98,7 +98,9 @@ const Blackjack = () => {
   };
 
   const startNewGame = async () => {
-    if (currentBet > balance) {
+    const betAmount = parseFloat(currentBet);
+    
+    if (betAmount > balance) {
       toast({
         title: "Insufficient balance",
         description: "You don't have enough coins to place this bet.",
@@ -106,8 +108,6 @@ const Blackjack = () => {
       });
       return;
     }
-
-    const betAmount = currentBet;
 
     // Update balance immediately and in database
     try {
@@ -187,7 +187,7 @@ const Blackjack = () => {
         });
       } else {
         setGameResult("dealer_blackjack");
-        trackGameLoss('blackjack', currentBet, sessionId);
+        trackGameLoss('blackjack', betAmount, sessionId);
         toast({
           title: "Dealer Blackjack",
           description: "Dealer has blackjack. You lose.",
@@ -213,10 +213,11 @@ const Blackjack = () => {
     setPlayerTotal(newTotal);
 
     if (newTotal > 21) {
+      const betAmount = parseFloat(currentBet);
       setGameResult("bust");
       setGameStarted(false);
       setShowDealerCards(true);
-      trackGameLoss('blackjack', currentBet, sessionId);
+      trackGameLoss('blackjack', betAmount, sessionId);
       toast({
         title: "Bust!",
         description: "You went over 21. You lose.",
@@ -244,7 +245,7 @@ const Blackjack = () => {
     setDealerTotal(currentDealerTotal);
 
     // Determine winner
-    const betAmount = currentBet;
+    const betAmount = parseFloat(currentBet);
     if (currentDealerTotal > 21) {
       setGameResult("dealer_bust");
       const winnings = betAmount * 2;
@@ -285,7 +286,7 @@ const Blackjack = () => {
       });
     } else if (playerTotal < currentDealerTotal) {
       setGameResult("lose");
-      trackGameLoss('blackjack', currentBet, sessionId);
+      trackGameLoss('blackjack', betAmount, sessionId);
       toast({
         title: "You Lose",
         description: "Dealer has a higher hand.",

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -116,16 +115,25 @@ export const useQuests = () => {
 
       if (error) throw error;
 
+      // Handle the response data - it might be a number or an object
+      const totalReward = typeof data === 'number' ? data : 
+        (typeof data === 'object' && data !== null && 'total_reward' in data) 
+          ? (data as { total_reward: number }).total_reward 
+          : 0;
+
       toast({
         title: "Rewards Claimed!",
-        description: `You earned ${data.total_reward} $ITLOG tokens!`,
+        description: `You earned ${totalReward} $ITLOG tokens!`,
       });
 
       setHasClaimedToday(true);
       setCanClaimRewards(false);
 
-      // Refresh quests
+      // Refresh quests and trigger a page reload to update all balances
       await fetchDailyQuests();
+
+      // Force a page refresh to ensure all components update their state
+      window.location.reload();
     } catch (error) {
       console.error('Error claiming rewards:', error);
       toast({

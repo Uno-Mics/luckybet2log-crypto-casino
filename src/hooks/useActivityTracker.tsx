@@ -226,6 +226,15 @@ export const useActivityTracker = () => {
     }
 
     try {
+      // Add more specific error handling and logging
+      console.log('Checking balance quests for user:', user.id);
+    } catch (error) {
+      console.error('Detailed error in checkBalanceQuests:', error);
+      // Don't throw the error to prevent app crashes
+      return;
+    }
+
+    try {
       const { error } = await supabase.rpc('check_balance_quests', {
         p_user_id: user.id
       });
