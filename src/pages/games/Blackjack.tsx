@@ -18,7 +18,7 @@ type CardType = {
 };
 
 const Blackjack = () => {
-  const [currentBet, setCurrentBet] = useState("1");
+  const [currentBet, setCurrentBet] = useState<number>(10);
   const [gameStarted, setGameStarted] = useState(false);
   const [playerCards, setPlayerCards] = useState<CardType[]>([]);
   const [dealerCards, setDealerCards] = useState<CardType[]>([]);
@@ -41,7 +41,7 @@ const Blackjack = () => {
     }
   }, [profile]);
 
-  const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
+  const betAmounts = [10, 25, 50, 100, 250, 500];
 
   const suits = ["♠", "♥", "♦", "♣"];
   const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
@@ -98,7 +98,7 @@ const Blackjack = () => {
   };
 
   const startNewGame = async () => {
-    if (parseFloat(currentBet) > balance) {
+    if (currentBet > balance) {
       toast({
         title: "Insufficient balance",
         description: "You don't have enough coins to place this bet.",
@@ -107,7 +107,7 @@ const Blackjack = () => {
       return;
     }
 
-    const betAmount = parseFloat(currentBet);
+    const betAmount = currentBet;
 
     // Update balance immediately and in database
     try {
@@ -173,9 +173,7 @@ const Blackjack = () => {
           coinsChange: winnings
         }).then(() => {
           setBalance(prev => prev + winnings);
-          if (user?.id) {
-            trackGameWin(user.id, winnings, 'blackjack', sessionId);
-          }
+          trackGameWin('blackjack', winnings, sessionId);
           toast({
             title: "Blackjack!",
             description: `You won ${winnings.toFixed(2)} coins with a natural blackjack!`
@@ -189,9 +187,7 @@ const Blackjack = () => {
         });
       } else {
         setGameResult("dealer_blackjack");
-        if (user?.id) {
-          trackGameLoss(user.id, 'blackjack', sessionId);
-        }
+        trackGameLoss('blackjack', currentBet, sessionId);
         toast({
           title: "Dealer Blackjack",
           description: "Dealer has blackjack. You lose.",
@@ -222,9 +218,7 @@ const Blackjack = () => {
       setGameResult("bust");
       setGameStarted(false);
       setShowDealerCards(true);
-      if (user?.id) {
-        trackGameLoss(user.id, 'blackjack', sessionId);
-      }
+      trackGameLoss('blackjack', currentBet, sessionId);
       toast({
         title: "Bust!",
         description: "You went over 21. You lose.",
@@ -252,7 +246,7 @@ const Blackjack = () => {
     setDealerTotal(currentDealerTotal);
 
     // Determine winner
-    const betAmount = parseFloat(currentBet);
+    const betAmount = currentBet;
     if (currentDealerTotal > 21) {
       setGameResult("dealer_bust");
       const winnings = betAmount * 2;
@@ -260,9 +254,7 @@ const Blackjack = () => {
         coinsChange: winnings
       }).then(() => {
         setBalance(prev => prev + winnings);
-        if (user?.id) {
-          trackGameWin(user.id, winnings, 'blackjack', sessionId);
-        }
+        trackGameWin('blackjack', winnings, sessionId);
         toast({
           title: "Dealer Bust!",
           description: `Dealer went over 21. You won ${winnings.toFixed(2)} coins!`
@@ -281,9 +273,7 @@ const Blackjack = () => {
         coinsChange: winnings
       }).then(() => {
         setBalance(prev => prev + winnings);
-        if (user?.id) {
-          trackGameWin(user.id, winnings, 'blackjack', sessionId);
-        }
+        trackGameWin('blackjack', winnings, sessionId);
         toast({
           title: "You Win!",
           description: `You beat the dealer! Won ${winnings.toFixed(2)} coins!`
@@ -297,9 +287,7 @@ const Blackjack = () => {
       });
     } else if (playerTotal < currentDealerTotal) {
       setGameResult("lose");
-      if (user?.id) {
-        trackGameLoss(user.id, 'blackjack', sessionId);
-      }
+      trackGameLoss('blackjack', currentBet, sessionId);
       toast({
         title: "You Lose",
         description: "Dealer has a higher hand.",
@@ -311,9 +299,7 @@ const Blackjack = () => {
         coinsChange: betAmount
       }).then(() => {
         setBalance(prev => prev + betAmount);
-        if (user?.id) {
-          trackGameWin(user.id, betAmount, 'blackjack', sessionId); // Push is a win of the bet amount
-        }
+        trackGameWin('blackjack', betAmount, sessionId); // Push is a win of the bet amount
         toast({
           title: "Push!",
           description: "Same total. Bet returned."

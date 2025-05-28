@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -38,10 +37,16 @@ export const useQuests = () => {
       setLoading(true);
 
       // First, ensure user has daily quests assigned
-      await supabase.rpc('assign_daily_quests', { p_user_id: user.id });
+      const { error: assignError } = await supabase.rpc('assign_daily_quests', { 
+        p_user_id: user.id 
+      });
+      if (assignError) console.error('Error assigning daily quests:', assignError);
 
       // Check balance-based quests to ensure they're up to date
-      await supabase.rpc('check_balance_quests', { p_user_id: user.id });
+      const { error: balanceError } = await supabase.rpc('check_balance_quests', { 
+        p_user_id: user.id 
+      });
+      if (balanceError) console.error('Error checking balance quests:', balanceError);
 
       // Fetch today's quests
       const { data: quests, error } = await supabase

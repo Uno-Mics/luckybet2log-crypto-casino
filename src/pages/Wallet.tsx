@@ -25,7 +25,7 @@ const Wallet = () => {
   const [withdrawalMethod, setWithdrawalMethod] = useState("bank_transfer");
   const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false);
   const { toast } = useToast();
-  const { profile, refetch } = useProfile();
+  const { profile, updateBalance } = useProfile();
   const { user } = useAuth();
   const { trackCurrencyConversion, trackItlogExchange } = useActivityTracker();
 
@@ -52,10 +52,13 @@ const Wallet = () => {
           });
           return;
         }
-        await updateBalance.mutateAsync({
-          phpChange: -amount,
-          coinsChange: amount
-        });
+        if (user?.id) {
+          await updateBalance.mutateAsync({
+            coinsChange: amount,
+            phpChange: -amount
+          });
+        }
+        trackCurrencyConversion(amount, "php", "coins");
         toast({
           title: "Conversion successful",
           description: `Converted ₱${amount.toFixed(2)} to ${amount.toFixed(2)} coins.`
@@ -69,10 +72,13 @@ const Wallet = () => {
           });
           return;
         }
-        await updateBalance.mutateAsync({
-          phpChange: amount,
-          coinsChange: -amount
-        });
+         if (user?.id) {
+          await updateBalance.mutateAsync({
+            coinsChange: -amount,
+            phpChange: amount
+          });
+        }
+        trackCurrencyConversion(amount, "coins", "php");
         toast({
           title: "Conversion successful",
           description: `Converted ${amount.toFixed(2)} coins to ₱${amount.toFixed(2)}.`
@@ -87,10 +93,13 @@ const Wallet = () => {
           return;
         }
         const coinsAmount = amount * 5000;
-        await updateBalance.mutateAsync({
-          coinsChange: coinsAmount,
-          itlogChange: -amount
-        });
+        if (user?.id) {
+          await updateBalance.mutateAsync({
+            coinsChange: coinsAmount,
+            itlogChange: -amount
+          });
+        }
+        trackItlogExchange(amount);
         toast({
           title: "Conversion successful",
           description: `Converted ${amount.toFixed(2)} $ITLOG to ${coinsAmount.toFixed(2)} coins.`

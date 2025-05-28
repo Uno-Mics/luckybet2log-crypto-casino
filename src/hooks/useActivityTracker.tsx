@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -80,7 +81,7 @@ export const useActivityTracker = () => {
     });
   }, [trackActivity]);
 
-  const trackBet = useCallback((gameType: string, betAmount: number, sessionId: string) => {
+  const trackBet = useCallback((betAmount: number, gameType: string, sessionId: string) => {
     trackActivity({
       activityType: 'place_bet',
       activityValue: betAmount,

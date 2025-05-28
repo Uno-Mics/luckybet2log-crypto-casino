@@ -1,5 +1,7 @@
 import { useQuests } from '@/hooks/useQuests';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
+
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -47,7 +49,10 @@ const QuestSystem = () => {
 
   const handleClaimRewards = async () => {
     await claimRewards();
-    trackActivity('Claimed Daily Quest Rewards');
+    trackActivity({
+      activityType: 'Claimed Daily Quest Rewards',
+      activityValue: 1
+    });
   };
 
   return (
