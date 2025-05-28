@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp, Play, Pause, Coins, Clock, Trophy, Gift } from "lucide-react";
 import { useFarmingSessions } from "@/hooks/useFarmingSessions";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
+import QuestSystem from "@/components/QuestSystem";
 
 const Earn = () => {
   const [stakingAmount, setStakingAmount] = useState("");
@@ -27,6 +29,8 @@ const Earn = () => {
     stopStaking,
     claimStaking
   } = useFarmingSessions();
+  
+  const { trackFarmingClaim, trackStaking } = useActivityTracker();
 
   const handleStartStaking = () => {
     const amount = parseFloat(stakingAmount);
@@ -34,7 +38,23 @@ const Earn = () => {
       return;
     }
     startStaking(amount);
+    trackStaking(amount);
     setStakingAmount("");
+  };
+
+  const handleHarvestFarming = async () => {
+    await harvestFarming();
+    // Track farming claim activity (0.02 tokens earned)
+    trackFarmingClaim(0.02);
+  };
+
+  const handleClaimStaking = async () => {
+    if (stakingSession?.stake_amount) {
+      const rewardAmount = stakingSession.stake_amount * 0.0005;
+      await claimStaking();
+      // Track staking claim activity
+      trackFarmingClaim(rewardAmount);
+    }
   };
 
   const canHarvest = farmingSession && farmingProgress >= 100;
@@ -65,6 +85,11 @@ const Earn = () => {
             <p className="text-xl text-muted-foreground">
               Farm and stake to earn exclusive $ITLOG tokens
             </p>
+          </div>
+
+          {/* Quest System */}
+          <div className="mb-8">
+            <QuestSystem />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -104,7 +129,7 @@ const Earn = () => {
 
                 {canHarvest ? (
                   <Button 
-                    onClick={harvestFarming}
+                    onClick={handleHarvestFarming}
                     className="w-full glow-gold bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-semibold"
                   >
                     <Gift className="w-4 h-4 mr-2" />
@@ -170,7 +195,7 @@ const Earn = () => {
 
                 {canClaim ? (
                   <Button 
-                    onClick={claimStaking}
+                    onClick={handleClaimStaking}
                     className="w-full glow-gold bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-semibold"
                   >
                     <Trophy className="w-4 h-4 mr-2" />

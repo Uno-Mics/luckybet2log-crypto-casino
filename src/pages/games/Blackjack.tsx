@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import BannedOverlay from "@/components/BannedOverlay";
@@ -9,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
+import { useAuth } from "@/hooks/useAuth";
 
 type CardType = {
   suit: string;
@@ -29,6 +30,10 @@ const Blackjack = () => {
   const { isBanned, reason } = useBannedCheck();
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
+  const { user } = useAuth();
+  const { trackGamePlay, trackBet, trackGameWin, trackGameLoss, trackGameSession } = useActivityTracker();
+  const [sessionId] = useState(`blackjack_session_${Date.now()}`);
+  const [sessionStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (profile) {
@@ -48,7 +53,7 @@ const Blackjack = () => {
         let numValue = parseInt(value);
         if (value === "A") numValue = 11;
         else if (["J", "Q", "K"].includes(value)) numValue = 10;
-        
+
         deck.push({ suit, value, numValue });
       });
     });
@@ -67,7 +72,7 @@ const Blackjack = () => {
   const calculateTotal = (cards: CardType[]): number => {
     let total = 0;
     let aces = 0;
-    
+
     cards.forEach(card => {
       if (card.value === "A") {
         aces++;
@@ -120,7 +125,7 @@ const Blackjack = () => {
     }
 
     const deck = createDeck();
-    
+
     // Deal initial cards
     const [playerCard1, deck1] = dealCard(deck);
     const [dealerCard1, deck2] = dealCard(deck1);
@@ -168,6 +173,9 @@ const Blackjack = () => {
           coinsChange: winnings
         }).then(() => {
           setBalance(prev => prev + winnings);
+          if (user?.id) {
+            trackGameWin(user.id, winnings, 'blackjack', sessionId);
+          }
           toast({
             title: "Blackjack!",
             description: `You won ${winnings.toFixed(2)} coins with a natural blackjack!`
@@ -181,6 +189,9 @@ const Blackjack = () => {
         });
       } else {
         setGameResult("dealer_blackjack");
+        if (user?.id) {
+          trackGameLoss(user.id, 'blackjack', sessionId);
+        }
         toast({
           title: "Dealer Blackjack",
           description: "Dealer has blackjack. You lose.",
@@ -188,6 +199,11 @@ const Blackjack = () => {
         });
       }
       setGameStarted(false);
+    } else {
+      if (user?.id) {
+        trackBet(user.id, betAmount, 'blackjack', sessionId);
+        trackGamePlay(user.id, 'blackjack', sessionId);
+      }
     }
   };
 
@@ -206,6 +222,9 @@ const Blackjack = () => {
       setGameResult("bust");
       setGameStarted(false);
       setShowDealerCards(true);
+      if (user?.id) {
+        trackGameLoss(user.id, 'blackjack', sessionId);
+      }
       toast({
         title: "Bust!",
         description: "You went over 21. You lose.",
@@ -241,6 +260,9 @@ const Blackjack = () => {
         coinsChange: winnings
       }).then(() => {
         setBalance(prev => prev + winnings);
+        if (user?.id) {
+          trackGameWin(user.id, winnings, 'blackjack', sessionId);
+        }
         toast({
           title: "Dealer Bust!",
           description: `Dealer went over 21. You won ${winnings.toFixed(2)} coins!`
@@ -259,6 +281,9 @@ const Blackjack = () => {
         coinsChange: winnings
       }).then(() => {
         setBalance(prev => prev + winnings);
+        if (user?.id) {
+          trackGameWin(user.id, winnings, 'blackjack', sessionId);
+        }
         toast({
           title: "You Win!",
           description: `You beat the dealer! Won ${winnings.toFixed(2)} coins!`
@@ -272,6 +297,9 @@ const Blackjack = () => {
       });
     } else if (playerTotal < currentDealerTotal) {
       setGameResult("lose");
+      if (user?.id) {
+        trackGameLoss(user.id, 'blackjack', sessionId);
+      }
       toast({
         title: "You Lose",
         description: "Dealer has a higher hand.",
@@ -283,6 +311,9 @@ const Blackjack = () => {
         coinsChange: betAmount
       }).then(() => {
         setBalance(prev => prev + betAmount);
+        if (user?.id) {
+          trackGameWin(user.id, betAmount, 'blackjack', sessionId); // Push is a win of the bet amount
+        }
         toast({
           title: "Push!",
           description: "Same total. Bet returned."
@@ -320,6 +351,18 @@ const Blackjack = () => {
       </div>
     );
   };
+
+  useEffect(() => {
+    // Track game session when the component mounts
+    if (user?.id) {
+      trackGameSession(user.id, 'blackjack', sessionId, sessionStartTime, Date.now());
+    }
+     return () => {
+            if (user?.id) {
+                trackGameSession(user.id, 'blackjack', sessionId, sessionStartTime, Date.now());
+            }
+        };
+  }, [user?.id, trackGameSession, sessionId, sessionStartTime]);
 
   return (
     <Layout>

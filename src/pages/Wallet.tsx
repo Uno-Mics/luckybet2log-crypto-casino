@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
@@ -14,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
 
 const Wallet = () => {
   const { isBanned } = useBannedCheck();
@@ -25,8 +25,9 @@ const Wallet = () => {
   const [withdrawalMethod, setWithdrawalMethod] = useState("bank_transfer");
   const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false);
   const { toast } = useToast();
-  const { profile, updateBalance } = useProfile();
+  const { profile, refetch } = useProfile();
   const { user } = useAuth();
+  const { trackCurrencyConversion, trackItlogExchange } = useActivityTracker();
 
   if (!profile) return null;
 
@@ -108,7 +109,7 @@ const Wallet = () => {
 
   const handleWithdrawalSubmit = async () => {
     const amount = parseFloat(withdrawAmount);
-    
+
     if (!amount || amount <= 0) {
       toast({
         title: "Invalid amount",
@@ -341,7 +342,7 @@ const Wallet = () => {
                         onChange={(e) => setWithdrawAmount(e.target.value)}
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="withdrawal-method">Withdrawal Method</Label>
                       <Select value={withdrawalMethod} onValueChange={setWithdrawalMethod}>
