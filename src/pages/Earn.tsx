@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import BannedOverlay from "@/components/BannedOverlay";
@@ -15,6 +15,18 @@ import QuestSystem from "@/components/QuestSystem";
 const Earn = () => {
   const [stakingAmount, setStakingAmount] = useState("");
   const { isBanned, reason } = useBannedCheck();
+  const [error, setError] = useState<string | null>(null);
+
+  // Error boundary effect
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('Page error:', event.error);
+      setError('An error occurred. Please refresh the page.');
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
   const {
     farmingSession,
     stakingSession,
@@ -29,7 +41,7 @@ const Earn = () => {
     stopStaking,
     claimStaking
   } = useFarmingSessions();
-  
+
   const { trackFarmingClaim, trackStaking } = useActivityTracker();
 
   const handleStartStaking = () => {
@@ -59,6 +71,24 @@ const Earn = () => {
 
   const canHarvest = farmingSession && farmingProgress >= 100;
   const canClaim = stakingSession && stakingProgress >= 100;
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <p className="text-red-400">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-primary text-white rounded"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (loading) {
     return (

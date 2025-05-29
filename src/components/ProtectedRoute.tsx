@@ -1,5 +1,6 @@
 
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 
@@ -9,10 +10,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
+  const location = useLocation();
 
-  if (loading || profileLoading) {
+  // Show loading while auth is being determined
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -20,11 +23,18 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
     );
   }
 
+  // Redirect to auth if not authenticated
   if (!user) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // Redirect to auth if profile doesn't exist (user was deleted)
+  if (!profile) {
     return <Navigate to="/auth" replace />;
   }
 
-  if (requireAdmin && (!profile?.is_admin)) {
+  // Check admin requirement
+  if (requireAdmin && !profile.is_admin) {
     return <Navigate to="/" replace />;
   }
 

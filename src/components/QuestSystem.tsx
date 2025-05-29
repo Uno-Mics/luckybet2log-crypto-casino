@@ -14,6 +14,19 @@ const QuestSystem = () => {
   const { dailyQuests, canClaimRewards, hasClaimedToday, loading, claimRewards, fixQuestProgress } = useQuests();
   const { trackActivity } = useActivityTracker();
 
+  // Add error boundary for null/undefined data
+  if (!dailyQuests) {
+    return (
+      <Card className="bg-card/50 backdrop-blur-sm border-purple-500/30">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center h-32">
+            <p className="text-muted-foreground">Loading quests...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const getDifficultyColor = (tier: string) => {
     switch (tier) {
       case 'easy': return 'bg-green-500/20 text-green-400 border-green-500/30';
@@ -104,7 +117,10 @@ const QuestSystem = () => {
         {/* Individual Quests */}
         <div className="space-y-4">
           {dailyQuests.map((quest) => {
-            const progressPercentage = Math.min((quest.progress / quest.quest_definition.target_value) * 100, 100);
+            // Safe progress calculation with null checks
+            const progress = quest?.progress ?? 0;
+            const targetValue = quest?.quest_definition?.target_value ?? 1;
+            const progressPercentage = Math.min((progress / targetValue) * 100, 100);
 
             return (
               <div 
@@ -142,7 +158,7 @@ const QuestSystem = () => {
                       <div className="flex justify-between text-xs">
                         <span>Progress</span>
                         <span>
-                          {quest.progress.toFixed(quest.quest_definition.target_value >= 100 ? 0 : 2)} / {quest.quest_definition.target_value}
+                          {(progress || 0).toFixed((targetValue >= 100) ? 0 : 2)} / {targetValue}
                         </span>
                       </div>
                       <Progress value={progressPercentage} className="h-2" />

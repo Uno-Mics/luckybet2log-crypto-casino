@@ -37,10 +37,35 @@ export const useProfile = () => {
         .eq("user_id", user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // If user profile not found, sign out the user
+        if (error.code === 'PGRST116') {
+          console.log('User profile not found, signing out...');
+          // Clear local state first
+          try {
+            // Clear all local storage immediately
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Sign out from Supabase
+            await supabase.auth.signOut();
+            
+            // Force redirect to auth page
+            window.location.href = '/auth';
+          } catch (signOutError) {
+            console.error('Error during sign out:', signOutError);
+            // Force redirect anyway
+            window.location.href = '/auth';
+          }
+          return null;
+        }
+        console.error('Profile fetch error:', error);
+        throw error;
+      }
       return data as Profile;
     },
     enabled: !!user,
+    retry: false, // Don't retry on profile fetch failure
   });
 
   const updateBalance = useMutation({

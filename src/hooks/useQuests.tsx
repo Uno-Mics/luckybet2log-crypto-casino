@@ -31,7 +31,11 @@ export const useQuests = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchDailyQuests = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setDailyQuests([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -100,6 +104,10 @@ export const useQuests = () => {
       setHasClaimedToday(!!claimed);
     } catch (error) {
       console.error('Error fetching daily quests:', error);
+      // Set safe defaults on error
+      setDailyQuests([]);
+      setCanClaimRewards(false);
+      setHasClaimedToday(false);
     } finally {
       setLoading(false);
     }

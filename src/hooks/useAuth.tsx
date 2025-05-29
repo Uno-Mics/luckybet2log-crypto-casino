@@ -22,7 +22,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        
+        if (event === 'SIGNED_OUT' || !session) {
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        
+        if (event === 'SIGNED_IN' && session) {
+          setSession(session);
+          setUser(session.user);
+          setLoading(false);
+          return;
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -72,14 +88,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         localStorage.clear();
         sessionStorage.clear();
+        // Also clear any Supabase specific storage
+        Object.keys(localStorage).forEach(key => {
+          if (key.includes('supabase')) {
+            localStorage.removeItem(key);
+          }
+        });
+        // Clear React Query cache
+        if (window.location.pathname !== '/auth') {
+          setTimeout(() => {
+            window.location.href = '/auth';
+          }, 100);
+        }
       } catch (storageError) {
         console.warn('Could not clear storage:', storageError);
       }
-      
-      // Force reload to clear any cached state
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
       
       return { error };
     } catch (err) {
@@ -89,9 +112,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setUser(null);
       
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+      if (window.location.pathname !== '/auth') {
+        setTimeout(() => {
+          window.location.href = '/auth';
+        }, 100);
+      }
       
       return { error: err as AuthError };
     }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Bomb, Gem, DollarSign } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
