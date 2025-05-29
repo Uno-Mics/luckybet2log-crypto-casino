@@ -11,7 +11,7 @@ import { Trophy, Target, Clock, CheckCircle, Gift } from "lucide-react";
 
 
 const QuestSystem = () => {
-  const { dailyQuests, canClaimRewards, hasClaimedToday, loading, claimRewards } = useQuests();
+  const { dailyQuests, canClaimRewards, hasClaimedToday, loading, claimRewards, fixQuestProgress } = useQuests();
   const { trackActivity } = useActivityTracker();
 
   const getDifficultyColor = (tier: string) => {
@@ -64,15 +64,25 @@ const QuestSystem = () => {
             Daily Quests & Tasks
           </span>
         </CardTitle>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            Resets daily at midnight
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              Resets daily at midnight
+            </div>
+            <div className="flex items-center gap-1">
+              <Trophy className="w-4 h-4" />
+              {completedQuests}/{totalQuests} completed
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Trophy className="w-4 h-4" />
-            {completedQuests}/{totalQuests} completed
-          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fixQuestProgress}
+            className="text-xs"
+          >
+            Refresh Progress
+          </Button>
         </div>
       </CardHeader>
 

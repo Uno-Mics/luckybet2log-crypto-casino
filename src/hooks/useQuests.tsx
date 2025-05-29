@@ -173,12 +173,38 @@ export const useQuests = () => {
     };
   }, [user, fetchDailyQuests]);
 
+  const fixQuestProgress = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase.rpc('fix_quest_progress_for_user', {
+        p_user_id: user.id
+      });
+
+      if (error) {
+        console.error('Error fixing quest progress:', error);
+        return;
+      }
+
+      // Refresh quests after fixing
+      await fetchDailyQuests();
+      
+      toast({
+        title: "Quest Progress Updated",
+        description: "Your quest progress has been recalculated based on your activities.",
+      });
+    } catch (error) {
+      console.error('Error fixing quest progress:', error);
+    }
+  }, [user, fetchDailyQuests, toast]);
+
   return {
     dailyQuests,
     canClaimRewards: canClaimRewards && !hasClaimedToday,
     hasClaimedToday,
     loading,
     claimRewards,
-    refetch: fetchDailyQuests
+    refetch: fetchDailyQuests,
+    fixQuestProgress
   };
 };

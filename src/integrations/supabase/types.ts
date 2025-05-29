@@ -522,6 +522,35 @@ export type Database = {
         }
         Returns: undefined
       }
+      handle_deposit_approval: {
+        Args: {
+          p_user_id: string
+          p_amount: number
+          p_status?: string
+        }
+        Returns: undefined
+      }
+      handle_game_win: {
+        Args: {
+          p_user_id: string
+          p_win_amount: number
+          p_game_type: string
+        }
+        Returns: undefined
+      }
+      handle_game_play: {
+        Args: {
+          p_user_id: string
+          p_game_type: string
+        }
+        Returns: undefined
+      }
+      fix_quest_progress_for_user: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       claim_quest_rewards: {
         Args: {
           p_user_id: string
