@@ -199,9 +199,10 @@ const Blackjack = () => {
       }
       setGameStarted(false);
     } else {
-      trackBet('blackjack', betAmount);
+      const betAmountNumber = parseFloat(currentBet);
+      trackBet(betAmountNumber, 'blackjack');
       trackGamePlay('blackjack');
-      trackActivityBet('blackjack', betAmount, sessionId);
+      trackActivityBet('blackjack', betAmountNumber, sessionId);
       trackActivityGamePlay('blackjack', sessionId);
     }
   };
