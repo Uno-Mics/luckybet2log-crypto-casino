@@ -32,7 +32,7 @@ export const useQuestTracker = () => {
         return;
       }
 
-      // Update quest progress
+      // Update quest progress using the existing function
       const { error: questError } = await supabase.rpc('update_quest_progress', {
         p_user_id: user.id,
         p_activity_type: activityType,

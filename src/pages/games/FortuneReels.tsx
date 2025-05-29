@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
+import { useQuestTracker } from "@/hooks/useQuestTracker";
 import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const FortuneReels = () => {
   const [balance, setBalance] = useState(0);
   const { toast } = useToast();
   const { isBanned } = useBannedCheck();
+  const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
 
   useEffect(() => {
     if (profile) {
@@ -63,6 +65,12 @@ const FortuneReels = () => {
         coinsChange: -betAmount
       });
       setBalance(prev => prev - betAmount);
+      
+      // Track bet for quest progress
+      await trackBet(betAmount, 'fortune-reels');
+      
+      // Track game play for quest progress
+      await trackGamePlay('fortune-reels');
     } catch (error) {
       toast({
         title: "Error",
@@ -140,7 +148,10 @@ const FortuneReels = () => {
           
           updateBalance.mutateAsync({
             itlogChange: reward
-          }).then(() => {
+          }).then(async () => {
+            // Track the win for quest progress (convert ITLOG to coin equivalent for tracking)
+            await trackGameWin(reward * 0.01, 'fortune-reels'); // Assuming 1 ITLOG = 0.01 coins equivalent
+            
             toast({
               title: "🎉 $ITLOG JACKPOT! 🎉",
               description: `Three $ITLOG symbols! You won ${reward.toLocaleString()} $ITLOG tokens!`,
@@ -158,8 +169,12 @@ const FortuneReels = () => {
           
           updateBalance.mutateAsync({
             coinsChange: winnings
-          }).then(() => {
+          }).then(async () => {
             setBalance(prev => prev + winnings);
+            
+            // Track the win for quest progress
+            await trackGameWin(winnings, 'fortune-reels');
+            
             toast({
               title: "Winner!",
               description: `You won ${winnings.toFixed(2)} coins with ${payTable[key]}x multiplier!`

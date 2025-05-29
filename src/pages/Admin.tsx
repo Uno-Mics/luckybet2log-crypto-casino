@@ -74,7 +74,7 @@ const Admin = () => {
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as Profile[];
     },
@@ -88,7 +88,7 @@ const Admin = () => {
         .from('appeals')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data as Appeal[];
     },
@@ -104,7 +104,7 @@ const Admin = () => {
         .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
-      
+
       if (withdrawalsError) throw withdrawalsError;
       if (!withdrawalsData || withdrawalsData.length === 0) return [];
 
@@ -116,7 +116,7 @@ const Admin = () => {
         .from('profiles')
         .select('user_id, username')
         .in('user_id', userIds);
-      
+
       if (profilesError) throw profilesError;
 
       // Create a map of user_id to username for quick lookup
@@ -145,7 +145,7 @@ const Admin = () => {
         .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
-      
+
       if (depositsError) throw depositsError;
       if (!depositsData || depositsData.length === 0) return [];
 
@@ -157,7 +157,7 @@ const Admin = () => {
         .from('profiles')
         .select('user_id, username')
         .in('user_id', userIds);
-      
+
       if (profilesError) throw profilesError;
 
       // Create a map of user_id to username for quick lookup
@@ -198,11 +198,26 @@ const Admin = () => {
           .single();
 
         if (deposit) {
-          // Update user balance
-          await supabase.rpc('update_user_balance', {
+          // Update user's PHP balance
+          const { error: balanceError } = await supabase.rpc('update_user_balance', {
             p_user_id: deposit.user_id,
             p_php_change: deposit.amount,
           });
+
+          if (balanceError) throw balanceError;
+
+          // Track quest progress for deposit
+          const { error: questError } = await supabase.rpc('update_quest_progress', {
+            p_user_id: deposit.user_id,
+            p_activity_type: 'deposit',
+            p_activity_value: deposit.amount,
+            p_game_type: null,
+            p_metadata: { status: 'approved' }
+          });
+
+          if (questError) {
+            console.error('Error tracking deposit quest:', questError);
+          }
         }
       }
     },
@@ -476,7 +491,7 @@ const Admin = () => {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="bg-muted/50 p-3 rounded">
                           <p className="text-sm font-medium mb-1">Bank Details:</p>
                           <p className="text-sm text-muted-foreground">Bank: {withdrawal.bank_name}</p>
@@ -558,7 +573,7 @@ const Admin = () => {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div>
                           <p className="text-sm font-medium mb-1">Appeal Message:</p>
                           <p className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
@@ -623,7 +638,7 @@ const Admin = () => {
                     <p className="text-3xl font-bold text-green-400">{users?.length || 0}</p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
                   <CardContent className="p-6 text-center">
                     <CreditCard className="w-8 h-8 mx-auto mb-2 text-blue-400" />

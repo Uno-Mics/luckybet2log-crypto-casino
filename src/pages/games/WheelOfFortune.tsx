@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useQuestTracker } from "@/hooks/useQuestTracker";
 
 const WheelOfFortune = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -19,6 +20,7 @@ const WheelOfFortune = () => {
   const [rotation, setRotation] = useState(0);
   const [gameEnded, setGameEnded] = useState(false);
   const { toast } = useToast();
+  const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
 
   useEffect(() => {
     if (profile) {
@@ -76,6 +78,10 @@ const WheelOfFortune = () => {
         coinsChange: -betAmount
       });
       setBalance(prev => prev - betAmount);
+      
+      // Track bet and game play for quest progress
+      await trackBet(betAmount, 'wheel-of-fortune');
+      await trackGamePlay('wheel-of-fortune');
     } catch (error) {
       toast({
         title: "Error",
@@ -141,10 +147,20 @@ const WheelOfFortune = () => {
         try {
           await updateBalance.mutateAsync({
             itlogChange: itlogReward
-          });
-          toast({
-            title: "🎉 $ITLOG TOKEN WON! 🎉",
-            description: `You hit the exclusive $ITLOG token and won ${itlogReward.toLocaleString()} $ITLOG tokens!`,
+          }).then(async () => {
+            // Track the win for quest progress (convert ITLOG to coin equivalent for tracking)
+            await trackGameWin(itlogReward * 0.01, 'wheel-of-fortune'); // Assuming 1 ITLOG = 0.01 coins equivalent
+
+            toast({
+              title: "🎉 $ITLOG TOKEN WON! 🎉",
+              description: `You hit the exclusive $ITLOG token and won ${itlogReward.toLocaleString()} $ITLOG tokens!`,
+            });
+          }).catch(() => {
+            toast({
+              title: "Error updating $ITLOG balance",
+              description: "Please contact support.",
+              variant: "destructive"
+            });
           });
         } catch (error) {
           toast({
@@ -160,6 +176,10 @@ const WheelOfFortune = () => {
             coinsChange: winnings
           });
           setBalance(prev => prev + winnings);
+          
+          // Track the win for quest progress
+          await trackGameWin(winnings, 'wheel-of-fortune');
+          
           toast({
             title: "Congratulations!",
             description: `You won ${winnings.toFixed(2)} coins with ${actualResult.multiplier}x multiplier!`

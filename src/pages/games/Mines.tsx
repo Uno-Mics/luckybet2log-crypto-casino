@@ -9,6 +9,7 @@ import { Bomb, Gem, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
+import { useQuestTracker } from "@/hooks/useQuestTracker";
 import BannedOverlay from "@/components/BannedOverlay";
 
 type TileState = "hidden" | "safe" | "mine" | "itlog";
@@ -31,6 +32,7 @@ const Mines = () => {
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
   const { isBanned } = useBannedCheck();
+  const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
@@ -102,6 +104,12 @@ const Mines = () => {
         coinsChange: -parseFloat(currentBet)
       });
 
+      // Track bet for quest progress
+      await trackBet(parseFloat(currentBet), 'mines');
+      
+      // Track game play for quest progress
+      await trackGamePlay('mines');
+
       // Generate new random game state
       const newGameState = generateRandomGameState(parseInt(minesCount));
       setGameState(newGameState);
@@ -160,6 +168,9 @@ const Mines = () => {
       // Add ITLOG tokens to user's balance
       updateBalance.mutateAsync({
         itlogChange: reward
+      }).then(async () => {
+        // Track the win for quest progress (convert ITLOG to coin equivalent for tracking)
+        await trackGameWin(reward * 0.01, 'mines'); // Assuming 1 ITLOG = 0.01 coins equivalent
       });
 
       // Reveal all tiles
@@ -199,6 +210,9 @@ const Mines = () => {
       await updateBalance.mutateAsync({
         coinsChange: winnings
       });
+
+      // Track the win for quest progress
+      await trackGameWin(winnings, 'mines');
 
       // Reset game state to allow new settings
       setGameStarted(false);

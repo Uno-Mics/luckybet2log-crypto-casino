@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
+import { useQuestTracker } from "@/hooks/useQuestTracker";
 import BannedOverlay from "@/components/BannedOverlay";
 
 const DiceRoll = () => {
@@ -25,6 +26,7 @@ const DiceRoll = () => {
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
   const { isBanned } = useBannedCheck();
+  const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
 
   useEffect(() => {
     if (profile) {
@@ -66,6 +68,12 @@ const DiceRoll = () => {
         coinsChange: -betAmount
       });
       setBalance(prev => prev - betAmount);
+      
+      // Track bet for quest progress
+      await trackBet(betAmount, 'dice-roll');
+      
+      // Track game play for quest progress
+      await trackGamePlay('dice-roll');
     } catch (error) {
       toast({
         title: "Error",
@@ -119,7 +127,10 @@ const DiceRoll = () => {
           
           updateBalance.mutateAsync({
             itlogChange: reward
-          }).then(() => {
+          }).then(async () => {
+            // Track the win for quest progress (convert ITLOG to coin equivalent for tracking)
+            await trackGameWin(reward * 0.01, 'dice-roll'); // Assuming 1 ITLOG = 0.01 coins equivalent
+            
             toast({
               title: "🎉 $ITLOG TOKEN WON! 🎉",
               description: `You rolled ${finalRoll} and won ${reward.toLocaleString()} $ITLOG tokens!`,
@@ -146,8 +157,12 @@ const DiceRoll = () => {
           const winnings = betAmount * multiplier;
           updateBalance.mutateAsync({
             coinsChange: winnings
-          }).then(() => {
+          }).then(async () => {
             setBalance(prev => prev + winnings);
+            
+            // Track the win for quest progress
+            await trackGameWin(winnings, 'dice-roll');
+            
             toast({
               title: "Winner!",
               description: `You rolled ${finalRoll} and won ${winnings.toFixed(2)} coins!`
