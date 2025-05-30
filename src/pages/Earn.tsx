@@ -11,6 +11,11 @@ import { TrendingUp, Play, Pause, Coins, Clock, Trophy, Gift } from "lucide-reac
 import { useFarmingSessions } from "@/hooks/useFarmingSessions";
 import { useActivityTracker } from "@/hooks/useActivityTracker";
 import QuestSystem from "@/components/QuestSystem";
+import EggShop from "@/components/EggShop";
+import Incubator from "@/components/Incubator";
+import PetGarden from "@/components/PetGarden";
+import { usePetSystem } from "@/hooks/usePetSystem";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Earn = () => {
   const [stakingAmount, setStakingAmount] = useState("");
@@ -121,6 +126,18 @@ const Earn = () => {
           <div className="mb-8">
             <QuestSystem />
           </div>
+
+          {/* Pet System */}
+          <div className="mb-8">
+            <Tabs defaultValue="farming" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="farming">Farming & Staking</TabsTrigger>
+                <TabsTrigger value="shop">Egg Shop</TabsTrigger>
+                <TabsTrigger value="incubator">Incubator</TabsTrigger>
+                <TabsTrigger value="garden">Pet Garden</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="farming" className="space-y-8">
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Token Farming */}
@@ -266,7 +283,7 @@ const Earn = () => {
             </Card>
           </div>
 
-          {/* Token Earning History */}
+                {/* Token Earning History */}
           <Card className="bg-card/50 backdrop-blur-sm border-primary/20 mt-8">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -318,7 +335,7 @@ const Earn = () => {
             </CardContent>
           </Card>
 
-          {/* Info Section */}
+                {/* Info Section */}
           <Card className="bg-card/50 backdrop-blur-sm border-primary/20 mt-8">
             <CardHeader>
               <CardTitle>How It Works</CardTitle>
@@ -338,8 +355,23 @@ const Earn = () => {
                   Your staked amount will be returned when you claim your rewards.
                 </p>
               </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+              </TabsContent>
+
+              <TabsContent value="shop">
+                <EggShop />
+              </TabsContent>
+
+              <TabsContent value="incubator">
+                <Incubator />
+              </TabsContent>
+
+              <TabsContent value="garden">
+                <PetGarden />
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
     </Layout>

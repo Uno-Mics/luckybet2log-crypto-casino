@@ -492,6 +492,129 @@ export type Database = {
         }
         Relationships: []
       }
+      egg_types: {
+        Row: {
+          id: number
+          name: string
+          rarity: string
+          price: number
+          hatch_time: number
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          rarity: string
+          price: number
+          hatch_time?: number
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          rarity?: string
+          price?: number
+          hatch_time?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      pet_types: {
+        Row: {
+          id: number
+          name: string
+          egg_type_id: number
+          rarity: string
+          sprite_emoji: string
+          trait_type: string
+          trait_value: number
+          drop_rate: number
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          egg_type_id: number
+          rarity: string
+          sprite_emoji?: string
+          trait_type: string
+          trait_value?: number
+          drop_rate?: number
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          egg_type_id?: number
+          rarity?: string
+          sprite_emoji?: string
+          trait_type?: string
+          trait_value?: number
+          drop_rate?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_eggs: {
+        Row: {
+          id: string
+          user_id: string
+          egg_type_id: number
+          status: string
+          incubation_start: string | null
+          hatch_time: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          egg_type_id: number
+          status?: string
+          incubation_start?: string | null
+          hatch_time?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          egg_type_id?: number
+          status?: string
+          incubation_start?: string | null
+          hatch_time?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_pets: {
+        Row: {
+          id: string
+          user_id: string
+          pet_type_id: number
+          name: string | null
+          is_active: boolean
+          garden_position: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          pet_type_id: number
+          name?: string | null
+          is_active?: boolean
+          garden_position?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          pet_type_id?: number
+          name?: string | null
+          is_active?: boolean
+          garden_position?: number | null
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -562,6 +685,51 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      purchase_egg: {
+        Args: {
+          p_user_id: string
+          p_egg_type_id: number
+        }
+        Returns: Json
+      }
+      start_incubation: {
+        Args: {
+          p_user_id: string
+          p_egg_id: string
+        }
+        Returns: Json
+      }
+      hatch_egg: {
+        Args: {
+          p_user_id: string
+          p_egg_id: string
+        }
+        Returns: Json
+      }
+      place_pet_in_garden: {
+        Args: {
+          p_user_id: string
+          p_pet_id: string
+          p_position: number
+        }
+        Returns: Json
+      }
+      remove_pet_from_garden: {
+        Args: {
+          p_user_id: string
+          p_pet_id: string
+        }
+        Returns: Json
+      }
+      get_user_pet_boosts: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: {
+          trait_type: string
+          total_boost: number
+        }[]
       }
     }
     Enums: {

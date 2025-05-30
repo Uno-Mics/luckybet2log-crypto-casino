@@ -4,6 +4,7 @@ import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
 import { useProfile } from "./useProfile";
 import { Tables } from "@/integrations/supabase/types";
+import { usePetSystem } from "./usePetSystem";
 
 type FarmingSession = Tables<"farming_sessions">;
 type EarningHistory = Tables<"earning_history">;
@@ -12,6 +13,7 @@ export const useFarmingSessions = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
+  const { activePetBoosts } = usePetSystem();
   const [farmingSession, setFarmingSession] = useState<FarmingSession | null>(
     null,
   );
@@ -163,7 +165,18 @@ export const useFarmingSessions = () => {
     if (!farmingSession || farmingProgress < 100 || !user) return;
 
     try {
-      const tokensEarned = 0.02;
+      let tokensEarned = 0.02;
+      
+      // Apply pet boosts
+      const farmingBoost = activePetBoosts.find(boost => boost.trait_type === 'farming_boost');
+      const tokenMultiplier = activePetBoosts.find(boost => boost.trait_type === 'token_multiplier');
+      
+      if (farmingBoost) {
+        tokensEarned *= farmingBoost.total_boost;
+      }
+      if (tokenMultiplier) {
+        tokensEarned *= tokenMultiplier.total_boost;
+      }
 
       // Update user's itlog balance using the database function
       const { error: updateError } = await supabase.rpc("update_user_balance", {
@@ -326,7 +339,18 @@ export const useFarmingSessions = () => {
 
     try {
       const stakeAmount = stakingSession.stake_amount || 0;
-      const tokensEarned = stakeAmount * 0.000005; // 0.000005 of staked amount as ITLOG tokens
+      let tokensEarned = stakeAmount * 0.000005; // 0.000005 of staked amount as ITLOG tokens
+      
+      // Apply pet boosts
+      const stakingBoost = activePetBoosts.find(boost => boost.trait_type === 'staking_boost');
+      const tokenMultiplier = activePetBoosts.find(boost => boost.trait_type === 'token_multiplier');
+      
+      if (stakingBoost) {
+        tokensEarned *= stakingBoost.total_boost;
+      }
+      if (tokenMultiplier) {
+        tokensEarned *= tokenMultiplier.total_boost;
+      }
 
       // Update user's itlog tokens (but don't return stake since we continue staking)
       const { error: updateError } = await supabase.rpc("update_user_balance", {
