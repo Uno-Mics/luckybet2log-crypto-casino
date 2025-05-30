@@ -1,0 +1,79 @@
+
+DECLARE
+    result JSON;
+    withdrawal_count INTEGER;
+    deposit_count INTEGER;
+    profile_count INTEGER;
+    activity_count INTEGER;
+    farming_count INTEGER;
+BEGIN
+    -- Check if user exists
+    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = target_user_id) THEN
+        RETURN json_build_object(
+            'success', false,
+            'error', 'User not found'
+        );
+    END IF;
+
+    -- Count records to be deleted
+    SELECT COUNT(*) INTO withdrawal_count FROM withdrawals WHERE user_id = target_user_id;
+    SELECT COUNT(*) INTO deposit_count FROM deposits WHERE user_id = target_user_id;
+    SELECT COUNT(*) INTO profile_count FROM profiles WHERE user_id = target_user_id;
+    SELECT COUNT(*) INTO activity_count FROM user_activity WHERE user_id = target_user_id;
+    SELECT COUNT(*) INTO farming_count FROM farming_sessions WHERE user_id = target_user_id;
+
+    -- Start transaction
+    BEGIN
+        -- Delete all related records in order (respecting foreign key constraints)
+        
+        -- Delete user activity records
+        DELETE FROM user_activity WHERE user_id = target_user_id;
+        
+        -- Delete farming sessions
+        DELETE FROM farming_sessions WHERE user_id = target_user_id;
+        
+        -- Delete quest progress
+        DELETE FROM quest_progress WHERE user_id = target_user_id;
+        
+        -- Delete appeals
+        DELETE FROM appeals WHERE user_id = target_user_id;
+        
+        -- Delete deposits
+        DELETE FROM deposits WHERE user_id = target_user_id;
+        
+        -- Delete withdrawals
+        DELETE FROM withdrawals WHERE user_id = target_user_id;
+        
+        -- Delete earning history
+        DELETE FROM earning_history WHERE user_id = target_user_id;
+        
+        -- Delete profile
+        DELETE FROM profiles WHERE user_id = target_user_id;
+        
+        -- Finally delete the user from auth.users
+        DELETE FROM auth.users WHERE id = target_user_id;
+        
+        -- Build success response
+        result := json_build_object(
+            'success', true,
+            'deleted_records', json_build_object(
+                'withdrawals', withdrawal_count,
+                'deposits', deposit_count,
+                'profiles', profile_count,
+                'user_activity', activity_count,
+                'farming_sessions', farming_count,
+                'user_id', target_user_id
+            )
+        );
+        
+        RETURN result;
+        
+    EXCEPTION WHEN OTHERS THEN
+        -- Rollback on error
+        RAISE;
+        RETURN json_build_object(
+            'success', false,
+            'error', SQLERRM
+        );
+    END;
+END;

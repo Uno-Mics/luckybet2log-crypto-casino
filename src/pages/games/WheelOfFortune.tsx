@@ -20,7 +20,7 @@ const WheelOfFortune = () => {
   const [rotation, setRotation] = useState(0);
   const [gameEnded, setGameEnded] = useState(false);
   const { toast } = useToast();
-  const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
+  const { trackGameWin, trackGamePlay, trackBet, trackGameLoss } = useQuestTracker();
 
   useEffect(() => {
     if (profile) {
@@ -78,7 +78,7 @@ const WheelOfFortune = () => {
         coinsChange: -betAmount
       });
       setBalance(prev => prev - betAmount);
-      
+
       // Track bet and game play for quest progress
       await trackBet(betAmount, 'wheel-of-fortune');
       await trackGamePlay('wheel-of-fortune');
@@ -176,10 +176,10 @@ const WheelOfFortune = () => {
             coinsChange: winnings
           });
           setBalance(prev => prev + winnings);
-          
+
           // Track the win for quest progress
           await trackGameWin(winnings, 'wheel-of-fortune');
-          
+
           toast({
             title: "Congratulations!",
             description: `You won ${winnings.toFixed(2)} coins with ${actualResult.multiplier}x multiplier!`
@@ -192,6 +192,9 @@ const WheelOfFortune = () => {
           });
         }
       } else {
+        // Track the loss for quest progress
+        trackGameLoss('wheel-of-fortune');
+
         toast({
           title: "Better luck next time!",
           description: `The wheel landed on ${result.toUpperCase()}. Try again!`,

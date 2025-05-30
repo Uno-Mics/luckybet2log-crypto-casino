@@ -1,0 +1,30 @@
+
+DECLARE
+    current_itlog_balance DECIMAL;
+    current_php_balance DECIMAL;
+    updated_quests INTEGER := 0;
+    quest_record RECORD;
+BEGIN
+    -- Get current balances
+    SELECT COALESCE(itlog_tokens, 0), COALESCE(php_balance, 0) 
+    INTO current_itlog_balance, current_php_balance
+    FROM profiles
+    WHERE id = p_user_id;
+    
+    -- Check and update all balance-based quests
+    PERFORM check_balance_quests(p_user_id);
+    
+    -- Count how many quests were updated
+    SELECT COUNT(*) INTO updated_quests
+    FROM daily_quests dq
+    JOIN quest_definitions qd ON dq.quest_definition_id = qd.id
+    WHERE dq.user_id = p_user_id
+    AND dq.date = CURRENT_DATE
+    AND qd.task_type IN ('itlog_balance', 'maintain_balance');
+    
+    RETURN json_build_object(
+        'itlog_balance', current_itlog_balance,
+        'php_balance', current_php_balance,
+        'quests_checked', updated_quests
+    );
+END;

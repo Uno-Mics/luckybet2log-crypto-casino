@@ -1,0 +1,45 @@
+
+DECLARE
+  assignment_record RECORD;
+  quest_record RECORD;
+BEGIN
+  -- Find matching active quest assignments for today
+  FOR assignment_record IN (
+    SELECT uqa.*, dq.title, dq.quest_type, dq.target_value, dq.target_game, dq.reward_amount
+    FROM user_daily_quest_assignments uqa
+    JOIN daily_quests dq ON uqa.quest_id = dq.id
+    WHERE uqa.user_id = p_user_id 
+      AND uqa.assigned_date = CURRENT_DATE
+      AND uqa.is_completed = false
+      AND dq.quest_type = p_quest_type
+      AND (dq.target_game IS NULL OR dq.target_game = p_game_type OR (dq.target_game = 'all_games' AND p_game_type IS NOT NULL))
+  ) LOOP
+    -- Update progress based on quest type
+    IF p_quest_type IN ('play_games', 'win_games', 'consecutive_wins') THEN
+      UPDATE user_daily_quest_assignments
+      SET current_progress = current_progress + p_increment,
+          is_completed = (current_progress + p_increment >= assignment_record.target_value),
+          completed_at = CASE WHEN (current_progress + p_increment >= assignment_record.target_value) THEN NOW() ELSE NULL END
+      WHERE id = assignment_record.id;
+      
+    ELSIF p_quest_type IN ('bet_amount', 'win_amount') AND p_amount IS NOT NULL THEN
+      UPDATE user_daily_quest_assignments
+      SET current_progress = current_progress + p_amount,
+          is_completed = (current_progress + p_amount >= assignment_record.target_value),
+          completed_at = CASE WHEN (current_progress + p_amount >= assignment_record.target_value) THEN NOW() ELSE NULL END
+      WHERE id = assignment_record.id;
+    END IF;
+    
+    -- If quest is completed, add to completions and award tokens
+    IF (assignment_record.quest_type IN ('play_games', 'win_games', 'consecutive_wins') AND (assignment_record.current_progress + p_increment) >= assignment_record.target_value) OR
+       (assignment_record.quest_type IN ('bet_amount', 'win_amount') AND p_amount IS NOT NULL AND (assignment_record.current_progress + p_amount) >= assignment_record.target_value) THEN
+      
+      -- Insert completion record
+      INSERT INTO quest_completions (user_id, quest_id, assignment_id, tokens_earned)
+      VALUES (p_user_id, assignment_record.quest_id, assignment_record.id, assignment_record.reward_amount);
+      
+      -- Award tokens to user
+      PERFORM update_user_balance(p_user_id, 0, 0, assignment_record.reward_amount);
+    END IF;
+  END LOOP;
+END;

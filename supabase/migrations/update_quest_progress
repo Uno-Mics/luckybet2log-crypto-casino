@@ -1,0 +1,14 @@
+
+BEGIN
+    UPDATE user_daily_quests 
+    SET 
+        progress = LEAST(progress + p_increment, t.target_value),
+        is_completed = (progress + p_increment) >= t.target_value,
+        updated_at = NOW()
+    FROM daily_quest_templates t
+    WHERE user_daily_quests.quest_template_id = t.id
+        AND user_daily_quests.user_id = p_user_id
+        AND t.task_type = p_task_type
+        AND user_daily_quests.assigned_date = CURRENT_DATE
+        AND user_daily_quests.is_completed = FALSE;
+END;

@@ -64,6 +64,10 @@ export const useQuestTracker = () => {
     await trackQuestProgress('win_game', winAmount, gameType);
   }, [trackQuestProgress]);
 
+  const trackGameLoss = useCallback(async (gameType: string) => {
+    await trackQuestProgress('lose_game', 1, gameType);
+  }, [trackQuestProgress]);
+
   const trackGamePlay = useCallback(async (gameType: string) => {
     await trackQuestProgress('play_game', 1, gameType);
   }, [trackQuestProgress]);
@@ -87,6 +91,7 @@ export const useQuestTracker = () => {
   return {
     trackQuestProgress,
     trackGameWin,
+    trackGameLoss,
     trackGamePlay,
     trackBet,
     trackDeposit,

@@ -21,7 +21,7 @@ const FortuneReels = () => {
   const [balance, setBalance] = useState(0);
   const { toast } = useToast();
   const { isBanned } = useBannedCheck();
-  const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
+  const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
 
   useEffect(() => {
     if (profile) {
@@ -187,6 +187,9 @@ const FortuneReels = () => {
             });
           });
         } else {
+          // Track the loss for quest progress
+          trackGameLoss('fortune-reels');
+          
           toast({
             title: "No match",
             description: "Better luck next time!",

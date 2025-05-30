@@ -32,7 +32,7 @@ const Mines = () => {
   const { toast } = useToast();
   const { profile, updateBalance } = useProfile();
   const { isBanned } = useBannedCheck();
-  const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
+  const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
@@ -142,6 +142,9 @@ const Mines = () => {
     newBoard[index] = actualTileState;
 
     if (actualTileState === "mine") {
+      // Track the loss for quest progress
+      trackGameLoss('mines');
+      
       // Reveal all tiles
       newBoard.forEach((tile, i) => {
         if (tile === "hidden") {

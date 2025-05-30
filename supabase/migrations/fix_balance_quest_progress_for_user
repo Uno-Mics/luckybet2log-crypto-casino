@@ -1,0 +1,65 @@
+
+DECLARE
+    quest_record RECORD;
+    user_php_balance DECIMAL;
+    user_itlog_balance DECIMAL;
+BEGIN
+    -- Get user's current balances with explicit table reference
+    SELECT COALESCE(profiles.php_balance, 0), COALESCE(profiles.itlog_tokens, 0)
+    INTO user_php_balance, user_itlog_balance
+    FROM profiles
+    WHERE profiles.id = p_user_id;
+
+    -- Update PHP balance quests
+    FOR quest_record IN (
+        SELECT dq.id, qd.task_type, qd.target_value
+        FROM daily_quests dq
+        JOIN quest_definitions qd ON dq.quest_definition_id = qd.id
+        WHERE dq.user_id = p_user_id
+        AND dq.date = CURRENT_DATE
+        AND qd.task_type IN ('php_balance', 'maintain_balance')
+    ) LOOP
+        IF user_php_balance >= quest_record.target_value THEN
+            UPDATE daily_quests
+            SET progress = quest_record.target_value, is_completed = TRUE
+            WHERE id = quest_record.id;
+
+            -- Track quest completion if not already tracked
+            INSERT INTO user_activities (user_id, activity_type, activity_value, metadata)
+            VALUES (p_user_id, 'complete_quest', 1, jsonb_build_object('quest_id', quest_record.id))
+            ON CONFLICT DO NOTHING;
+        ELSE
+            UPDATE daily_quests
+            SET progress = user_php_balance, is_completed = FALSE
+            WHERE id = quest_record.id;
+        END IF;
+    END LOOP;
+
+    -- Update ITLOG balance quests
+    FOR quest_record IN (
+        SELECT dq.id, qd.task_type, qd.target_value
+        FROM daily_quests dq
+        JOIN quest_definitions qd ON dq.quest_definition_id = qd.id
+        WHERE dq.user_id = p_user_id
+        AND dq.date = CURRENT_DATE
+        AND qd.task_type = 'itlog_balance'
+    ) LOOP
+        IF user_itlog_balance >= quest_record.target_value THEN
+            UPDATE daily_quests
+            SET progress = quest_record.target_value, is_completed = TRUE
+            WHERE id = quest_record.id;
+
+            -- Track quest completion if not already tracked
+            INSERT INTO user_activities (user_id, activity_type, activity_value, metadata)
+            VALUES (p_user_id, 'complete_quest', 1, jsonb_build_object('quest_id', quest_record.id))
+            ON CONFLICT DO NOTHING;
+        ELSE
+            UPDATE daily_quests
+            SET progress = user_itlog_balance, is_completed = FALSE
+            WHERE id = quest_record.id;
+        END IF;
+    END LOOP;
+
+    -- After updating balance quests, check for quest completion dependencies
+    PERFORM check_quest_completion_dependencies(p_user_id);
+END;
