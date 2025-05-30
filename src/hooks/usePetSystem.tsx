@@ -10,26 +10,52 @@ type PetType = Tables<"pet_types">;
 type UserEgg = Tables<"user_eggs">;
 type UserPet = Tables<"user_pets">;
 
-interface UserEggWithType extends UserEgg {
+// Define types for Supabase joined query responses
+type UserEggQueryResult = UserEgg & {
   egg_type: EggType;
-}
+};
 
-interface UserPetWithType extends UserPet {
+type UserPetQueryResult = UserPet & {
   pet_type: PetType;
-}
+};
 
 interface PetBoost {
   trait_type: string;
   total_boost: number;
 }
 
+// RPC Response types - these need to match the actual database function returns
+type PurchaseEggResponse = {
+  success: boolean;
+  error?: string;
+  tokens_spent?: number;
+} | boolean;
+
+type StartIncubationResponse = {
+  success: boolean;
+  error?: string;
+} | boolean;
+
+type HatchEggResponse = {
+  success: boolean;
+  error?: string;
+  rarity?: string;
+  pet_name?: string;
+  pet_emoji?: string;
+} | boolean;
+
+type PlacePetResponse = {
+  success: boolean;
+  error?: string;
+} | boolean;
+
 export const usePetSystem = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   
   const [eggTypes, setEggTypes] = useState<EggType[]>([]);
-  const [userEggs, setUserEggs] = useState<UserEggWithType[]>([]);
-  const [userPets, setUserPets] = useState<UserPetWithType[]>([]);
+  const [userEggs, setUserEggs] = useState<UserEggQueryResult[]>([]);
+  const [userPets, setUserPets] = useState<UserPetQueryResult[]>([]);
   const [activePetBoosts, setActivePetBoosts] = useState<PetBoost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -63,7 +89,7 @@ export const usePetSystem = () => {
         .order("created_at", { ascending: false });
       
       if (error) throw error;
-      setUserEggs(data || []);
+      setUserEggs((data || []) as unknown as UserEggQueryResult[]);
     } catch (error) {
       console.error("Error loading user eggs:", error);
     }
@@ -84,7 +110,7 @@ export const usePetSystem = () => {
         .order("created_at", { ascending: false });
       
       if (error) throw error;
-      setUserPets(data || []);
+      setUserPets((data || []) as unknown as UserPetQueryResult[]);
     } catch (error) {
       console.error("Error loading user pets:", error);
     }
@@ -130,18 +156,36 @@ export const usePetSystem = () => {
 
       if (error) throw error;
 
-      if (data.success) {
-        toast({
-          title: "Egg purchased!",
-          description: `You spent ${data.tokens_spent} $ITLOG tokens.`
-        });
-        loadUserEggs();
-      } else {
-        toast({
-          title: "Purchase failed",
-          description: data.error,
-          variant: "destructive"
-        });
+      // Handle both boolean and object responses
+      if (typeof data === 'boolean') {
+        if (data) {
+          toast({
+            title: "Egg purchased!",
+            description: "You successfully purchased an egg!"
+          });
+          loadUserEggs();
+        } else {
+          toast({
+            title: "Purchase failed",
+            description: "Not enough tokens or other error occurred",
+            variant: "destructive"
+          });
+        }
+      } else if (data && typeof data === 'object') {
+        const response = data as { success: boolean; error?: string; tokens_spent?: number };
+        if (response.success) {
+          toast({
+            title: "Egg purchased!",
+            description: `You spent ${response.tokens_spent || 0} $ITLOG tokens.`
+          });
+          loadUserEggs();
+        } else {
+          toast({
+            title: "Purchase failed",
+            description: response.error || "Unknown error occurred",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       console.error("Error purchasing egg:", error);
@@ -165,18 +209,36 @@ export const usePetSystem = () => {
 
       if (error) throw error;
 
-      if (data.success) {
-        toast({
-          title: "Incubation started!",
-          description: "Your egg is now incubating."
-        });
-        loadUserEggs();
-      } else {
-        toast({
-          title: "Incubation failed",
-          description: data.error,
-          variant: "destructive"
-        });
+      // Handle both boolean and object responses
+      if (typeof data === 'boolean') {
+        if (data) {
+          toast({
+            title: "Incubation started!",
+            description: "Your egg is now incubating."
+          });
+          loadUserEggs();
+        } else {
+          toast({
+            title: "Incubation failed",
+            description: "Unable to start incubation",
+            variant: "destructive"
+          });
+        }
+      } else if (data && typeof data === 'object') {
+        const response = data as { success: boolean; error?: string };
+        if (response.success) {
+          toast({
+            title: "Incubation started!",
+            description: "Your egg is now incubating."
+          });
+          loadUserEggs();
+        } else {
+          toast({
+            title: "Incubation failed",
+            description: response.error || "Unknown error occurred",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       console.error("Error starting incubation:", error);
@@ -200,19 +262,38 @@ export const usePetSystem = () => {
 
       if (error) throw error;
 
-      if (data.success) {
-        toast({
-          title: "🎉 Egg Hatched!",
-          description: `You got a ${data.rarity} ${data.pet_name} ${data.pet_emoji}!`
-        });
-        loadUserEggs();
-        loadUserPets();
-      } else {
-        toast({
-          title: "Hatching failed",
-          description: data.error,
-          variant: "destructive"
-        });
+      // Handle both boolean and object responses
+      if (typeof data === 'boolean') {
+        if (data) {
+          toast({
+            title: "🎉 Egg Hatched!",
+            description: "Congratulations! You got a new pet!"
+          });
+          loadUserEggs();
+          loadUserPets();
+        } else {
+          toast({
+            title: "Hatching failed",
+            description: "Unable to hatch egg",
+            variant: "destructive"
+          });
+        }
+      } else if (data && typeof data === 'object') {
+        const response = data as { success: boolean; error?: string; rarity?: string; pet_name?: string; pet_emoji?: string };
+        if (response.success) {
+          toast({
+            title: "🎉 Egg Hatched!",
+            description: `You got a ${response.rarity || 'new'} ${response.pet_name || 'pet'} ${response.pet_emoji || '🐾'}!`
+          });
+          loadUserEggs();
+          loadUserPets();
+        } else {
+          toast({
+            title: "Hatching failed",
+            description: response.error || "Unknown error occurred",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       console.error("Error hatching egg:", error);
@@ -237,19 +318,38 @@ export const usePetSystem = () => {
 
       if (error) throw error;
 
-      if (data.success) {
-        toast({
-          title: "Pet placed in garden!",
-          description: "Your pet is now providing its boost."
-        });
-        loadUserPets();
-        loadActivePetBoosts();
-      } else {
-        toast({
-          title: "Placement failed",
-          description: data.error,
-          variant: "destructive"
-        });
+      // Handle both boolean and object responses
+      if (typeof data === 'boolean') {
+        if (data) {
+          toast({
+            title: "Pet placed in garden!",
+            description: "Your pet is now providing its boost."
+          });
+          loadUserPets();
+          loadActivePetBoosts();
+        } else {
+          toast({
+            title: "Placement failed",
+            description: "Unable to place pet in garden",
+            variant: "destructive"
+          });
+        }
+      } else if (data && typeof data === 'object') {
+        const response = data as { success: boolean; error?: string };
+        if (response.success) {
+          toast({
+            title: "Pet placed in garden!",
+            description: "Your pet is now providing its boost."
+          });
+          loadUserPets();
+          loadActivePetBoosts();
+        } else {
+          toast({
+            title: "Placement failed",
+            description: response.error || "Unknown error occurred",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       console.error("Error placing pet:", error);
@@ -273,13 +373,38 @@ export const usePetSystem = () => {
 
       if (error) throw error;
 
-      if (data.success) {
-        toast({
-          title: "Pet removed from garden",
-          description: "Your pet is back in inventory."
-        });
-        loadUserPets();
-        loadActivePetBoosts();
+      // Handle both boolean and object responses
+      if (typeof data === 'boolean') {
+        if (data) {
+          toast({
+            title: "Pet removed from garden",
+            description: "Your pet is back in inventory."
+          });
+          loadUserPets();
+          loadActivePetBoosts();
+        } else {
+          toast({
+            title: "Removal failed",
+            description: "Unable to remove pet from garden",
+            variant: "destructive"
+          });
+        }
+      } else if (data && typeof data === 'object') {
+        const response = data as { success: boolean; error?: string };
+        if (response.success) {
+          toast({
+            title: "Pet removed from garden",
+            description: "Your pet is back in inventory."
+          });
+          loadUserPets();
+          loadActivePetBoosts();
+        } else {
+          toast({
+            title: "Removal failed",
+            description: response.error || "Unknown error occurred",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       console.error("Error removing pet:", error);

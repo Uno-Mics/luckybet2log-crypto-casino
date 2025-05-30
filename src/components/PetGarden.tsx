@@ -722,7 +722,12 @@ const pokemonPetSprites = {
 };
 
 // Pokemon-style pixel garden background component
-const PixelGarden = ({ children, onGardenClick }: { children: React.ReactNode, onGardenClick: (x: number, y: number) => void }) => {
+interface PixelGardenProps {
+  children: React.ReactNode;
+  onGardenClick: (x: number, y: number) => void;
+}
+
+const PixelGarden = ({ children, onGardenClick }: PixelGardenProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   useEffect(() => {
@@ -828,7 +833,19 @@ const PixelGarden = ({ children, onGardenClick }: { children: React.ReactNode, o
 };
 
 // Pokemon-style animated pet sprite component
-const PokemonPet = ({ pet, position, petId }: { pet: any, position: { x: number, y: number }, petId: string }) => {
+interface PetProps {
+  pet: {
+    id: string;
+    pet_type: {
+      sprite_emoji: string;
+      name: string;
+    };
+  };
+  position: { x: number; y: number };
+  petId: string;
+}
+
+const PokemonPet = ({ pet, position, petId }: PetProps) => {
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isWalking, setIsWalking] = useState(false);
   const [direction, setDirection] = useState(1);
@@ -904,7 +921,7 @@ const PokemonPet = ({ pet, position, petId }: { pet: any, position: { x: number,
       clearInterval(moveInterval);
       clearTimeout(initialTimeout);
     };
-  }, [petId]); // Only depend on petId, not the callback
+  }, [moveToNewPosition, petId]); // Include moveToNewPosition dependency
 
   // Sprite animation - faster walking frames for more realistic movement
   useEffect(() => {
@@ -960,6 +977,9 @@ export const PetGarden = () => {
   const activePets = userPets.filter(pet => pet.is_active);
   const inactivePets = userPets.filter(pet => !pet.is_active);
 
+  // Extract active pet IDs for stable dependency
+  const activePetIds = activePets.map(pet => pet.id).join(',');
+
   // Initialize pet positions only for new pets - stable effect
   useEffect(() => {
     const safePositions = [
@@ -990,7 +1010,7 @@ export const PetGarden = () => {
       
       return hasChanges ? newPositions : prev;
     });
-  }, [activePets.map(pet => pet.id).join(',')]); // Stable dependency
+  }, [activePetIds, activePets]); // Include both dependencies
 
   const handleGardenClick = useCallback((x: number, y: number) => {
     if (selectedPetForPlacement) {
