@@ -323,6 +323,33 @@ export type Database = {
         }
         Relationships: []
       }
+      deposit_notifications: {
+        Row: {
+          id: string
+          user_id: string
+          deposit_id: string
+          message: string
+          is_read: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          deposit_id: string
+          message: string
+          is_read?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          deposit_id?: string
+          message?: string
+          is_read?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
       withdrawal_notifications: {
         Row: {
           id: string

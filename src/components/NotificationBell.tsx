@@ -6,15 +6,38 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWithdrawalNotifications } from "@/hooks/useWithdrawalNotifications";
+import { useDepositNotifications } from "@/hooks/useDepositNotifications";
 import { formatDistanceToNow } from "date-fns";
 
 const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, unreadCount, markAsRead } = useWithdrawalNotifications();
+  const { 
+    notifications: withdrawalNotifications, 
+    unreadCount: withdrawalUnreadCount, 
+    markAsRead: markWithdrawalAsRead 
+  } = useWithdrawalNotifications();
+  
+  const { 
+    notifications: depositNotifications, 
+    unreadCount: depositUnreadCount, 
+    markAsRead: markDepositAsRead 
+  } = useDepositNotifications();
 
-  const handleMarkAsRead = async (notificationId: string) => {
+  // Combine both notification types and sort by date
+  const allNotifications = [
+    ...withdrawalNotifications.map(n => ({ ...n, type: 'withdrawal' })),
+    ...depositNotifications.map(n => ({ ...n, type: 'deposit' }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const totalUnreadCount = withdrawalUnreadCount + depositUnreadCount;
+
+  const handleMarkAsRead = async (notificationId: string, type: string) => {
     try {
-      await markAsRead.mutateAsync(notificationId);
+      if (type === 'withdrawal') {
+        await markWithdrawalAsRead.mutateAsync(notificationId);
+      } else {
+        await markDepositAsRead.mutateAsync(notificationId);
+      }
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -22,9 +45,15 @@ const NotificationBell = () => {
 
   const handleMarkAllAsRead = async () => {
     try {
-      const unreadNotifications = notifications.filter(n => !n.is_read);
-      for (const notification of unreadNotifications) {
-        await markAsRead.mutateAsync(notification.id);
+      const unreadWithdrawals = withdrawalNotifications.filter(n => !n.is_read);
+      const unreadDeposits = depositNotifications.filter(n => !n.is_read);
+      
+      for (const notification of unreadWithdrawals) {
+        await markWithdrawalAsRead.mutateAsync(notification.id);
+      }
+      
+      for (const notification of unreadDeposits) {
+        await markDepositAsRead.mutateAsync(notification.id);
       }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
@@ -36,12 +65,12 @@ const NotificationBell = () => {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" className="relative">
           <Bell className="w-4 h-4" />
-          {unreadCount > 0 && (
+          {totalUnreadCount > 0 && (
             <Badge 
               variant="destructive" 
               className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
             >
-              {unreadCount > 99 ? "99+" : unreadCount}
+              {totalUnreadCount > 99 ? "99+" : totalUnreadCount}
             </Badge>
           )}
         </Button>
@@ -50,7 +79,7 @@ const NotificationBell = () => {
         <div className="border-b p-4">
           <div className="flex items-center justify-between">
             <h4 className="font-semibold">Notifications</h4>
-            {unreadCount > 0 && (
+            {totalUnreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -63,16 +92,16 @@ const NotificationBell = () => {
           </div>
         </div>
         <ScrollArea className="h-80">
-          {notifications.length === 0 ? (
+          {allNotifications.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
               <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No notifications yet</p>
             </div>
           ) : (
             <div className="p-2">
-              {notifications.map((notification) => (
+              {allNotifications.map((notification) => (
                 <div
-                  key={notification.id}
+                  key={`${notification.type}-${notification.id}`}
                   className={`p-3 rounded-lg mb-2 transition-colors ${
                     notification.is_read 
                       ? "bg-muted/30" 
@@ -81,6 +110,18 @@ const NotificationBell = () => {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            notification.type === 'deposit' 
+                              ? 'bg-green-500/10 text-green-400 border-green-500/30' 
+                              : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                          }`}
+                        >
+                          {notification.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
+                        </Badge>
+                      </div>
                       <p className={`text-sm ${
                         notification.is_read ? "text-muted-foreground" : "text-foreground"
                       }`}>
@@ -94,7 +135,7 @@ const NotificationBell = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleMarkAsRead(notification.id)}
+                        onClick={() => handleMarkAsRead(notification.id, notification.type)}
                         className="h-6 w-6 p-0"
                       >
                         <Check className="w-3 h-3" />

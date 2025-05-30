@@ -189,15 +189,15 @@ const Admin = () => {
 
       if (error) throw error;
 
-      if (approve) {
-        // Get deposit details to add balance
-        const { data: deposit } = await supabase
-          .from('deposits')
-          .select('user_id, amount')
-          .eq('id', depositId)
-          .single();
+      // Get deposit details
+      const { data: deposit } = await supabase
+        .from('deposits')
+        .select('user_id, amount')
+        .eq('id', depositId)
+        .single();
 
-        if (deposit) {
+      if (deposit) {
+        if (approve) {
           // Update user's PHP balance
           const { error: balanceError } = await supabase.rpc('update_user_balance', {
             p_user_id: deposit.user_id,
@@ -219,6 +219,17 @@ const Admin = () => {
             console.error('Error tracking deposit quest:', questError);
           }
         }
+
+        // Create notification
+        await supabase
+          .from('deposit_notifications')
+          .insert({
+            user_id: deposit.user_id,
+            deposit_id: depositId,
+            message: approve 
+              ? `Your deposit of ₱${deposit.amount.toFixed(2)} has been approved and added to your account.`
+              : `Your deposit of ₱${deposit.amount.toFixed(2)} has been rejected. Please contact support for assistance.`
+          });
       }
     },
     onSuccess: () => {
