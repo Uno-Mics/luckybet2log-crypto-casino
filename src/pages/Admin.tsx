@@ -7,7 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, CreditCard, TrendingUp, MessageSquare } from "lucide-react";
+import { Shield, Users, CreditCard, TrendingUp, MessageSquare, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type DepositWithProfile = {
   id: string;
@@ -359,6 +370,58 @@ const Admin = () => {
     },
   });
 
+  // Delete user mutation
+  const deleteUser = useMutation({
+    mutationFn: async ({ userId }: { userId: string }) => {
+      try {
+        const { data, error } = await supabase.rpc('admin_delete_user', {
+          target_user_id: userId
+        });
+
+        if (error) {
+          console.error('Supabase RPC error:', error);
+          throw new Error(`Database error: ${error.message}`);
+        }
+
+        console.log('Delete user response:', data);
+        return data as { success: boolean; error?: string; error_detail?: string; message?: string; user_id?: string };
+      } catch (error) {
+        console.error('Delete user error:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log('Delete user success:', data);
+      
+      if (data?.success) {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+        queryClient.invalidateQueries({ queryKey: ['admin', 'deposits'] });
+        queryClient.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
+        queryClient.invalidateQueries({ queryKey: ['admin', 'appeals'] });
+        
+        toast({
+          title: "User deleted successfully",
+          description: `User and all associated data have been permanently deleted.`,
+        });
+      } else {
+        console.error('Delete user failed:', data);
+        toast({
+          title: "Error deleting user",
+          description: data?.error || data?.error_detail || "An error occurred while deleting the user.",
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error: Error) => {
+      console.error('Delete user mutation error:', error);
+      toast({
+        title: "Error deleting user",
+        description: error?.message || "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
@@ -415,6 +478,45 @@ const Admin = () => {
                           >
                             {user.is_banned ? 'Unban' : 'Ban'}
                           </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete User Account</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to permanently delete user "{user.username}"? 
+                                  This action will remove all user data including:
+                                  <ul className="mt-2 ml-4 list-disc">
+                                    <li>Profile and account information</li>
+                                    <li>Wallet balance and transaction history</li>
+                                    <li>Deposits and withdrawals</li>
+                                    <li>Game activity and earnings</li>
+                                    <li>Appeals and notifications</li>
+                                    <li>Pet collection and farming sessions</li>
+                                  </ul>
+                                  <br />
+                                  <strong>This action cannot be undone.</strong>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteUser.mutate({ userId: user.user_id })}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete Permanently
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     ))}
