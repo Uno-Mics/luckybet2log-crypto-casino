@@ -14,6 +14,90 @@ const rarityColors = {
   mythical: "bg-gold-500"
 };
 
+// Detailed egg sprites for different rarities
+const detailedEggSprites = {
+  common: (
+    <div className="text-4xl mb-2 relative inline-block">
+      🥚
+    </div>
+  ),
+  uncommon: (
+    <div className="text-4xl mb-2 relative inline-block filter sepia-[0.3] hue-rotate-[30deg] brightness-[0.9]">
+      🥚
+    </div>
+  ),
+  rare: (
+    <div className="text-4xl mb-2 relative inline-block filter hue-rotate-[200deg] brightness-[1.1] saturate-[1.3]">
+      🥚
+    </div>
+  ),
+  legendary: (
+    <div className="text-4xl mb-2 relative inline-block filter hue-rotate-[270deg] brightness-[1.2] saturate-[1.5]">
+      🥚
+      <div className="absolute inset-0 animate-pulse opacity-60">
+        ✨
+      </div>
+    </div>
+  ),
+  mythical: (
+    <div className="text-4xl mb-2 relative inline-block filter hue-rotate-[45deg] brightness-[1.4] saturate-[2] contrast-[1.2]">
+      🥚
+      <div className="absolute inset-0 animate-pulse text-yellow-300 opacity-80">
+        ✨
+      </div>
+    </div>
+  )
+};
+
+// Hatching animation component
+const HatchingEgg = ({ rarity, progress }: { rarity: string, progress: number }) => {
+  const isAlmostReady = progress > 80;
+  const isReady = progress >= 100;
+  
+  if (isReady) {
+    return (
+      <div className="text-4xl mb-2 relative inline-block animate-bounce">
+        <div className="animate-pulse">
+          {detailedEggSprites[rarity as keyof typeof detailedEggSprites]}
+        </div>
+        <div className="absolute inset-0 animate-ping text-yellow-400">
+          💫
+        </div>
+        <div className="absolute -top-2 -right-2 text-sm animate-bounce">
+          🎉
+        </div>
+      </div>
+    );
+  }
+  
+  if (isAlmostReady) {
+    return (
+      <div className="text-4xl mb-2 relative inline-block">
+        <div className="animate-pulse" style={{
+          animation: 'shake 0.5s ease-in-out infinite alternate'
+        }}>
+          {detailedEggSprites[rarity as keyof typeof detailedEggSprites]}
+        </div>
+        <div className="absolute inset-0 opacity-60">
+          <div className="animate-ping text-xs">
+            ⚡
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="text-4xl mb-2 relative inline-block">
+      <div style={{
+        animation: progress > 50 ? 'gentle-wobble 2s ease-in-out infinite' : 'none'
+      }}>
+        {detailedEggSprites[rarity as keyof typeof detailedEggSprites]}
+      </div>
+    </div>
+  );
+};
+
 export const Incubator = () => {
   const { userEggs, startIncubation, hatchEgg, skipEggHatching } = usePetSystem();
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -74,7 +158,7 @@ export const Incubator = () => {
                 return (
                   <Card key={egg.id} className="border-2 border-orange-500/50">
                     <CardContent className="p-4 text-center">
-                      <div className="text-4xl mb-2">🥚</div>
+                      <HatchingEgg rarity={egg.egg_type.rarity} progress={progress} />
                       <h3 className="font-bold mb-2">{egg.egg_type.name}</h3>
                       <Badge className={`mb-3 ${rarityColors[egg.egg_type.rarity as keyof typeof rarityColors]} text-white`}>
                         {egg.egg_type.rarity.toUpperCase()}
@@ -132,7 +216,7 @@ export const Incubator = () => {
               {inventoryEggs.map((egg) => (
                 <Card key={egg.id} className="border-2 border-gray-500/50">
                   <CardContent className="p-4 text-center">
-                    <div className="text-4xl mb-2">🥚</div>
+                    {detailedEggSprites[egg.egg_type.rarity as keyof typeof detailedEggSprites]}
                     <h3 className="font-bold mb-2">{egg.egg_type.name}</h3>
                     <Badge className={`mb-3 ${rarityColors[egg.egg_type.rarity as keyof typeof rarityColors]} text-white`}>
                       {egg.egg_type.rarity.toUpperCase()}

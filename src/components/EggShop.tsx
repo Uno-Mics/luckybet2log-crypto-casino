@@ -21,6 +21,62 @@ const rarityGlow = {
   mythical: "glow-gold"
 };
 
+const eggSprites = {
+  common: "🥚", // Basic white egg
+  uncommon: "🟫", // Brown-ish egg (using brown square as placeholder for brown egg)
+  rare: "🔵", // Blue tinted egg
+  legendary: "🟣", // Purple egg
+  mythical: "🟡" // Golden egg
+};
+
+// More detailed egg representations using text art
+const detailedEggSprites = {
+  common: (
+    <div className="text-4xl mb-2 relative">
+      <div className="inline-block transform hover:scale-110 transition-transform duration-200">
+        🥚
+      </div>
+    </div>
+  ),
+  uncommon: (
+    <div className="text-4xl mb-2 relative">
+      <div className="inline-block transform hover:scale-110 transition-transform duration-200 filter sepia-[0.3] hue-rotate-[30deg] brightness-[0.9]">
+        🥚
+      </div>
+    </div>
+  ),
+  rare: (
+    <div className="text-4xl mb-2 relative">
+      <div className="inline-block transform hover:scale-110 transition-transform duration-200 filter hue-rotate-[200deg] brightness-[1.1] saturate-[1.3]">
+        🥚
+      </div>
+    </div>
+  ),
+  legendary: (
+    <div className="text-4xl mb-2 relative">
+      <div className="inline-block transform hover:scale-110 transition-transform duration-200 filter hue-rotate-[270deg] brightness-[1.2] saturate-[1.5]">
+        🥚
+      </div>
+      <div className="absolute inset-0 animate-pulse">
+        ✨
+      </div>
+    </div>
+  ),
+  mythical: (
+    <div className="text-4xl mb-2 relative">
+      <div className="inline-block transform hover:scale-110 transition-transform duration-200 filter hue-rotate-[45deg] brightness-[1.4] saturate-[2] contrast-[1.2]">
+        🥚
+      </div>
+      <div className="absolute inset-0 animate-pulse text-yellow-300">
+        ✨
+      </div>
+      <div className="absolute inset-0 animate-ping opacity-20 text-yellow-400">
+        💫
+      </div>
+    </div>
+  )
+};
+
 export const EggShop = () => {
   const { eggTypes, purchaseEgg } = usePetSystem();
   const { profile } = useProfile();
@@ -39,7 +95,7 @@ export const EggShop = () => {
           {eggTypes.map((eggType) => (
             <Card key={eggType.id} className={`${rarityColors[eggType.rarity as keyof typeof rarityColors]}/10 border-2 border-${eggType.rarity}`}>
               <CardContent className="p-4 text-center">
-                <div className="text-4xl mb-2">🥚</div>
+                {detailedEggSprites[eggType.rarity as keyof typeof detailedEggSprites]}
                 <h3 className="font-bold text-lg mb-2">{eggType.name}</h3>
                 <Badge className={`mb-2 ${rarityColors[eggType.rarity as keyof typeof rarityColors]} text-white`}>
                   {eggType.rarity.toUpperCase()}
