@@ -15,7 +15,7 @@ const rarityColors = {
 };
 
 export const Incubator = () => {
-  const { userEggs, startIncubation, hatchEgg } = usePetSystem();
+  const { userEggs, startIncubation, hatchEgg, skipEggHatching } = usePetSystem();
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Update time every second for progress tracking
@@ -95,9 +95,18 @@ export const Incubator = () => {
                           Hatch Now! 🐣
                         </Button>
                       ) : (
-                        <Button disabled className="w-full">
-                          Incubating...
-                        </Button>
+                        <div className="space-y-2">
+                          <Button disabled className="w-full">
+                            Incubating...
+                          </Button>
+                          <Button
+                            onClick={() => skipEggHatching(egg.id)}
+                            variant="outline"
+                            className="w-full border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-colors"
+                          >
+                            ⏰ Skip for 50 $ITLOG
+                          </Button>
+                        </div>
                       )}
                     </CardContent>
                   </Card>

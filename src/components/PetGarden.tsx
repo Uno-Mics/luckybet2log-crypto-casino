@@ -5,6 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSpring, animated } from "@react-spring/web";
+import { Tables } from "@/integrations/supabase/types";
+
+type UserPetQueryResult = Tables<"user_pets"> & {
+  pet_type: Tables<"pet_types">;
+};
 
 const traitIcons = {
   farming_boost: "⚡",
@@ -36,7 +41,16 @@ const petIdToSpriteMap: { [key: string]: string } = {
   '14': '🌌', // Cosmic Wolf (legendary)
   '15': '✨', // Fortune Spirit (legendary)
   '16': '👑', // Royal Griffin (legendary)
-  '17': '⭐', // Eternal Phoenix (mythical)
+  '17': '🌟', // Eternal Phoenix (mythical)
+  '18': '🌑', // Void Dragon (mythical)
+  '19': '🔮', // Reality Bender (mythical)
+  '20': '🍀', // Luck Incarnate (mythical)
+  '21': '🌀', // Dimension Walker (mythical)
+  '22': '⏰', // Time Guardian (mythical)
+  '23': '💀', // Chaos Entity (mythical)
+  '24': '🌙', // Dream Weaver (mythical)
+  '25': '👻', // Soul Keeper (mythical)
+  '26': '⭐', // Star Forger (mythical)
 };
 
 const pokemonPetSprites = {
@@ -1381,7 +1395,7 @@ const pokemonPetSprites = {
     name: 'Vixen'
   },
   // Eternal Phoenix - Mythical pet with ethereal flames
-  '⭐': {
+  '🌟': {
     idle: [
       'data:image/svg+xml;base64,' + btoa(`
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2860,6 +2874,1562 @@ const pokemonPetSprites = {
       `)
     ],
     name: 'Phoenix Chick'
+  },
+    // Void Dragon - Mythical pet with dark energy effects
+  '🌑': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="8" fill="#1a1a2e"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#16213e"/>
+          <!-- Snout -->
+          <rect x="8" y="12" width="4" height="4" fill="#16213e"/>
+          <!-- Eyes (void purple) -->
+          <rect x="13" y="10" width="2" height="2" fill="#8a2be2"/>
+          <rect x="17" y="10" width="2" height="2" fill="#8a2be2"/>
+          <!-- Inner eye glow -->
+          <rect x="13" y="10" width="1" height="1" fill="#da70d6"/>
+          <rect x="17" y="10" width="1" height="1" fill="#da70d6"/>
+          <!-- Nostrils with void energy -->
+          <rect x="9" y="13" width="1" height="1" fill="#4b0082"/>
+          <rect x="10" y="13" width="1" height="1" fill="#4b0082"/>
+          <!-- Wings (void energy) -->
+          <rect x="6" y="14" width="6" height="8" fill="#0f0f23"/>
+          <rect x="20" y="14" width="6" height="8" fill="#0f0f23"/>
+          <!-- Wing membrane -->
+          <rect x="7" y="16" width="4" height="4" fill="#2e2e54"/>
+          <rect x="21" y="16" width="4" height="4" fill="#2e2e54"/>
+          <!-- Void energy wisps -->
+          <rect x="5" y="15" width="1" height="1" fill="#9370db"/>
+          <rect x="26" y="17" width="1" height="1" fill="#9370db"/>
+          <rect x="4" y="18" width="1" height="1" fill="#663399"/>
+          <rect x="27" y="19" width="1" height="1" fill="#663399"/>
+          <!-- Legs -->
+          <rect x="12" y="24" width="3" height="4" fill="#16213e"/>
+          <rect x="17" y="24" width="3" height="4" fill="#16213e"/>
+          <!-- Tail with void energy -->
+          <rect x="22" y="20" width="4" height="2" fill="#1a1a2e"/>
+          <rect x="24" y="18" width="2" height="2" fill="#1a1a2e"/>
+          <rect x="26" y="20" width="1" height="1" fill="#8a2be2"/>
+          <!-- Spikes on back (crystalline void) -->
+          <rect x="14" y="14" width="2" height="2" fill="#4b0082"/>
+          <rect x="16" y="14" width="2" height="2" fill="#4b0082"/>
+          <!-- Void aura -->
+          <rect x="8" y="12" width="1" height="1" fill="#9370db"/>
+          <rect x="23" y="15" width="1" height="1" fill="#9370db"/>
+          <rect x="6" y="19" width="1" height="1" fill="#663399"/>
+          <rect x="25" y="21" width="1" height="1" fill="#663399"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#1a1a2e"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#16213e"/>
+          <!-- Snout -->
+          <rect x="8" y="11" width="4" height="4" fill="#16213e"/>
+          <!-- Eyes (pulsing void) -->
+          <rect x="13" y="9" width="2" height="2" fill="#da70d6"/>
+          <rect x="17" y="9" width="2" height="2" fill="#da70d6"/>
+          <!-- Inner eye core -->
+          <rect x="14" y="9" width="1" height="1" fill="#ff69b4"/>
+          <rect x="18" y="9" width="1" height="1" fill="#ff69b4"/>
+          <!-- Nostrils -->
+          <rect x="9" y="12" width="1" height="1" fill="#8a2be2"/>
+          <rect x="10" y="12" width="1" height="1" fill="#8a2be2"/>
+          <!-- Wings (energy flare) -->
+          <rect x="5" y="12" width="7" height="9" fill="#0f0f23"/>
+          <rect x="20" y="12" width="7" height="9" fill="#0f0f23"/>
+          <!-- Wing membrane (brighter) -->
+          <rect x="6" y="14" width="5" height="5" fill="#4b0082"/>
+          <rect x="21" y="14" width="5" height="5" fill="#4b0082"/>
+          <!-- Enhanced void wisps -->
+          <rect x="4" y="13" width="1" height="1" fill="#da70d6"/>
+          <rect x="27" y="15" width="1" height="1" fill="#da70d6"/>
+          <rect x="3" y="16" width="1" height="1" fill="#9370db"/>
+          <rect x="28" y="18" width="1" height="1" fill="#9370db"/>
+          <rect x="2" y="19" width="1" height="1" fill="#663399"/>
+          <rect x="29" y="20" width="1" height="1" fill="#663399"/>
+          <!-- Legs -->
+          <rect x="12" y="23" width="3" height="4" fill="#16213e"/>
+          <rect x="17" y="23" width="3" height="4" fill="#16213e"/>
+          <!-- Tail -->
+          <rect x="22" y="19" width="4" height="2" fill="#1a1a2e"/>
+          <rect x="24" y="17" width="2" height="2" fill="#1a1a2e"/>
+          <rect x="26" y="19" width="1" height="1" fill="#da70d6"/>
+          <!-- Spikes -->
+          <rect x="14" y="13" width="2" height="2" fill="#8a2be2"/>
+          <rect x="16" y="13" width="2" height="2" fill="#8a2be2"/>
+          <!-- Intense void aura -->
+          <rect x="7" y="10" width="1" height="1" fill="#da70d6"/>
+          <rect x="24" y="13" width="1" height="1" fill="#da70d6"/>
+          <rect x="5" y="17" width="1" height="1" fill="#9370db"/>
+          <rect x="26" y="19" width="1" height="1" fill="#9370db"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (flying) -->
+          <rect x="11" y="14" width="12" height="8" fill="#1a1a2e"/>
+          <!-- Head -->
+          <rect x="13" y="6" width="8" height="8" fill="#16213e"/>
+          <!-- Snout -->
+          <rect x="9" y="10" width="4" height="4" fill="#16213e"/>
+          <!-- Eyes (intense void glow) -->
+          <rect x="14" y="8" width="2" height="2" fill="#ff69b4"/>
+          <rect x="18" y="8" width="2" height="2" fill="#ff69b4"/>
+          <!-- Void breath -->
+          <rect x="6" y="11" width="3" height="1" fill="#8a2be2"/>
+          <rect x="5" y="12" width="2" height="1" fill="#da70d6"/>
+          <rect x="4" y="13" width="1" height="1" fill="#ff69b4"/>
+          <!-- Wings (spread wide) -->
+          <rect x="1" y="8" width="10" height="12" fill="#0f0f23"/>
+          <rect x="21" y="8" width="10" height="12" fill="#0f0f23"/>
+          <!-- Wing details -->
+          <rect x="2" y="10" width="8" height="8" fill="#2e2e54"/>
+          <rect x="22" y="10" width="8" height="8" fill="#2e2e54"/>
+          <!-- Wing energy -->
+          <rect x="3" y="12" width="6" height="4" fill="#4b0082"/>
+          <rect x="23" y="12" width="6" height="4" fill="#4b0082"/>
+          <!-- Massive void aura -->
+          <rect x="0" y="9" width="1" height="1" fill="#da70d6"/>
+          <rect x="31" y="11" width="1" height="1" fill="#da70d6"/>
+          <rect x="1" y="14" width="1" height="1" fill="#9370db"/>
+          <rect x="30" y="16" width="1" height="1" fill="#9370db"/>
+          <rect x="0" y="17" width="1" height="1" fill="#663399"/>
+          <rect x="31" y="19" width="1" height="1" fill="#663399"/>
+          <!-- Legs (flying position) -->
+          <rect x="13" y="22" width="3" height="3" fill="#16213e"/>
+          <rect x="17" y="22" width="3" height="3" fill="#16213e"/>
+          <!-- Tail (extended) -->
+          <rect x="23" y="18" width="5" height="2" fill="#1a1a2e"/>
+          <rect x="26" y="16" width="3" height="2" fill="#1a1a2e"/>
+          <rect x="28" y="18" width="2" height="1" fill="#8a2be2"/>
+          <!-- Spikes -->
+          <rect x="15" y="12" width="2" height="2" fill="#8a2be2"/>
+          <rect x="17" y="12" width="2" height="2" fill="#8a2be2"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#1a1a2e"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#16213e"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#16213e"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#8a2be2"/>
+          <rect x="18" y="10" width="2" height="2" fill="#8a2be2"/>
+          <!-- Wings (folded) -->
+          <rect x="4" y="14" width="8" height="9" fill="#0f0f23"/>
+          <rect x="20" y="14" width="8" height="9" fill="#0f0f23"/>
+          <!-- Wing details -->
+          <rect x="5" y="16" width="6" height="5" fill="#2e2e54"/>
+          <rect x="21" y="16" width="6" height="5" fill="#2e2e54"/>
+          <!-- Void energy trails -->
+          <rect x="3" y="15" width="1" height="1" fill="#9370db"/>
+          <rect x="28" y="17" width="1" height="1" fill="#9370db"/>
+          <rect x="2" y="18" width="1" height="1" fill="#663399"/>
+          <rect x="29" y="20" width="1" height="1" fill="#663399"/>
+          <!-- Legs -->
+          <rect x="13" y="24" width="3" height="4" fill="#16213e"/>
+          <rect x="17" y="24" width="3" height="4" fill="#16213e"/>
+          <!-- Tail -->
+          <rect x="23" y="20" width="4" height="2" fill="#1a1a2e"/>
+          <rect x="25" y="18" width="2" height="2" fill="#1a1a2e"/>
+          <!-- Spikes -->
+          <rect x="15" y="14" width="2" height="2" fill="#4b0082"/>
+          <rect x="17" y="14" width="2" height="2" fill="#4b0082"/>
+        </svg>
+      `)
+    ],
+    name: 'Void Dragon'
+  },
+
+  // Reality Bender - Mythical pet with reality distortion effects
+  '🔮': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Core body (crystalline) -->
+          <rect x="12" y="16" width="8" height="8" fill="#4169e1"/>
+          <!-- Head (floating crystal) -->
+          <rect x="14" y="8" width="4" height="6" fill="#6495ed"/>
+          <!-- Crystal facets -->
+          <rect x="13" y="9" width="2" height="2" fill="#87ceeb"/>
+          <rect x="17" y="9" width="2" height="2" fill="#87ceeb"/>
+          <rect x="15" y="11" width="2" height="2" fill="#b0e0e6"/>
+          <!-- Eyes (reality rifts) -->
+          <rect x="14" y="10" width="1" height="1" fill="#ff1493"/>
+          <rect x="17" y="10" width="1" height="1" fill="#00ffff"/>
+          <!-- Reality fragments floating around -->
+          <rect x="10" y="12" width="2" height="2" fill="#ff69b4"/>
+          <rect x="20" y="14" width="2" height="2" fill="#00ff7f"/>
+          <rect x="8" y="18" width="2" height="2" fill="#ffff00"/>
+          <rect x="22" y="20" width="2" height="2" fill="#ff4500"/>
+          <!-- Arms (energy tendrils) -->
+          <rect x="8" y="16" width="4" height="2" fill="#9370db"/>
+          <rect x="20" y="18" width="4" height="2" fill="#9370db"/>
+          <!-- Geometric patterns on body -->
+          <rect x="13" y="17" width="2" height="2" fill="#00ffff"/>
+          <rect x="17" y="19" width="2" height="2" fill="#ff1493"/>
+          <rect x="15" y="21" width="2" height="2" fill="#00ff7f"/>
+          <!-- Legs (crystal shards) -->
+          <rect x="13" y="24" width="2" height="4" fill="#4169e1"/>
+          <rect x="17" y="24" width="2" height="4" fill="#4169e1"/>
+          <!-- Reality distortion effects -->
+          <rect x="6" y="10" width="1" height="1" fill="#ff1493"/>
+          <rect x="25" y="12" width="1" height="1" fill="#00ffff"/>
+          <rect x="5" y="16" width="1" height="1" fill="#ffff00"/>
+          <rect x="26" y="18" width="1" height="1" fill="#ff4500"/>
+          <rect x="7" y="22" width="1" height="1" fill="#00ff7f"/>
+          <rect x="24" y="24" width="1" height="1" fill="#9370db"/>
+          <!-- Base energy field -->
+          <rect x="11" y="28" width="10" height="1" fill="#4169e1"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Core body -->
+          <rect x="12" y="15" width="8" height="8" fill="#4169e1"/>
+          <!-- Head (phase shift) -->
+          <rect x="14" y="7" width="4" height="6" fill="#6495ed"/>
+          <!-- Crystal facets (shifted) -->
+          <rect x="13" y="8" width="2" height="2" fill="#b0e0e6"/>
+          <rect x="17" y="8" width="2" height="2" fill="#b0e0e6"/>
+          <rect x="15" y="10" width="2" height="2" fill="#87ceeb"/>
+          <!-- Eyes (color swap) -->
+          <rect x="14" y="9" width="1" height="1" fill="#00ffff"/>
+          <rect x="17" y="9" width="1" height="1" fill="#ff1493"/>
+          <!-- Reality fragments (moved) -->
+          <rect x="9" y="11" width="2" height="2" fill="#00ff7f"/>
+          <rect x="21" y="13" width="2" height="2" fill="#ff69b4"/>
+          <rect x="7" y="17" width="2" height="2" fill="#ff4500"/>
+          <rect x="23" y="19" width="2" height="2" fill="#ffff00"/>
+          <!-- Arms -->
+          <rect x="8" y="15" width="4" height="2" fill="#9370db"/>
+          <rect x="20" y="17" width="4" height="2" fill="#9370db"/>
+          <!-- Body patterns (shifted) -->
+          <rect x="13" y="16" width="2" height="2" fill="#ff1493"/>
+          <rect x="17" y="18" width="2" height="2" fill="#00ffff"/>
+          <rect x="15" y="20" width="2" height="2" fill="#ffff00"/>
+          <!-- Legs -->
+          <rect x="13" y="23" width="2" height="4" fill="#4169e1"/>
+          <rect x="17" y="23" width="2" height="4" fill="#4169e1"/>
+          <!-- Enhanced distortion -->
+          <rect x="5" y="9" width="1" height="1" fill="#00ffff"/>
+          <rect x="26" y="11" width="1" height="1" fill="#ff1493"/>
+          <rect x="4" y="15" width="1" height="1" fill="#ff4500"/>
+          <rect x="27" y="17" width="1" height="1" fill="#ffff00"/>
+          <rect x="6" y="21" width="1" height="1" fill="#9370db"/>
+          <rect x="25" y="23" width="1" height="1" fill="#00ff7f"/>
+          <!-- Pulsing energy field -->
+          <rect x="10" y="27" width="12" height="1" fill="#6495ed"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (phase shifting forward) -->
+          <rect x="13" y="16" width="8" height="8" fill="#4169e1"/>
+          <!-- Head -->
+          <rect x="15" y="8" width="4" height="6" fill="#6495ed"/>
+          <!-- Warped crystal facets -->
+          <rect x="14" y="9" width="2" height="2" fill="#87ceeb"/>
+          <rect x="18" y="9" width="2" height="2" fill="#87ceeb"/>
+          <rect x="16" y="11" width="2" height="2" fill="#b0e0e6"/>
+          <!-- Eyes (intense reality rift) -->
+          <rect x="15" y="10" width="1" height="1" fill="#ff69b4"/>
+          <rect x="18" y="10" width="1" height="1" fill="#00ff7f"/>
+          <!-- Reality storm around -->
+          <rect x="8" y="10" width="3" height="3" fill="#ff1493"/>
+          <rect x="21" y="12" width="3" height="3" fill="#00ffff"/>
+          <rect x="6" y="16" width="3" height="3" fill="#ffff00"/>
+          <rect x="23" y="18" width="3" height="3" fill="#ff4500"/>
+          <rect x="4" y="20" width="3" height="3" fill="#9370db"/>
+          <rect x="25" y="22" width="3" height="3" fill="#00ff7f"/>
+          <!-- Extended energy arms -->
+          <rect x="5" y="15" width="8" height="3" fill="#9370db"/>
+          <rect x="19" y="17" width="8" height="3" fill="#9370db"/>
+          <!-- Distorted body patterns -->
+          <rect x="14" y="17" width="2" height="2" fill="#00ff7f"/>
+          <rect x="18" y="19" width="2" height="2" fill="#ff1493"/>
+          <rect x="16" y="21" width="2" height="2" fill="#00ffff"/>
+          <!-- Legs (reality tears) -->
+          <rect x="12" y="24" width="3" height="4" fill="#4169e1"/>
+          <rect x="17" y="24" width="3" height="4" fill="#4169e1"/>
+          <!-- Reality tears in space -->
+          <rect x="2" y="8" width="1" height="1" fill="#ff1493"/>
+          <rect x="29" y="10" width="1" height="1" fill="#00ffff"/>
+          <rect x="1" y="14" width="1" height="1" fill="#ffff00"/>
+          <rect x="30" y="16" width="1" height="1" fill="#ff4500"/>
+          <rect x="3" y="20" width="1" height="1" fill="#9370db"/>
+          <rect x="28" y="22" width="1" height="1" fill="#00ff7f"/>
+          <!-- Reality wake -->
+          <rect x="8" y="28" width="16" height="1" fill="#6495ed"/>
+          <rect x="6" y="27" width="4" height="1" fill="#ff1493"/>
+          <rect x="22" y="27" width="4" height="1" fill="#00ffff"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (stabilizing) -->
+          <rect x="13" y="16" width="8" height="8" fill="#4169e1"/>
+          <!-- Head -->
+          <rect x="15" y="8" width="4" height="6" fill="#6495ed"/>
+          <!-- Crystal facets -->
+          <rect x="14" y="9" width="2" height="2" fill="#87ceeb"/>
+          <rect x="18" y="9" width="2" height="2" fill="#87ceeb"/>
+          <rect x="16" y="11" width="2" height="2" fill="#b0e0e6"/>
+          <!-- Eyes (calming) -->
+          <rect x="15" y="10" width="1" height="1" fill="#00ffff"/>
+          <rect x="18" y="10" width="1" height="1" fill="#ff1493"/>
+          <!-- Settling reality fragments -->
+          <rect x="10" y="12" width="2" height="2" fill="#ff69b4"/>
+          <rect x="20" y="14" width="2" height="2" fill="#00ff7f"/>
+          <rect x="8" y="18" width="2" height="2" fill="#ffff00"/>
+          <rect x="22" y="20" width="2" height="2" fill="#ff4500"/>
+          <!-- Arms (retracting) -->
+          <rect x="9" y="16" width="4" height="2" fill="#9370db"/>
+          <rect x="19" y="18" width="4" height="2" fill="#9370db"/>
+          <!-- Body patterns -->
+          <rect x="14" y="17" width="2" height="2" fill="#00ffff"/>
+          <rect x="18" y="19" width="2" height="2" fill="#ff1493"/>
+          <rect x="16" y="21" width="2" height="2" fill="#00ff7f"/>
+          <!-- Legs -->
+          <rect x="14" y="24" width="2" height="4" fill="#4169e1"/>
+          <rect x="16" y="24" width="2" height="4" fill="#4169e1"/>
+          <!-- Residual distortion -->
+          <rect x="6" y="10" width="1" height="1" fill="#ff1493"/>
+          <rect x="25" y="12" width="1" height="1" fill="#00ffff"/>
+          <rect x="5" y="16" width="1" height="1" fill="#ffff00"/>
+          <rect x="26" y="18" width="1" height="1" fill="#ff4500"/>
+          <!-- Energy field -->
+          <rect x="11" y="28" width="10" height="1" fill="#4169e1"/>
+        </svg>
+      `)
+    ],
+    name: 'Reality Bender'
+  },
+
+  // Luck Incarnate - Mythical pet with fortune effects
+  '🍀': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (leprechaun-like) -->
+          <rect x="10" y="16" width="12" height="8" fill="#228b22"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#98fb98"/>
+          <!-- Hat (lucky top hat) -->
+          <rect x="11" y="4" width="10" height="6" fill="#006400"/>
+          <rect x="9" y="8" width="14" height="2" fill="#006400"/>
+          <!-- Hat band with shamrock -->
+          <rect x="12" y="6" width="8" height="1" fill="#ffd700"/>
+          <rect x="15" y="5" width="2" height="2" fill="#32cd32"/>
+          <!-- Eyes (sparkling) -->
+          <rect x="13" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="17" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="13" y="10" width="1" height="1" fill="#ffd700"/>
+          <rect x="17" y="10" width="1" height="1" fill="#ffd700"/>
+          <!-- Nose -->
+          <rect x="15" y="12" width="2" height="1" fill="#ff69b4"/>
+          <!-- Mouth (lucky grin) -->
+          <rect x="14" y="13" width="4" height="1" fill="#000000"/>
+          <!-- Beard -->
+          <rect x="13" y="14" width="6" height="3" fill="#ffa500"/>
+          <!-- Arms -->
+          <rect x="8" y="18" width="3" height="4" fill="#98fb98"/>
+          <rect x="21" y="18" width="3" height="4" fill="#98fb98"/>
+          <!-- Lucky coins floating -->
+          <rect x="6" y="14" width="2" height="2" fill="#ffd700"/>
+          <rect x="24" y="16" width="2" height="2" fill="#ffd700"/>
+          <rect x="5" y="20" width="2" height="2" fill="#ffd700"/>
+          <rect x="25" y="22" width="2" height="2" fill="#ffd700"/>
+          <!-- Vest -->
+          <rect x="11" y="17" width="10" height="6" fill="#8b4513"/>
+          <!-- Vest buttons -->
+          <rect x="15" y="18" width="1" height="1" fill="#ffd700"/>
+          <rect x="15" y="20" width="1" height="1" fill="#ffd700"/>
+          <rect x="15" y="22" width="1" height="1" fill="#ffd700"/>
+          <!-- Legs -->
+          <rect x="12" y="24" width="3" height="4" fill="#228b22"/>
+          <rect x="17" y="24" width="3" height="4" fill="#228b22"/>
+          <!-- Lucky shoes -->
+          <rect x="11" y="28" width="4" height="2" fill="#000000"/>
+          <rect x="17" y="28" width="4" height="2" fill="#000000"/>
+          <!-- Four-leaf clovers floating around -->
+          <rect x="7" y="10" width="2" height="2" fill="#32cd32"/>
+          <rect x="23" y="12" width="2" height="2" fill="#32cd32"/>
+          <rect x="6" y="24" width="2" height="2" fill="#32cd32"/>
+          <rect x="24" y="26" width="2" height="2" fill="#32cd32"/>
+          <!-- Lucky sparkles -->
+          <rect x="9" y="6" width="1" height="1" fill="#ffd700"/>
+          <rect x="22" y="8" width="1" height="1" fill="#ffd700"/>
+          <rect x="8" y="25" width="1" height="1" fill="#ffd700"/>
+          <rect x="23" y="27" width="1" height="1" fill="#ffd700"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#228b22"/>
+          <!-- Head (bobbing) -->
+          <rect x="12" y="7" width="8" height="8" fill="#98fb98"/>
+          <!-- Hat -->
+          <rect x="11" y="3" width="10" height="6" fill="#006400"/>
+          <rect x="9" y="7" width="14" height="2" fill="#006400"/>
+          <!-- Hat band -->
+          <rect x="12" y="5" width="8" height="1" fill="#ffd700"/>
+          <rect x="15" y="4" width="2" height="2" fill="#32cd32"/>
+          <!-- Eyes (winking) -->
+          <rect x="13" y="9" width="2" height="1" fill="#000000"/>
+          <rect x="17" y="9" width="2" height="2" fill="#000000"/>
+          <rect x="17" y="9" width="1" height="1" fill="#ffd700"/>
+          <!-- Nose -->
+          <rect x="15" y="11" width="2" height="1" fill="#ff69b4"/>
+          <!-- Mouth -->
+          <rect x="14" y="12" width="4" height="1" fill="#000000"/>
+          <!-- Beard -->
+          <rect x="13" y="13" width="6" height="3" fill="#ffa500"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#98fb98"/>
+          <rect x="21" y="17" width="3" height="4" fill="#98fb98"/>
+          <!-- More coins (luck increasing) -->
+          <rect x="5" y="13" width="2" height="2" fill="#ffd700"/>
+          <rect x="25" y="15" width="2" height="2" fill="#ffd700"/>
+          <rect x="4" y="19" width="2" height="2" fill="#ffd700"/>
+          <rect x="26" y="21" width="2" height="2" fill="#ffd700"/>
+          <rect x="6" y="25" width="2" height="2" fill="#ffd700"/>
+          <rect x="24" y="27" width="2" height="2" fill="#ffd700"/>
+          <!-- Vest -->
+          <rect x="11" y="16" width="10" height="6" fill="#8b4513"/>
+          <!-- Vest buttons -->
+          <rect x="15" y="17" width="1" height="1" fill="#ffd700"/>
+          <rect x="15" y="19" width="1" height="1" fill="#ffd700"/>
+          <rect x="15" y="21" width="1" height="1" fill="#ffd700"/>
+          <!-- Legs -->
+          <rect x="12" y="23" width="3" height="4" fill="#228b22"/>
+          <rect x="17" y="23" width="3" height="4" fill="#228b22"/>
+          <!-- Shoes -->
+          <rect x="11" y="27" width="4" height="2" fill="#000000"/>
+          <rect x="17" y="27" width="4" height="2" fill="#000000"/>
+          <!-- Enhanced clovers -->
+          <rect x="7" y="9" width="2" height="2" fill="#32cd32"/>
+          <rect x="23" y="11" width="2" height="2" fill="#32cd32"/>
+          <rect x="5" y="23" width="2" height="2" fill="#32cd32"/>
+          <rect x="25" y="25" width="2" height="2" fill="#32cd32"/>
+          <!-- Extra sparkles -->
+          <rect x="8" y="5" width="1" height="1" fill="#ffd700"/>
+          <rect x="23" y="7" width="1" height="1" fill="#ffd700"/>
+          <rect x="7" y="24" width="1" height="1" fill="#ffd700"/>
+          <rect x="24" y="26" width="1" height="1" fill="#ffd700"/>
+          <rect x="9" y="12" width="1" height="1" fill="#ffd700"/>
+          <rect x="22" y="14" width="1" height="1" fill="#ffd700"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (walking with purpose) -->
+          <rect x="11" y="16" width="12" height="8" fill="#228b22"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#98fb98"/>
+          <!-- Hat (tilted from movement) -->
+          <rect x="12" y="4" width="10" height="6" fill="#006400"/>
+          <rect x="10" y="8" width="14" height="2" fill="#006400"/>
+          <!-- Hat band -->
+          <rect x="13" y="6" width="8" height="1" fill="#ffd700"/>
+          <rect x="16" y="5" width="2" height="2" fill="#32cd32"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="14" y="10" width="1" height="1" fill="#ffd700"/>
+          <rect x="18" y="10" width="1" height="1" fill="#ffd700"/>
+          <!-- Nose -->
+          <rect x="16" y="12" width="2" height="1" fill="#ff69b4"/>
+          <!-- Mouth -->
+          <rect x="15" y="13" width="4" height="1" fill="#000000"/>
+          <!-- Beard (flowing) -->
+          <rect x="14" y="14" width="6" height="3" fill="#ffa500"/>
+          <!-- Arms (swinging) -->
+          <rect x="7" y="17" width="4" height="5" fill="#98fb98"/>
+          <rect x="21" y="19" width="4" height="3" fill="#98fb98"/>
+          <!-- Massive coin shower -->
+          <rect x="3" y="12" width="2" height="2" fill="#ffd700"/>
+          <rect x="27" y="14" width="2" height="2" fill="#ffd700"/>
+          <rect x="2" y="18" width="2" height="2" fill="#ffd700"/>
+          <rect x="28" y="20" width="2" height="2" fill="#ffd700"/>
+          <rect x="4" y="24" width="2" height="2" fill="#ffd700"/>
+          <rect x="26" y="26" width="2" height="2" fill="#ffd700"/>
+          <rect x="1" y="22" width="2" height="2" fill="#ffd700"/>
+          <rect x="29" y="24" width="2" height="2" fill="#ffd700"/>
+          <!-- Vest -->
+          <rect x="12" y="17" width="10" height="6" fill="#8b4513"/>
+          <!-- Buttons -->
+          <rect x="16" y="18" width="1" height="1" fill="#ffd700"/>
+          <rect x="16" y="20" width="1" height="1" fill="#ffd700"/>
+          <rect x="16" y="22" width="1" height="1" fill="#ffd700"/>
+          <!-- Legs (marching) -->
+          <rect x="11" y="24" width="3" height="4" fill="#228b22"/>
+          <rect x="18" y="24" width="3" height="4" fill="#228b22"/>
+          <!-- Shoes -->
+          <rect x="10" y="28" width="4" height="2" fill="#000000"/>
+          <rect x="18" y="28" width="4" height="2" fill="#000000"/>
+          <!-- Clover trail -->
+          <rect x="5" y="8" width="2" height="2" fill="#32cd32"/>
+          <rect x="25" y="10" width="2" height="2" fill="#32cd32"/>
+          <rect x="3" y="16" width="2" height="2" fill="#32cd32"/>
+          <rect x="27" y="18" width="2" height="2" fill="#32cd32"/>
+          <rect x="6" y="26" width="2" height="2" fill="#32cd32"/>
+          <rect x="24" y="28" width="2" height="2" fill="#32cd32"/>
+          <!-- Rainbow sparkles -->
+          <rect x="0" y="10" width="1" height="1" fill="#ff0000"/>
+          <rect x="31" y="12" width="1" height="1" fill="#ff7f00"/>
+          <rect x="1" y="16" width="1" height="1" fill="#ffff00"/>
+          <rect x="30" y="18" width="1" height="1" fill="#00ff00"/>
+          <rect x="2" y="20" width="1" height="1" fill="#0000ff"/>
+          <rect x="29" y="22" width="1" height="1" fill="#4b0082"/>
+          <rect x="3" y="26" width="1" height="1" fill="#9400d3"/>
+          <rect x="28" y="28" width="1" height="1" fill="#ffd700"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#228b22"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#98fb98"/>
+          <!-- Hat -->
+          <rect x="12" y="4" width="10" height="6" fill="#006400"/>
+          <rect x="10" y="8" width="14" height="2" fill="#006400"/>
+          <!-- Hat band -->
+          <rect x="13" y="6" width="8" height="1" fill="#ffd700"/>
+          <rect x="16" y="5" width="2" height="2" fill="#32cd32"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="14" y="10" width="1" height="1" fill="#ffd700"/>
+          <rect x="18" y="10" width="1" height="1" fill="#ffd700"/>
+          <!-- Nose -->
+          <rect x="16" y="12" width="2" height="1" fill="#ff69b4"/>
+          <!-- Mouth -->
+          <rect x="15" y="13" width="4" height="1" fill="#000000"/>
+          <!-- Beard -->
+          <rect x="14" y="14" width="6" height="3" fill="#ffa500"/>
+          <!-- Arms (opposite swing) -->
+          <rect x="9" y="19" width="4" height="3" fill="#98fb98"/>
+          <rect x="23" y="17" width="4" height="5" fill="#98fb98"/>
+          <!-- Settled coins -->
+          <rect x="5" y="13" width="2" height="2" fill="#ffd700"/>
+          <rect x="25" y="15" width="2" height="2" fill="#ffd700"/>
+          <rect x="4" y="19" width="2" height="2" fill="#ffd700"/>
+          <rect x="26" y="21" width="2" height="2" fill="#ffd700"/>
+          <rect x="6" y="25" width="2" height="2" fill="#ffd700"/>
+          <rect x="24" y="27" width="2" height="2" fill="#ffd700"/>
+          <!-- Vest -->
+          <rect x="12" y="17" width="10" height="6" fill="#8b4513"/>
+          <!-- Buttons -->
+          <rect x="16" y="18" width="1" height="1" fill="#ffd700"/>
+          <rect x="16" y="20" width="1" height="1" fill="#ffd700"/>
+          <rect x="16" y="22" width="1" height="1" fill="#ffd700"/>
+          <!-- Legs (walking) -->
+          <rect x="13" y="24" width="3" height="4" fill="#228b22"/>
+          <rect x="16" y="24" width="3" height="4" fill="#228b22"/>
+          <!-- Shoes -->
+          <rect x="12" y="28" width="4" height="2" fill="#000000"/>
+          <rect x="16" y="28" width="4" height="2" fill="#000000"/>
+          <!-- Clovers -->
+          <rect x="7" y="9" width="2" height="2" fill="#32cd32"/>
+          <rect x="23" y="11" width="2" height="2" fill="#32cd32"/>
+          <rect x="5" y="23" width="2" height="2" fill="#32cd32"/>
+          <rect x="25" y="25" width="2" height="2" fill="#32cd32"/>
+          <!-- Sparkles -->
+          <rect x="8" y="5" width="1" height="1" fill="#ffd700"/>
+          <rect x="23" y="7" width="1" height="1" fill="#ffd700"/>
+          <rect x="7" y="24" width="1" height="1" fill="#ffd700"/>
+          <rect x="24" y="26" width="1" height="1" fill="#ffd700"/>
+        </svg>
+      `)
+    ],
+    name: 'Luck Incarnate'
+  },
+  // Dimension Walker - Mythical interdimensional traveler
+  '🌀': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (shifting phases) -->
+          <rect x="10" y="16" width="12" height="10" fill="#4B0082"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#6A5ACD"/>
+          <!-- Dimensional rifts -->
+          <rect x="8" y="14" width="2" height="4" fill="#FF00FF"/>
+          <rect x="22" y="18" width="2" height="4" fill="#00FFFF"/>
+          <rect x="14" y="6" width="2" height="2" fill="#FFFF00"/>
+          <!-- Eyes (void-like) -->
+          <rect x="13" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="17" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="13" y="10" width="1" height="1" fill="#9400D3"/>
+          <rect x="17" y="10" width="1" height="1" fill="#9400D3"/>
+          <!-- Portal fragments -->
+          <rect x="6" y="16" width="1" height="1" fill="#FF00FF"/>
+          <rect x="25" y="20" width="1" height="1" fill="#00FFFF"/>
+          <rect x="16" y="4" width="1" height="1" fill="#FFFF00"/>
+          <!-- Arms -->
+          <rect x="8" y="18" width="3" height="4" fill="#4B0082"/>
+          <rect x="21" y="18" width="3" height="4" fill="#4B0082"/>
+          <!-- Legs -->
+          <rect x="12" y="26" width="3" height="4" fill="#4B0082"/>
+          <rect x="17" y="26" width="3" height="4" fill="#4B0082"/>
+          <!-- Dimensional aura -->
+          <rect x="5" y="15" width="1" height="1" fill="#9400D3"/>
+          <rect x="26" y="19" width="1" height="1" fill="#9400D3"/>
+          <rect x="15" y="3" width="1" height="1" fill="#9400D3"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (phase shift) -->
+          <rect x="10" y="15" width="12" height="10" fill="#483D8B"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#6A5ACD"/>
+          <!-- Dimensional rifts (shifted) -->
+          <rect x="7" y="13" width="2" height="4" fill="#00FFFF"/>
+          <rect x="23" y="17" width="2" height="4" fill="#FF00FF"/>
+          <rect x="15" y="5" width="2" height="2" fill="#FFFF00"/>
+          <!-- Eyes -->
+          <rect x="13" y="9" width="2" height="2" fill="#000000"/>
+          <rect x="17" y="9" width="2" height="2" fill="#000000"/>
+          <rect x="14" y="9" width="1" height="1" fill="#8A2BE2"/>
+          <rect x="18" y="9" width="1" height="1" fill="#8A2BE2"/>
+          <!-- Portal fragments -->
+          <rect x="5" y="15" width="1" height="1" fill="#00FFFF"/>
+          <rect x="26" y="19" width="1" height="1" fill="#FF00FF"/>
+          <rect x="17" y="3" width="1" height="1" fill="#FFFF00"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#483D8B"/>
+          <rect x="21" y="17" width="3" height="4" fill="#483D8B"/>
+          <!-- Legs -->
+          <rect x="12" y="25" width="3" height="4" fill="#483D8B"/>
+          <rect x="17" y="25" width="3" height="4" fill="#483D8B"/>
+          <!-- Dimensional aura -->
+          <rect x="4" y="14" width="1" height="1" fill="#8A2BE2"/>
+          <rect x="27" y="20" width="1" height="1" fill="#8A2BE2"/>
+          <rect x="16" y="2" width="1" height="1" fill="#8A2BE2"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (dimensional phasing) -->
+          <rect x="11" y="16" width="12" height="10" fill="#4B0082"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#6A5ACD"/>
+          <!-- Active portals -->
+          <rect x="6" y="12" width="3" height="6" fill="#FF00FF"/>
+          <rect x="23" y="14" width="3" height="6" fill="#00FFFF"/>
+          <rect x="15" y="4" width="3" height="3" fill="#FFFF00"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Portal energy -->
+          <rect x="3" y="13" width="2" height="4" fill="#9400D3"/>
+          <rect x="27" y="15" width="2" height="4" fill="#9400D3"/>
+          <rect x="16" y="1" width="2" height="2" fill="#9400D3"/>
+          <!-- Arms (phasing) -->
+          <rect x="7" y="17" width="4" height="5" fill="#4B0082"/>
+          <rect x="21" y="19" width="4" height="3" fill="#4B0082"/>
+          <!-- Legs (dimensional step) -->
+          <rect x="11" y="26" width="3" height="4" fill="#4B0082"/>
+          <rect x="18" y="26" width="3" height="4" fill="#4B0082"/>
+          <!-- Dimension trail -->
+          <rect x="1" y="14" width="1" height="1" fill="#FF00FF"/>
+          <rect x="29" y="16" width="1" height="1" fill="#00FFFF"/>
+          <rect x="17" y="0" width="1" height="1" fill="#FFFF00"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#483D8B"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#6A5ACD"/>
+          <!-- Dimensional rifts -->
+          <rect x="5" y="11" width="4" height="7" fill="#00FFFF"/>
+          <rect x="24" y="13" width="4" height="7" fill="#FF00FF"/>
+          <rect x="14" y="3" width="4" height="4" fill="#FFFF00"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Portal vortex -->
+          <rect x="2" y="12" width="3" height="5" fill="#8A2BE2"/>
+          <rect x="27" y="14" width="3" height="5" fill="#8A2BE2"/>
+          <rect x="15" y="0" width="3" height="3" fill="#8A2BE2"/>
+          <!-- Arms -->
+          <rect x="9" y="19" width="4" height="3" fill="#483D8B"/>
+          <rect x="23" y="17" width="4" height="5" fill="#483D8B"/>
+          <!-- Legs -->
+          <rect x="13" y="26" width="3" height="4" fill="#483D8B"/>
+          <rect x="16" y="26" width="3" height="4" fill="#483D8B"/>
+          <!-- Reality distortion -->
+          <rect x="0" y="13" width="1" height="1" fill="#9400D3"/>
+          <rect x="31" y="15" width="1" height="1" fill="#9400D3"/>
+          <rect x="16" y="31" width="1" height="1" fill="#9400D3"/>
+        </svg>
+      `)
+    ],
+    name: 'Dimension Walker'
+  },
+  // Time Guardian - Mythical time manipulator
+  '⏰': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (clockwork) -->
+          <rect x="10" y="16" width="12" height="10" fill="#B8860B"/>
+          <!-- Clock face chest -->
+          <rect x="13" y="18" width="6" height="6" fill="#FFD700"/>
+          <rect x="15" y="20" width="2" height="2" fill="#8B4513"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#DAA520"/>
+          <!-- Clock crown -->
+          <rect x="14" y="6" width="4" height="2" fill="#FFD700"/>
+          <rect x="15" y="4" width="2" height="2" fill="#FFA500"/>
+          <!-- Eyes (chronometer style) -->
+          <rect x="13" y="10" width="2" height="2" fill="#4169E1"/>
+          <rect x="17" y="10" width="2" height="2" fill="#4169E1"/>
+          <rect x="13" y="10" width="1" height="1" fill="#87CEEB"/>
+          <rect x="17" y="10" width="1" height="1" fill="#87CEEB"/>
+          <!-- Nose (gear) -->
+          <rect x="15" y="12" width="2" height="2" fill="#CD853F"/>
+          <!-- Arms (mechanical) -->
+          <rect x="8" y="18" width="3" height="4" fill="#B8860B"/>
+          <rect x="21" y="18" width="3" height="4" fill="#B8860B"/>
+          <!-- Gear details -->
+          <rect x="7" y="19" width="1" height="1" fill="#FFD700"/>
+          <rect x="24" y="19" width="1" height="1" fill="#FFD700"/>
+          <!-- Legs -->
+          <rect x="12" y="26" width="3" height="4" fill="#B8860B"/>
+          <rect x="17" y="26" width="3" height="4" fill="#B8860B"/>
+          <!-- Time particles -->
+          <rect x="6" y="14" width="1" height="1" fill="#87CEEB"/>
+          <rect x="25" y="16" width="1" height="1" fill="#87CEEB"/>
+          <rect x="16" y="2" width="1" height="1" fill="#87CEEB"/>
+          <!-- Clock hands -->
+          <rect x="15" y="19" width="1" height="2" fill="#8B4513"/>
+          <rect x="16" y="20" width="2" height="1" fill="#8B4513"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="10" fill="#B8860B"/>
+          <!-- Clock face (ticking) -->
+          <rect x="13" y="17" width="6" height="6" fill="#FFD700"/>
+          <rect x="15" y="19" width="2" height="2" fill="#8B4513"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#DAA520"/>
+          <!-- Clock crown -->
+          <rect x="14" y="5" width="4" height="2" fill="#FFD700"/>
+          <rect x="15" y="3" width="2" height="2" fill="#FFA500"/>
+          <!-- Eyes -->
+          <rect x="13" y="9" width="2" height="2" fill="#4169E1"/>
+          <rect x="17" y="9" width="2" height="2" fill="#4169E1"/>
+          <rect x="14" y="9" width="1" height="1" fill="#87CEEB"/>
+          <rect x="18" y="9" width="1" height="1" fill="#87CEEB"/>
+          <!-- Nose -->
+          <rect x="15" y="11" width="2" height="2" fill="#CD853F"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#B8860B"/>
+          <rect x="21" y="17" width="3" height="4" fill="#B8860B"/>
+          <!-- Gear details -->
+          <rect x="7" y="18" width="1" height="1" fill="#FFD700"/>
+          <rect x="24" y="18" width="1" height="1" fill="#FFD700"/>
+          <!-- Legs -->
+          <rect x="12" y="25" width="3" height="4" fill="#B8860B"/>
+          <rect x="17" y="25" width="3" height="4" fill="#B8860B"/>
+          <!-- Time particles (shifted) -->
+          <rect x="5" y="13" width="1" height="1" fill="#87CEEB"/>
+          <rect x="26" y="15" width="1" height="1" fill="#87CEEB"/>
+          <rect x="17" y="1" width="1" height="1" fill="#87CEEB"/>
+          <!-- Clock hands (moved) -->
+          <rect x="16" y="18" width="1" height="2" fill="#8B4513"/>
+          <rect x="15" y="19" width="2" height="1" fill="#8B4513"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#B8860B"/>
+          <!-- Clock face -->
+          <rect x="14" y="18" width="6" height="6" fill="#FFD700"/>
+          <rect x="16" y="20" width="2" height="2" fill="#8B4513"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#DAA520"/>
+          <!-- Clock crown -->
+          <rect x="15" y="6" width="4" height="2" fill="#FFD700"/>
+          <rect x="16" y="4" width="2" height="2" fill="#FFA500"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#4169E1"/>
+          <rect x="18" y="10" width="2" height="2" fill="#4169E1"/>
+          <!-- Time field -->
+          <rect x="3" y="12" width="5" height="8" fill="#87CEEB"/>
+          <rect x="24" y="14" width="5" height="6" fill="#87CEEB"/>
+          <rect x="15" y="2" width="4" height="4" fill="#87CEEB"/>
+          <!-- Arms (clockwork motion) -->
+          <rect x="7" y="17" width="4" height="5" fill="#B8860B"/>
+          <rect x="21" y="19" width="4" height="3" fill="#B8860B"/>
+          <!-- Temporal gears -->
+          <rect x="2" y="13" width="2" height="2" fill="#FFD700"/>
+          <rect x="28" y="15" width="2" height="2" fill="#FFD700"/>
+          <rect x="16" y="1" width="2" height="2" fill="#FFD700"/>
+          <!-- Legs (stepping through time) -->
+          <rect x="11" y="26" width="3" height="4" fill="#B8860B"/>
+          <rect x="18" y="26" width="3" height="4" fill="#B8860B"/>
+          <!-- Time ripples -->
+          <rect x="1" y="14" width="1" height="1" fill="#4169E1"/>
+          <rect x="30" y="16" width="1" height="1" fill="#4169E1"/>
+          <rect x="17" y="0" width="1" height="1" fill="#4169E1"/>
+          <!-- Clock hands (active) -->
+          <rect x="16" y="19" width="1" height="3" fill="#8B4513"/>
+          <rect x="15" y="20" width="3" height="1" fill="#8B4513"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#B8860B"/>
+          <!-- Clock face -->
+          <rect x="14" y="18" width="6" height="6" fill="#FFD700"/>
+          <rect x="16" y="20" width="2" height="2" fill="#8B4513"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#DAA520"/>
+          <!-- Clock crown -->
+          <rect x="15" y="6" width="4" height="2" fill="#FFD700"/>
+          <rect x="16" y="4" width="2" height="2" fill="#FFA500"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#4169E1"/>
+          <rect x="18" y="10" width="2" height="2" fill="#4169E1"/>
+          <!-- Time field -->
+          <rect x="4" y="11" width="4" height="9" fill="#87CEEB"/>
+          <rect x="25" y="13" width="4" height="7" fill="#87CEEB"/>
+          <rect x="14" y="1" width="5" height="5" fill="#87CEEB"/>
+          <!-- Arms -->
+          <rect x="9" y="19" width="4" height="3" fill="#B8860B"/>
+          <rect x="23" y="17" width="4" height="5" fill="#B8860B"/>
+          <!-- Temporal gears -->
+          <rect x="3" y="12" width="2" height="2" fill="#FFD700"/>
+          <rect x="27" y="14" width="2" height="2" fill="#FFD700"/>
+          <rect x="15" y="0" width="2" height="2" fill="#FFD700"/>
+          <!-- Legs -->
+          <rect x="13" y="26" width="3" height="4" fill="#B8860B"/>
+          <rect x="16" y="26" width="3" height="4" fill="#B8860B"/>
+          <!-- Time ripples -->
+          <rect x="2" y="13" width="1" height="1" fill="#4169E1"/>
+          <rect x="29" y="15" width="1" height="1" fill="#4169E1"/>
+          <rect x="16" y="31" width="1" height="1" fill="#4169E1"/>
+          <!-- Clock hands -->
+          <rect x="15" y="19" width="3" height="1" fill="#8B4513"/>
+          <rect x="16" y="20" width="1" height="3" fill="#8B4513"/>
+        </svg>
+      `)
+    ],
+    name: 'Time Guardian'
+  },
+  // Chaos Entity - Mythical chaos embodiment
+  '💀': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (dark energy) -->
+          <rect x="10" y="16" width="12" height="10" fill="#2F0A2F"/>
+          <!-- Chaotic aura -->
+          <rect x="8" y="14" width="2" height="12" fill="#4B0082"/>
+          <rect x="22" y="14" width="2" height="12" fill="#4B0082"/>
+          <!-- Head (skull-like) -->
+          <rect x="12" y="8" width="8" height="8" fill="#483D8B"/>
+          <!-- Eye sockets (void) -->
+          <rect x="13" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="17" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Glowing eyes -->
+          <rect x="13" y="10" width="1" height="1" fill="#FF0000"/>
+          <rect x="17" y="10" width="1" height="1" fill="#FF0000"/>
+          <!-- Nasal cavity -->
+          <rect x="15" y="12" width="2" height="2" fill="#000000"/>
+          <!-- Mouth (grinning) -->
+          <rect x="14" y="14" width="4" height="1" fill="#000000"/>
+          <rect x="13" y="15" width="1" height="1" fill="#000000"/>
+          <rect x="18" y="15" width="1" height="1" fill="#000000"/>
+          <!-- Arms (chaotic tendrils) -->
+          <rect x="6" y="18" width="4" height="4" fill="#2F0A2F"/>
+          <rect x="22" y="18" width="4" height="4" fill="#2F0A2F"/>
+          <!-- Chaos spikes -->
+          <rect x="5" y="17" width="1" height="6" fill="#8B008B"/>
+          <rect x="26" y="17" width="1" height="6" fill="#8B008B"/>
+          <!-- Legs -->
+          <rect x="12" y="26" width="3" height="4" fill="#2F0A2F"/>
+          <rect x="17" y="26" width="3" height="4" fill="#2F0A2F"/>
+          <!-- Chaos particles -->
+          <rect x="7" y="12" width="1" height="1" fill="#FF0000"/>
+          <rect x="24" y="15" width="1" height="1" fill="#FF0000"/>
+          <rect x="16" y="5" width="1" height="1" fill="#FF0000"/>
+          <!-- Dark energy wisps -->
+          <rect x="4" y="20" width="1" height="1" fill="#8B008B"/>
+          <rect x="27" y="19" width="1" height="1" fill="#8B008B"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="10" fill="#2F0A2F"/>
+          <!-- Chaotic aura (pulsing) -->
+          <rect x="7" y="13" width="3" height="14" fill="#4B0082"/>
+          <rect x="22" y="13" width="3" height="14" fill="#4B0082"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#483D8B"/>
+          <!-- Eye sockets -->
+          <rect x="13" y="9" width="2" height="2" fill="#000000"/>
+          <rect x="17" y="9" width="2" height="2" fill="#000000"/>
+          <!-- Glowing eyes (intense) -->
+          <rect x="13" y="9" width="2" height="1" fill="#FF0000"/>
+          <rect x="17" y="9" width="2" height="1" fill="#FF0000"/>
+          <!-- Nasal cavity -->
+          <rect x="15" y="11" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="14" y="13" width="4" height="1" fill="#000000"/>
+          <rect x="13" y="14" width="1" height="1" fill="#000000"/>
+          <rect x="18" y="14" width="1" height="1" fill="#000000"/>
+          <!-- Arms -->
+          <rect x="5" y="17" width="5" height="5" fill="#2F0A2F"/>
+          <rect x="22" y="17" width="5" height="5" fill="#2F0A2F"/>
+          <!-- Chaos spikes (growing) -->
+          <rect x="4" y="16" width="2" height="7" fill="#8B008B"/>
+          <rect x="26" y="16" width="2" height="7" fill="#8B008B"/>
+          <!-- Legs -->
+          <rect x="12" y="25" width="3" height="4" fill="#2F0A2F"/>
+          <rect x="17" y="25" width="3" height="4" fill="#2F0A2F"/>
+          <!-- Chaos particles (more intense) -->
+          <rect x="6" y="11" width="1" height="1" fill="#FF0000"/>
+          <rect x="25" y="14" width="1" height="1" fill="#FF0000"/>
+          <rect x="17" y="4" width="1" height="1" fill="#FF0000"/>
+          <!-- Dark energy -->
+          <rect x="3" y="19" width="1" height="1" fill="#8B008B"/>
+          <rect x="28" y="18" width="1" height="1" fill="#8B008B"/>
+          <rect x="15" y="2" width="1" height="1" fill="#8B008B"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#2F0A2F"/>
+          <!-- Chaos eruption -->
+          <rect x="5" y="10" width="6" height="16" fill="#4B0082"/>
+          <rect x="21" y="12" width="6" height="14" fill="#4B0082"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#483D8B"/>
+          <!-- Eye sockets -->
+          <rect x="14" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Blazing eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FF0000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FF0000"/>
+          <!-- Nasal cavity -->
+          <rect x="16" y="12" width="2" height="2" fill="#000000"/>
+          <!-- Mouth (screaming) -->
+          <rect x="15" y="14" width="4" height="2" fill="#000000"/>
+          <!-- Arms (chaos tendrils) -->
+          <rect x="3" y="15" width="8" height="6" fill="#2F0A2F"/>
+          <rect x="21" y="17" width="8" height="4" fill="#2F0A2F"/>
+          <!-- Massive chaos spikes -->
+          <rect x="1" y="12" width="3" height="12" fill="#8B008B"/>
+          <rect x="28" y="14" width="3" height="10" fill="#8B008B"/>
+          <rect x="15" y="2" width="3" height="6" fill="#8B008B"/>
+          <!-- Legs -->
+          <rect x="11" y="26" width="3" height="4" fill="#2F0A2F"/>
+          <rect x="18" y="26" width="3" height="4" fill="#2F0A2F"/>
+          <!-- Chaos storm -->
+          <rect x="0" y="15" width="2" height="3" fill="#FF0000"/>
+          <rect x="30" y="17" width="2" height="2" fill="#FF0000"/>
+          <rect x="16" y="0" width="2" height="2" fill="#FF0000"/>
+          <!-- Void tears -->
+          <rect x="2" y="18" width="1" height="1" fill="#000000"/>
+          <rect x="29" y="16" width="1" height="1" fill="#000000"/>
+          <rect x="17" y="1" width="1" height="1" fill="#000000"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#2F0A2F"/>
+          <!-- Chaos field -->
+          <rect x="6" y="9" width="5" height="17" fill="#4B0082"/>
+          <rect x="22" y="11" width="5" height="15" fill="#4B0082"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#483D8B"/>
+          <!-- Eye sockets -->
+          <rect x="14" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="1" height="2" fill="#FF0000"/>
+          <rect x="18" y="10" width="1" height="2" fill="#FF0000"/>
+          <!-- Nasal cavity -->
+          <rect x="16" y="12" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="15" y="14" width="4" height="1" fill="#000000"/>
+          <!-- Arms -->
+          <rect x="4" y="16" width="7" height="5" fill="#2F0A2F"/>
+          <rect x="23" y="18" width="7" height="3" fill="#2F0A2F"/>
+          <!-- Chaos spikes -->
+          <rect x="2" y="13" width="4" height="11" fill="#8B008B"/>
+          <rect x="26" y="15" width="4" height="9" fill="#8B008B"/>
+          <rect x="14" y="1" width="4" height="7" fill="#8B008B"/>
+          <!-- Legs -->
+          <rect x="13" y="26" width="3" height="4" fill="#2F0A2F"/>
+          <rect x="16" y="26" width="3" height="4" fill="#2F0A2F"/>
+          <!-- Chaos energy -->
+          <rect x="1" y="16" width="1" height="2" fill="#FF0000"/>
+          <rect x="31" y="18" width="1" height="1" fill="#FF0000"/>
+          <rect x="17" y="31" width="1" height="1" fill="#FF0000"/>
+          <!-- Void -->
+          <rect x="3" y="19" width="1" height="1" fill="#000000"/>
+          <rect x="28" y="17" width="1" height="1" fill="#000000"/>
+        </svg>
+      `)
+    ],
+    name: 'Chaos Entity'
+  },
+  // Dream Weaver - Mythical dream manipulator
+  '🌙': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (ethereal) -->
+          <rect x="10" y="16" width="12" height="10" fill="#191970"/>
+          <!-- Dream wisps -->
+          <rect x="8" y="14" width="2" height="8" fill="#9370DB"/>
+          <rect x="22" y="16" width="2" height="6" fill="#9370DB"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#4169E1"/>
+          <!-- Crescent crown -->
+          <rect x="14" y="6" width="4" height="2" fill="#FFD700"/>
+          <rect x="13" y="5" width="2" height="1" fill="#FFD700"/>
+          <rect x="17" y="5" width="2" height="1" fill="#FFD700"/>
+          <!-- Eyes (starlike) -->
+          <rect x="13" y="10" width="2" height="2" fill="#FFFFFF"/>
+          <rect x="17" y="10" width="2" height="2" fill="#FFFFFF"/>
+          <rect x="13" y="10" width="1" height="1" fill="#87CEEB"/>
+          <rect x="17" y="10" width="1" height="1" fill="#87CEEB"/>
+          <!-- Third eye -->
+          <rect x="15" y="8" width="2" height="2" fill="#FFD700"/>
+          <rect x="15" y="8" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Arms (flowing) -->
+          <rect x="8" y="18" width="3" height="4" fill="#191970"/>
+          <rect x="21" y="18" width="3" height="4" fill="#191970"/>
+          <!-- Dream ribbons -->
+          <rect x="6" y="17" width="2" height="6" fill="#9370DB"/>
+          <rect x="24" y="19" width="2" height="4" fill="#9370DB"/>
+          <!-- Legs (floating) -->
+          <rect x="12" y="26" width="3" height="4" fill="#191970"/>
+          <rect x="17" y="26" width="3" height="4" fill="#191970"/>
+          <!-- Dream particles -->
+          <rect x="7" y="13" width="1" height="1" fill="#FFD700"/>
+          <rect x="24" y="15" width="1" height="1" fill="#FFD700"/>
+          <rect x="16" y="4" width="1" height="1" fill="#FFD700"/>
+          <!-- Stardust -->
+          <rect x="5" y="16" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="26" y="18" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="15" y="2" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="10" fill="#191970"/>
+          <!-- Dream wisps (shifting) -->
+          <rect x="7" y="13" width="3" height="9" fill="#9370DB"/>
+          <rect x="22" y="15" width="3" height="7" fill="#9370DB"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#4169E1"/>
+          <!-- Crescent crown -->
+          <rect x="14" y="5" width="4" height="2" fill="#FFD700"/>
+          <rect x="13" y="4" width="2" height="1" fill="#FFD700"/>
+          <rect x="17" y="4" width="2" height="1" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="13" y="9" width="2" height="2" fill="#FFFFFF"/>
+          <rect x="17" y="9" width="2" height="2" fill="#FFFFFF"/>
+          <rect x="14" y="9" width="1" height="1" fill="#87CEEB"/>
+          <rect x="18" y="9" width="1" height="1" fill="#87CEEB"/>
+          <!-- Third eye (glowing) -->
+          <rect x="15" y="7" width="2" height="2" fill="#FFD700"/>
+          <rect x="16" y="7" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#191970"/>
+          <rect x="21" y="17" width="3" height="4" fill="#191970"/>
+          <!-- Dream ribbons -->
+          <rect x="5" y="16" width="3" height="7" fill="#9370DB"/>
+          <rect x="24" y="18" width="3" height="5" fill="#9370DB"/>
+          <!-- Legs -->
+          <rect x="12" y="25" width="3" height="4" fill="#191970"/>
+          <rect x="17" y="25" width="3" height="4" fill="#191970"/>
+          <!-- Dream particles -->
+          <rect x="6" y="12" width="1" height="1" fill="#FFD700"/>
+          <rect x="25" y="14" width="1" height="1" fill="#FFD700"/>
+          <rect x="17" y="3" width="1" height="1" fill="#FFD700"/>
+          <!-- Stardust -->
+          <rect x="4" y="15" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="27" y="17" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="16" y="1" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#191970"/>
+          <!-- Dream vortex -->
+          <rect x="5" y="12" width="6" height="12" fill="#9370DB"/>
+          <rect x="21" y="14" width="6" height="10" fill="#9370DB"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#4169E1"/>
+          <!-- Crescent crown -->
+          <rect x="15" y="6" width="4" height="2" fill="#FFD700"/>
+          <rect x="14" y="5" width="2" height="1" fill="#FFD700"/>
+          <rect x="18" y="5" width="2" height="1" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FFFFFF"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Third eye (active) -->
+          <rect x="16" y="8" width="2" height="2" fill="#FFD700"/>
+          <rect x="16" y="8" width="2" height="1" fill="#FFFFFF"/>
+          <!-- Arms (weaving dreams) -->
+          <rect x="7" y="17" width="4" height="5" fill="#191970"/>
+          <rect x="21" y="19" width="4" height="3" fill="#191970"/>
+          <!-- Dream streams -->
+          <rect x="3" y="13" width="4" height="11" fill="#9370DB"/>
+          <rect x="25" y="15" width="4" height="9" fill="#9370DB"/>
+          <rect x="15" y="4" width="4" height="4" fill="#9370DB"/>
+          <!-- Legs (floating) -->
+          <rect x="11" y="26" width="3" height="4" fill="#191970"/>
+          <rect x="18" y="26" width="3" height="4" fill="#191970"/>
+          <!-- Dream magic -->
+          <rect x="1" y="14" width="2" height="2" fill="#FFD700"/>
+          <rect x="29" y="16" width="2" height="2" fill="#FFD700"/>
+          <rect x="16" y="2" width="2" height="2" fill="#FFD700"/>
+          <!-- Cosmic dust -->
+          <rect x="2" y="17" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="29" y="19" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="17" y="1" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Nightmare wisps -->
+          <rect x="4" y="20" width="1" height="1" fill="#000000"/>
+          <rect x="27" y="18" width="1" height="1" fill="#000000"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#191970"/>
+          <!-- Dream field -->
+          <rect x="6" y="11" width="5" height="13" fill="#9370DB"/>
+          <rect x="22" y="13" width="5" height="11" fill="#9370DB"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#4169E1"/>
+          <!-- Crescent crown -->
+          <rect x="15" y="6" width="4" height="2" fill="#FFD700"/>
+          <rect x="14" y="5" width="2" height="1" fill="#FFD700"/>
+          <rect x="18" y="5" width="2" height="1" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FFFFFF"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Third eye -->
+          <rect x="16" y="8" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="8" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Arms -->
+          <rect x="9" y="19" width="4" height="3" fill="#191970"/>
+          <rect x="23" y="17" width="4" height="5" fill="#191970"/>
+          <!-- Dream streams -->
+          <rect x="4" y="12" width="3" height="12" fill="#9370DB"/>
+          <rect x="26" y="14" width="3" height="10" fill="#9370DB"/>
+          <rect x="14" y="3" width="5" height="5" fill="#9370DB"/>
+          <!-- Legs -->
+          <rect x="13" y="26" width="3" height="4" fill="#191970"/>
+          <rect x="16" y="26" width="3" height="4" fill="#191970"/>
+          <!-- Dream magic -->
+          <rect x="2" y="13" width="2" height="2" fill="#FFD700"/>
+          <rect x="28" y="15" width="2" height="2" fill="#FFD700"/>
+          <rect x="15" y="1" width="2" height="2" fill="#FFD700"/>
+          <!-- Cosmic dust -->
+          <rect x="3" y="16" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="28" y="18" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="16" y="0" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    name: 'Dream Weaver'
+  },
+  // Soul Keeper - Mythical soul guardian
+  '👻': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (ethereal) -->
+          <rect x="10" y="16" width="12" height="10" fill="#E6E6FA"/>
+          <!-- Spectral trail -->
+          <rect x="8" y="20" width="2" height="6" fill="#DDA0DD"/>
+          <rect x="22" y="18" width="2" height="8" fill="#DDA0DD"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#F8F8FF"/>
+          <!-- Eyes (soul wells) -->
+          <rect x="13" y="10" width="2" height="2" fill="#4B0082"/>
+          <rect x="17" y="10" width="2" height="2" fill="#4B0082"/>
+          <rect x="13" y="10" width="1" height="1" fill="#9370DB"/>
+          <rect x="17" y="10" width="1" height="1" fill="#9370DB"/>
+          <!-- Soul orb (forehead) -->
+          <rect x="15" y="8" width="2" height="2" fill="#9370DB"/>
+          <rect x="15" y="8" width="1" height="1" fill="#DDA0DD"/>
+          <!-- Mouth (void) -->
+          <rect x="15" y="13" width="2" height="2" fill="#4B0082"/>
+          <!-- Arms (flowing) -->
+          <rect x="8" y="18" width="3" height="4" fill="#E6E6FA"/>
+          <rect x="21" y="18" width="3" height="4" fill="#E6E6FA"/>
+          <!-- Spirit wisps -->
+          <rect x="6" y="16" width="2" height="2" fill="#DDA0DD"/>
+          <rect x="24" y="20" width="2" height="2" fill="#DDA0DD"/>
+          <!-- Legs (floating tendrils) -->
+          <rect x="12" y="26" width="3" height="4" fill="#E6E6FA"/>
+          <rect x="17" y="26" width="3" height="4" fill="#E6E6FA"/>
+          <!-- Soul particles -->
+          <rect x="7" y="14" width="1" height="1" fill="#9370DB"/>
+          <rect x="24" y="17" width="1" height="1" fill="#9370DB"/>
+          <rect x="16" y="6" width="1" height="1" fill="#9370DB"/>
+          <!-- Ectoplasm -->
+          <rect x="5" y="18" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="26" y="22" width="1" height="1" fill="#DDA0DD"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="10" fill="#E6E6FA"/>
+          <!-- Spectral trail (shifting) -->
+          <rect x="7" y="19" width="3" height="7" fill="#DDA0DD"/>
+          <rect x="22" y="17" width="3" height="9" fill="#DDA0DD"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#F8F8FF"/>
+          <!-- Eyes -->
+          <rect x="13" y="9" width="2" height="2" fill="#4B0082"/>
+          <rect x="17" y="9" width="2" height="2" fill="#4B0082"/>
+          <rect x="14" y="9" width="1" height="1" fill="#9370DB"/>
+          <rect x="18" y="9" width="1" height="1" fill="#9370DB"/>
+          <!-- Soul orb (pulsing) -->
+          <rect x="15" y="7" width="2" height="2" fill="#9370DB"/>
+          <rect x="16" y="7" width="1" height="1" fill="#DDA0DD"/>
+          <!-- Mouth -->
+          <rect x="15" y="12" width="2" height="2" fill="#4B0082"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#E6E6FA"/>
+          <rect x="21" y="17" width="3" height="4" fill="#E6E6FA"/>
+          <!-- Spirit wisps -->
+          <rect x="5" y="15" width="3" height="3" fill="#DDA0DD"/>
+          <rect x="24" y="19" width="3" height="3" fill="#DDA0DD"/>
+          <!-- Legs -->
+          <rect x="12" y="25" width="3" height="4" fill="#E6E6FA"/>
+          <rect x="17" y="25" width="3" height="4" fill="#E6E6FA"/>
+          <!-- Soul particles -->
+          <rect x="6" y="13" width="1" height="1" fill="#9370DB"/>
+          <rect x="25" y="16" width="1" height="1" fill="#9370DB"/>
+          <rect x="17" y="5" width="1" height="1" fill="#9370DB"/>
+          <!-- Ectoplasm -->
+          <rect x="4" y="17" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="27" y="21" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="15" y="3" width="1" height="1" fill="#DDA0DD"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#E6E6FA"/>
+          <!-- Soul vortex -->
+          <rect x="5" y="14" width="6" height="12" fill="#DDA0DD"/>
+          <rect x="21" y="16" width="6" height="10" fill="#DDA0DD"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#F8F8FF"/>
+          <!-- Eyes (glowing) -->
+          <rect x="14" y="10" width="2" height="2" fill="#4B0082"/>
+          <rect x="18" y="10" width="2" height="2" fill="#4B0082"/>
+          <rect x="14" y="10" width="2" height="1" fill="#9370DB"/>
+          <rect x="18" y="10" width="2" height="1" fill="#9370DB"/>
+          <!-- Soul orb (active) -->
+          <rect x="16" y="8" width="2" height="2" fill="#9370DB"/>
+          <rect x="16" y="8" width="2" height="1" fill="#DDA0DD"/>
+          <!-- Mouth -->
+          <rect x="16" y="13" width="2" height="2" fill="#4B0082"/>
+          <!-- Arms (soul gathering) -->
+          <rect x="7" y="17" width="4" height="5" fill="#E6E6FA"/>
+          <rect x="21" y="19" width="4" height="3" fill="#E6E6FA"/>
+          <!-- Soul streams -->
+          <rect x="3" y="15" width="4" height="11" fill="#DDA0DD"/>
+          <rect x="25" y="17" width="4" height="9" fill="#DDA0DD"/>
+          <rect x="15" y="6" width="4" height="4" fill="#DDA0DD"/>
+          <!-- Legs (floating) -->
+          <rect x="11" y="26" width="3" height="4" fill="#E6E6FA"/>
+          <rect x="18" y="26" width="3" height="4" fill="#E6E6FA"/>
+          <!-- Soul harvest -->
+          <rect x="1" y="16" width="2" height="2" fill="#9370DB"/>
+          <rect x="29" y="18" width="2" height="2" fill="#9370DB"/>
+          <rect x="16" y="4" width="2" height="2" fill="#9370DB"/>
+          <!-- Spirit energy -->
+          <rect x="2" y="19" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="29" y="21" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="17" y="3" width="1" height="1" fill="#DDA0DD"/>
+          <!-- Soul essence -->
+          <rect x="4" y="22" width="1" height="1" fill="#4B0082"/>
+          <rect x="27" y="20" width="1" height="1" fill="#4B0082"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#E6E6FA"/>
+          <!-- Soul field -->
+          <rect x="6" y="13" width="5" height="13" fill="#DDA0DD"/>
+          <rect x="22" y="15" width="5" height="11" fill="#DDA0DD"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#F8F8FF"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#4B0082"/>
+          <rect x="18" y="10" width="2" height="2" fill="#4B0082"/>
+          <rect x="15" y="10" width="1" height="1" fill="#9370DB"/>
+          <rect x="19" y="10" width="1" height="1" fill="#9370DB"/>
+          <!-- Soul orb -->
+          <rect x="16" y="8" width="2" height="2" fill="#9370DB"/>
+          <rect x="17" y="8" width="1" height="1" fill="#DDA0DD"/>
+          <!-- Mouth -->
+          <rect x="16" y="13" width="2" height="2" fill="#4B0082"/>
+          <!-- Arms -->
+          <rect x="9" y="19" width="4" height="3" fill="#E6E6FA"/>
+          <rect x="23" y="17" width="4" height="5" fill="#E6E6FA"/>
+          <!-- Soul streams -->
+          <rect x="4" y="14" width="3" height="12" fill="#DDA0DD"/>
+          <rect x="26" y="16" width="3" height="10" fill="#DDA0DD"/>
+          <rect x="14" y="5" width="5" height="5" fill="#DDA0DD"/>
+          <!-- Legs -->
+          <rect x="13" y="26" width="3" height="4" fill="#E6E6FA"/>
+          <rect x="16" y="26" width="3" height="4" fill="#E6E6FA"/>
+          <!-- Soul harvest -->
+          <rect x="2" y="15" width="2" height="2" fill="#9370DB"/>
+          <rect x="28" y="17" width="2" height="2" fill="#9370DB"/>
+          <rect x="15" y="3" width="2" height="2" fill="#9370DB"/>
+          <!-- Spirit energy -->
+          <rect x="3" y="18" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="28" y="20" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="16" y="2" width="1" height="1" fill="#DDA0DD"/>
+        </svg>
+      `)
+    ],
+    name: 'Soul Keeper'
+  },
+  // Star Forger - Mythical cosmic smith
+  '⭐': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (cosmic forge) -->
+          <rect x="10" y="16" width="12" height="10" fill="#191970"/>
+          <!-- Stellar core -->
+          <rect x="13" y="18" width="6" height="6" fill="#FFD700"/>
+          <rect x="15" y="20" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#4169E1"/>
+          <!-- Star crown -->
+          <rect x="14" y="6" width="4" height="2" fill="#FFD700"/>
+          <rect x="13" y="4" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="4" width="2" height="2" fill="#FFD700"/>
+          <rect x="15" y="2" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Eyes (stellar) -->
+          <rect x="13" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="13" y="10" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="17" y="10" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Third eye (forge sight) -->
+          <rect x="15" y="8" width="2" height="2" fill="#FF4500"/>
+          <rect x="15" y="8" width="1" height="1" fill="#FFD700"/>
+          <!-- Arms (forging) -->
+          <rect x="8" y="18" width="3" height="4" fill="#191970"/>
+          <rect x="21" y="18" width="3" height="4" fill="#191970"/>
+          <!-- Forge hammer -->
+          <rect x="6" y="17" width="2" height="6" fill="#C0C0C0"/>
+          <rect x="5" y="16" width="4" height="2" fill="#8B4513"/>
+          <!-- Star fragments -->
+          <rect x="24" y="19" width="2" height="2" fill="#FFD700"/>
+          <rect x="25" y="20" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Legs -->
+          <rect x="12" y="26" width="3" height="4" fill="#191970"/>
+          <rect x="17" y="26" width="3" height="4" fill="#191970"/>
+          <!-- Cosmic sparks -->
+          <rect x="7" y="14" width="1" height="1" fill="#FFD700"/>
+          <rect x="24" y="16" width="1" height="1" fill="#FFD700"/>
+          <rect x="16" y="0" width="1" height="1" fill="#FFD700"/>
+          <!-- Stellar dust -->
+          <rect x="5" y="20" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="26" y="22" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="15" y="1" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="10" fill="#191970"/>
+          <!-- Stellar core (pulsing) -->
+          <rect x="13" y="17" width="6" height="6" fill="#FFD700"/>
+          <rect x="14" y="19" width="4" height="2" fill="#FFFFFF"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#4169E1"/>
+          <!-- Star crown -->
+          <rect x="14" y="5" width="4" height="2" fill="#FFD700"/>
+          <rect x="13" y="3" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="3" width="2" height="2" fill="#FFD700"/>
+          <rect x="15" y="1" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Eyes -->
+          <rect x="13" y="9" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="9" width="2" height="2" fill="#FFD700"/>
+          <rect x="14" y="9" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="18" y="9" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Third eye (glowing) -->
+          <rect x="15" y="7" width="2" height="2" fill="#FF4500"/>
+          <rect x="16" y="7" width="1" height="1" fill="#FFD700"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#191970"/>
+          <rect x="21" y="17" width="3" height="4" fill="#191970"/>
+          <!-- Forge hammer -->
+          <rect x="6" y="16" width="2" height="6" fill="#C0C0C0"/>
+          <rect x="5" y="15" width="4" height="2" fill="#8B4513"/>
+          <!-- Star fragments -->
+          <rect x="24" y="18" width="2" height="2" fill="#FFD700"/>
+          <rect x="25" y="19" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Legs -->
+          <rect x="12" y="25" width="3" height="4" fill="#191970"/>
+          <rect x="17" y="25" width="3" height="4" fill="#191970"/>
+          <!-- Cosmic sparks -->
+          <rect x="6" y="13" width="1" height="1" fill="#FFD700"/>
+          <rect x="25" y="15" width="1" height="1" fill="#FFD700"/>
+          <rect x="17" y="31" width="1" height="1" fill="#FFD700"/>
+          <!-- Stellar dust -->
+          <rect x="4" y="19" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="27" y="21" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="16" y="0" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#191970"/>
+          <!-- Stellar forge (active) -->
+          <rect x="14" y="18" width="6" height="6" fill="#FFD700"/>
+          <rect x="15" y="19" width="4" height="4" fill="#FFFFFF"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#4169E1"/>
+          <!-- Star crown -->
+          <rect x="15" y="6" width="4" height="2" fill="#FFD700"/>
+          <rect x="14" y="4" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="4" width="2" height="2" fill="#FFD700"/>
+          <rect x="16" y="2" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FFD700"/>
+          <!-- Third eye (forging) -->
+          <rect x="16" y="8" width="2" height="2" fill="#FF4500"/>
+          <rect x="16" y="8" width="2" height="1" fill="#FFD700"/>
+          <!-- Arms (hammer swinging) -->
+          <rect x="7" y="15" width="4" height="7" fill="#191970"/>
+          <rect x="21" y="19" width="4" height="3" fill="#191970"/>
+          <!-- Forge hammer (mid-swing) -->
+          <rect x="3" y="12" width="4" height="8" fill="#C0C0C0"/>
+          <rect x="1" y="10" width="6" height="3" fill="#8B4513"/>
+          <!-- Star creation -->
+          <rect x="25" y="17" width="4" height="4" fill="#FFD700"/>
+          <rect x="26" y="18" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Legs (forging stance) -->
+          <rect x="11" y="26" width="3" height="4" fill="#191970"/>
+          <rect x="18" y="26" width="3" height="4" fill="#191970"/>
+          <!-- Cosmic forge fire -->
+          <rect x="0" y="13" width="2" height="3" fill="#FF4500"/>
+          <rect x="29" y="18" width="2" height="2" fill="#FF4500"/>
+          <rect x="17" y="0" width="2" height="2" fill="#FF4500"/>
+          <!-- Stellar sparks -->
+          <rect x="2" y="16" width="1" height="1" fill="#FFD700"/>
+          <rect x="30" y="20" width="1" height="1" fill="#FFD700"/>
+          <rect x="18" y="1" width="1" height="1" fill="#FFD700"/>
+          <!-- Star dust -->
+          <rect x="4" y="22" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="28" y="19" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#191970"/>
+          <!-- Stellar forge -->
+          <rect x="14" y="18" width="6" height="6" fill="#FFD700"/>
+          <rect x="16" y="20" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#4169E1"/>
+          <!-- Star crown -->
+          <rect x="15" y="6" width="4" height="2" fill="#FFD700"/>
+          <rect x="14" y="4" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="4" width="2" height="2" fill="#FFD700"/>
+          <rect x="16" y="2" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FFD700"/>
+          <!-- Third eye -->
+          <rect x="16" y="8" width="2" height="2" fill="#FF4500"/>
+          <rect x="17" y="8" width="1" height="1" fill="#FFD700"/>
+          <!-- Arms (hammer down) -->
+          <rect x="9" y="19" width="4" height="3" fill="#191970"/>
+          <rect x="23" y="17" width="4" height="5" fill="#191970"/>
+          <!-- Forge hammer (impact) -->
+          <rect x="5" y="18" width="4" height="6" fill="#C0C0C0"/>
+          <rect x="3" y="16" width="6" height="3" fill="#8B4513"/>
+          <!-- Star fragments -->
+          <rect x="24" y="18" width="3" height="3" fill="#FFD700"/>
+          <rect x="25" y="19" width="2" height="2" fill="#FFFFFF"/>
+          <!-- Legs -->
+          <rect x="13" y="26" width="3" height="4" fill="#191970"/>
+          <rect x="16" y="26" width="3" height="4" fill="#191970"/>
+          <!-- Cosmic impact -->
+          <rect x="2" y="19" width="3" height="2" fill="#FF4500"/>
+          <rect x="27" y="19" width="3" height="2" fill="#FF4500"/>
+          <rect x="16" y="1" width="3" height="2" fill="#FF4500"/>
+          <!-- Stellar sparks -->
+          <rect x="1" y="20" width="1" height="1" fill="#FFD700"/>
+          <rect x="30" y="20" width="1" height="1" fill="#FFD700"/>
+          <rect x="17" y="0" width="1" height="1" fill="#FFD700"/>
+          <!-- New star birth -->
+          <rect x="26" y="17" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="28" y="21" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    name: 'Star Forger'
   }
 };
 
@@ -2871,22 +4441,22 @@ interface PixelGardenProps {
 
 const PixelGarden = ({ children, onGardenClick }: PixelGardenProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     ctx.imageSmoothingEnabled = false;
-    
+
     // Pokemon-style pixelated grass pattern
     const drawGrassPattern = () => {
       // Base grass layer
       ctx.fillStyle = '#4A9749';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
+
       // Grass texture
       for (let x = 0; x < canvas.width; x += 16) {
         for (let y = 0; y < canvas.height; y += 16) {
@@ -2900,7 +4470,7 @@ const PixelGarden = ({ children, onGardenClick }: PixelGardenProps) => {
           }
         }
       }
-      
+
       // Add some flowers
       ctx.fillStyle = '#FF6B9D';
       for (let i = 0; i < 8; i++) {
@@ -2911,31 +4481,31 @@ const PixelGarden = ({ children, onGardenClick }: PixelGardenProps) => {
         ctx.fillRect(x + 2, y + 2, 4, 4);
         ctx.fillStyle = '#FF6B9D';
       }
-      
+
       // Add trees
       ctx.fillStyle = '#8B4513';
       // Tree trunks
       ctx.fillRect(50, canvas.height - 80, 16, 32);
       ctx.fillRect(canvas.width - 80, canvas.height - 80, 16, 32);
-      
+
       // Tree tops
       ctx.fillStyle = '#228B22';
       ctx.fillRect(34, canvas.height - 96, 48, 48);
       ctx.fillRect(canvas.width - 96, canvas.height - 96, 48, 48);
-      
+
       // Darker green spots on trees
       ctx.fillStyle = '#006400';
       ctx.fillRect(42, canvas.height - 88, 16, 16);
       ctx.fillRect(50, canvas.height - 72, 16, 16);
       ctx.fillRect(canvas.width - 88, canvas.height - 88, 16, 16);
       ctx.fillRect(canvas.width - 80, canvas.height - 72, 16, 16);
-      
+
       // Add a small pond
       ctx.fillStyle = '#4FC3F7';
       ctx.fillRect(canvas.width/2 - 40, canvas.height/2 - 20, 80, 40);
       ctx.fillStyle = '#29B6F6';
       ctx.fillRect(canvas.width/2 - 32, canvas.height/2 - 12, 64, 24);
-      
+
       // Add path
       ctx.fillStyle = '#D2B48C';
       for (let y = 0; y < canvas.height; y += 16) {
@@ -2947,7 +4517,7 @@ const PixelGarden = ({ children, onGardenClick }: PixelGardenProps) => {
         }
       }
     };
-    
+
     drawGrassPattern();
   }, []);
 
@@ -2979,6 +4549,7 @@ interface PetProps {
   pet: {
     id: string;
     pet_type: {
+      id?: number;
       sprite_emoji: string;
       name: string;
     };
@@ -2992,11 +4563,11 @@ const PokemonPet = ({ pet, position, petId }: PetProps) => {
   const [isWalking, setIsWalking] = useState(false);
   const [direction, setDirection] = useState(1);
   const [currentPosition, setCurrentPosition] = useState(position);
-  
+
   // Use pet type ID to get correct sprite, fallback to sprite_emoji, then default
-  const spriteKey = petIdToSpriteMap[pet.pet_type.id?.toString()] || pet.pet_type.sprite_emoji || '🐣';
+  const spriteKey = petIdToSpriteMap[pet.pet_type.id?.toString() || ''] || pet.pet_type.sprite_emoji || '🐣';
   const sprite = pokemonPetSprites[spriteKey] || pokemonPetSprites['🐣'];
-  
+
   // Position animation with Pokemon-style movement
   const [{ x, y }, api] = useSpring(() => ({
     x: position.x,
@@ -3009,18 +4580,18 @@ const PokemonPet = ({ pet, position, petId }: PetProps) => {
     // Always move - no random check
     const currentX = currentPosition.x;
     const currentY = currentPosition.y;
-    
+
     // Generate a new position with guaranteed movement
     const moveDistance = 60 + Math.random() * 80; // 60-140 pixels movement
     const angle = Math.random() * 2 * Math.PI;
-    
+
     let newX = currentX + Math.cos(angle) * moveDistance;
     let newY = currentY + Math.sin(angle) * moveDistance;
-    
+
     // Keep within bounds with simpler collision
     newX = Math.max(60, Math.min(newX, 520));
     newY = Math.max(60, Math.min(newY, 300));
-    
+
     // Simple obstacle avoidance - just move away from obstacles
     if (newX < 120 && newY > 260) newX = 150; // Left tree
     if (newX > 480 && newY > 260) newX = 450; // Right tree
@@ -3029,26 +4600,26 @@ const PokemonPet = ({ pet, position, petId }: PetProps) => {
       if (newX < 300) newX = 220;
       else newX = 380;
     }
-    
+
     // Update stored position
     setCurrentPosition({ x: newX, y: newY });
-    
+
     // Update direction for sprite flipping
     setDirection(newX > currentX ? 1 : -1);
-    
+
     // Start walking animation
     setIsWalking(true);
-    
+
     // Animate to new position
     api.start({ 
       x: newX, 
       y: newY,
       config: { tension: 80, friction: 25 }
     });
-    
+
     // Stop walking after movement completes
     setTimeout(() => setIsWalking(false), 1200);
-    
+
     console.log(`Pet ${petId} moving from (${currentX}, ${currentY}) to (${newX}, ${newY})`);
   }, [currentPosition, api, petId]);
 
@@ -3057,10 +4628,10 @@ const PokemonPet = ({ pet, position, petId }: PetProps) => {
     const moveInterval = setInterval(() => {
       moveToNewPosition();
     }, 2000 + Math.random() * 2000); // 2-4 seconds
-    
+
     // Start first movement after a short delay
     const initialTimeout = setTimeout(moveToNewPosition, 500 + Math.random() * 1000);
-    
+
     return () => {
       clearInterval(moveInterval);
       clearTimeout(initialTimeout);
@@ -3098,12 +4669,12 @@ const PokemonPet = ({ pet, position, petId }: PetProps) => {
             filter: 'none'
           }}
         />
-        
+
         {/* Pokemon-style nameplate */}
         <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-blue-900 text-white text-xs px-2 py-1 rounded border-2 border-blue-600 pokemon-nameplate whitespace-nowrap">
           {sprite.name}
         </div>
-        
+
         {/* Movement indicator */}
         {isWalking && (
           <div className="absolute -top-2 -right-2 w-3 h-3 bg-yellow-400 rounded-full animate-pulse pokemon-indicator"></div>
@@ -3114,7 +4685,7 @@ const PokemonPet = ({ pet, position, petId }: PetProps) => {
 };
 
 export const PetGarden = () => {
-  const { userPets, activePetBoosts, placePetInGarden, removePetFromGarden } = usePetSystem();
+  const { userPets, activePetBoosts, placePetInGarden, removePetFromGarden, sellPet } = usePetSystem();
   const [selectedPetForPlacement, setSelectedPetForPlacement] = useState<string | null>(null);
   const [petPositions, setPetPositions] = useState<{ [key: string]: { x: number, y: number } }>({});
 
@@ -3131,11 +4702,11 @@ export const PetGarden = () => {
       { x: 150, y: 180 }, { x: 450, y: 160 }, { x: 350, y: 240 },
       { x: 180, y: 260 }, { x: 420, y: 80 }, { x: 480, y: 200 }
     ];
-    
+
     setPetPositions(prev => {
       const newPositions = { ...prev };
       let hasChanges = false;
-      
+
       activePets.forEach((pet, index) => {
         if (!newPositions[pet.id]) {
           const randomOffset = {
@@ -3151,7 +4722,7 @@ export const PetGarden = () => {
           console.log(`Initializing pet ${pet.id} at position:`, newPositions[pet.id]);
         }
       });
-      
+
       return hasChanges ? newPositions : prev;
     });
   }, [activePetIds, activePets]); // Include both dependencies
@@ -3166,15 +4737,15 @@ export const PetGarden = () => {
       ) {
         return; // Invalid position
       }
-      
+
       const position = Math.floor(Math.random() * 9);
       placePetInGarden(selectedPetForPlacement, position);
-      
+
       setPetPositions(prev => ({
         ...prev,
         [selectedPetForPlacement]: { x: Math.max(32, Math.min(x, 550)), y: Math.max(32, Math.min(y, 340)) }
       }));
-      
+
       setSelectedPetForPlacement(null);
     }
   }, [selectedPetForPlacement, placePetInGarden]);
@@ -3187,6 +4758,35 @@ export const PetGarden = () => {
       return newPositions;
     });
   }, [removePetFromGarden]);
+
+  const handleSellPet = useCallback((petId: string) => {
+    sellPet(petId);
+  }, [sellPet]);
+
+  // Calculate selling price for a pet
+  const calculateSellPrice = useCallback((pet: UserPetQueryResult) => {
+    const basePrices = {
+      common: 10,
+      uncommon: 50,
+      rare: 100,
+      legendary: 1000,
+      mythical: 10000
+    };
+
+    const rarityMultipliers = {
+      common: 5.0,
+      uncommon: 10.0,
+      rare: 25.0,
+      legendary: 50.0,
+      mythical: 100.0
+    };
+
+    const basePrice = basePrices[pet.pet_type.rarity as keyof typeof basePrices] || 5;
+    const rarityMultiplier = rarityMultipliers[pet.pet_type.rarity as keyof typeof rarityMultipliers] || 1.0;
+    const scarcityMultiplier = Math.max(1.0, (1.0 / pet.pet_type.drop_rate));
+    
+    return Math.floor(basePrice + rarityMultiplier * scarcityMultiplier);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -3247,7 +4847,7 @@ export const PetGarden = () => {
                 />
               )
             ))}
-            
+
             {/* Pokemon-style remove buttons */}
             {activePets.map((pet) => (
               petPositions[pet.id] && (
@@ -3316,23 +4916,46 @@ export const PetGarden = () => {
                         +{((pet.pet_type.trait_value - 1) * 100).toFixed(1)}%
                       </p>
                     </div>
-                    
-                    <Button
-                      size="sm"
-                      onClick={() => setSelectedPetForPlacement(
-                        selectedPetForPlacement === pet.id ? null : pet.id
-                      )}
-                      className={`w-full text-xs pokemon-action-btn border-2 ${
-                        selectedPetForPlacement === pet.id 
-                          ? "bg-orange-600 hover:bg-orange-700 border-orange-400" 
-                          : "bg-green-600 hover:bg-green-700 border-green-400"
-                      }`}
-                    >
-                      {selectedPetForPlacement === pet.id 
-                        ? "Cancel Selection" 
-                        : "Send to Garden"
-                      }
-                    </Button>
+
+                    <div className="space-y-2">
+                      <div className="text-center p-2 bg-yellow-100 rounded border-2 border-yellow-400">
+                        <p className="text-xs font-bold text-yellow-800">Sell Price</p>
+                        <p className="text-sm font-bold text-green-600">
+                          {calculateSellPrice(pet)} $ITLOG
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          Drop Rate: {(pet.pet_type.drop_rate * 100).toFixed(1)}%
+                        </p>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => setSelectedPetForPlacement(
+                            selectedPetForPlacement === pet.id ? null : pet.id
+                          )}
+                          className={`text-xs pokemon-action-btn border-2 ${
+                            selectedPetForPlacement === pet.id 
+                              ? "bg-orange-600 hover:bg-orange-700 border-orange-400" 
+                              : "bg-green-600 hover:bg-green-700 border-green-400"
+                          }`}
+                        >
+                          {selectedPetForPlacement === pet.id 
+                            ? "Cancel" 
+                            : "Garden"
+                          }
+                        </Button>
+                        
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleSellPet(pet.id)}
+                          className="text-xs pokemon-action-btn border-2 bg-red-600 hover:bg-red-700 border-red-400"
+                        >
+                          💰 Sell
+                        </Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

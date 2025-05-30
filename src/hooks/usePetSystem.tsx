@@ -419,6 +419,129 @@ export const usePetSystem = () => {
     }
   };
 
+  // Sell pet for ITLOG tokens
+  const sellPet = async (petId: string) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase.rpc("sell_pet", {
+        p_user_id: user.id,
+        p_pet_id: petId
+      });
+
+      if (error) throw error;
+
+      // Handle both boolean and object responses
+      if (typeof data === 'boolean') {
+        if (data) {
+          toast({
+            title: "Pet sold!",
+            description: "You received ITLOG tokens for your pet."
+          });
+          loadUserPets();
+          queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile query
+        } else {
+          toast({
+            title: "Sale failed",
+            description: "Unable to sell pet",
+            variant: "destructive"
+          });
+        }
+      } else if (data && typeof data === 'object') {
+        const response = data as { 
+          success: boolean; 
+          error?: string; 
+          pet_name?: string; 
+          pet_emoji?: string; 
+          rarity?: string; 
+          tokens_earned?: number;
+          drop_rate?: number;
+        };
+        if (response.success) {
+          toast({
+            title: "🏦 Pet Sold!",
+            description: `You sold your ${response.rarity} ${response.pet_name} ${response.pet_emoji} for ${response.tokens_earned} $ITLOG tokens!`
+          });
+          loadUserPets();
+          queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile query
+        } else {
+          toast({
+            title: "Sale failed",
+            description: response.error || "Unknown error occurred",
+            variant: "destructive"
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error selling pet:", error);
+      toast({
+        title: "Error",
+        description: "Failed to sell pet. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Skip egg hatching time for 50 ITLOG tokens
+  const skipEggHatching = async (eggId: string) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase.rpc("skip_egg_hatching", {
+        p_user_id: user.id,
+        p_egg_id: eggId
+      });
+
+      if (error) throw error;
+
+      // Handle both boolean and object responses
+      if (typeof data === 'boolean') {
+        if (data) {
+          toast({
+            title: "⏰ Hatching Skipped!",
+            description: "Your egg is now ready to hatch!"
+          });
+          loadUserEggs();
+          queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile query
+        } else {
+          toast({
+            title: "Skip failed",
+            description: "Unable to skip egg hatching",
+            variant: "destructive"
+          });
+        }
+      } else if (data && typeof data === 'object') {
+        const response = data as { 
+          success: boolean; 
+          error?: string; 
+          tokens_spent?: number;
+          message?: string;
+        };
+        if (response.success) {
+          toast({
+            title: "⏰ Hatching Skipped!",
+            description: `Spent ${response.tokens_spent} $ITLOG tokens. ${response.message || 'Your egg is ready to hatch!'}`
+          });
+          loadUserEggs();
+          queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile query
+        } else {
+          toast({
+            title: "Skip failed",
+            description: response.error || "Unknown error occurred",
+            variant: "destructive"
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error skipping egg hatching:", error);
+      toast({
+        title: "Error",
+        description: "Failed to skip egg hatching. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return {
     eggTypes,
     userEggs,
@@ -430,6 +553,8 @@ export const usePetSystem = () => {
     hatchEgg,
     placePetInGarden,
     removePetFromGarden,
+    sellPet,
+    skipEggHatching,
     loadUserEggs,
     loadUserPets,
     loadActivePetBoosts

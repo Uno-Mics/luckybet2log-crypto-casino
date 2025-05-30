@@ -738,6 +738,20 @@ export type Database = {
         }
         Returns: Json
       }
+      sell_pet: {
+        Args: {
+          p_user_id: string
+          p_pet_id: string
+        }
+        Returns: Json
+      }
+      skip_egg_hatching: {
+        Args: {
+          p_user_id: string
+          p_egg_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
