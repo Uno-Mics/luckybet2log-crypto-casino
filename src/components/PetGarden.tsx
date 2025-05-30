@@ -29,6 +29,16 @@ const rarityColors = {
 };
 
 // Enhanced Pokemon-style full-body pixel pet sprites with proper walking animations
+// Map database IDs to correct sprites
+const petIdToSpriteMap: { [key: string]: string } = {
+  '12': '🔆', // Golden Phoenix (legendary)
+  '13': '💚', // Ancient Dragon (legendary) 
+  '14': '🌌', // Cosmic Wolf (legendary)
+  '15': '✨', // Fortune Spirit (legendary)
+  '16': '👑', // Royal Griffin (legendary)
+  '17': '⭐', // Eternal Phoenix (mythical)
+};
+
 const pokemonPetSprites = {
   '🐣': {
     idle: [
@@ -718,6 +728,2138 @@ const pokemonPetSprites = {
       `)
     ],
     name: 'Shellington'
+  },
+  '🐸': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="8" fill="#32CD32"/>
+          <!-- Head -->
+          <rect x="12" y="10" width="8" height="6" fill="#32CD32"/>
+          <!-- Eye bulges -->
+          <rect x="11" y="8" width="4" height="4" fill="#32CD32"/>
+          <rect x="17" y="8" width="4" height="4" fill="#32CD32"/>
+          <!-- Eyes -->
+          <rect x="12" y="9" width="2" height="2" fill="#000000"/>
+          <rect x="18" y="9" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="14" y="14" width="4" height="1" fill="#000000"/>
+          <!-- Arms -->
+          <rect x="8" y="18" width="3" height="4" fill="#32CD32"/>
+          <rect x="21" y="18" width="3" height="4" fill="#32CD32"/>
+          <!-- Legs (crouched) -->
+          <rect x="12" y="24" width="3" height="4" fill="#32CD32"/>
+          <rect x="17" y="24" width="3" height="4" fill="#32CD32"/>
+          <!-- Belly -->
+          <rect x="13" y="18" width="6" height="4" fill="#90EE90"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#32CD32"/>
+          <!-- Head -->
+          <rect x="12" y="9" width="8" height="6" fill="#32CD32"/>
+          <!-- Eye bulges -->
+          <rect x="11" y="7" width="4" height="4" fill="#32CD32"/>
+          <rect x="17" y="7" width="4" height="4" fill="#32CD32"/>
+          <!-- Eyes (blinking) -->
+          <rect x="12" y="8" width="2" height="1" fill="#000000"/>
+          <rect x="18" y="8" width="2" height="1" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="14" y="13" width="4" height="1" fill="#000000"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#32CD32"/>
+          <rect x="21" y="17" width="3" height="4" fill="#32CD32"/>
+          <!-- Legs (crouched) -->
+          <rect x="12" y="23" width="3" height="4" fill="#32CD32"/>
+          <rect x="17" y="23" width="3" height="4" fill="#32CD32"/>
+          <!-- Belly -->
+          <rect x="13" y="17" width="6" height="4" fill="#90EE90"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (mid-hop) -->
+          <rect x="11" y="14" width="12" height="8" fill="#32CD32"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="6" fill="#32CD32"/>
+          <!-- Eye bulges -->
+          <rect x="12" y="6" width="4" height="4" fill="#32CD32"/>
+          <rect x="18" y="6" width="4" height="4" fill="#32CD32"/>
+          <!-- Eyes -->
+          <rect x="13" y="7" width="2" height="2" fill="#000000"/>
+          <rect x="19" y="7" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="15" y="12" width="4" height="1" fill="#000000"/>
+          <!-- Arms (extended) -->
+          <rect x="7" y="16" width="4" height="4" fill="#32CD32"/>
+          <rect x="21" y="16" width="4" height="4" fill="#32CD32"/>
+          <!-- Legs (extended for hop) -->
+          <rect x="10" y="22" width="4" height="5" fill="#32CD32"/>
+          <rect x="18" y="22" width="4" height="5" fill="#32CD32"/>
+          <!-- Belly -->
+          <rect x="14" y="16" width="6" height="4" fill="#90EE90"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (landing) -->
+          <rect x="11" y="16" width="12" height="8" fill="#32CD32"/>
+          <!-- Head -->
+          <rect x="13" y="10" width="8" height="6" fill="#32CD32"/>
+          <!-- Eye bulges -->
+          <rect x="12" y="8" width="4" height="4" fill="#32CD32"/>
+          <rect x="18" y="8" width="4" height="4" fill="#32CD32"/>
+          <!-- Eyes -->
+          <rect x="13" y="9" width="2" height="2" fill="#000000"/>
+          <rect x="19" y="9" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="15" y="14" width="4" height="1" fill="#000000"/>
+          <!-- Arms (tucked) -->
+          <rect x="9" y="18" width="3" height="4" fill="#32CD32"/>
+          <rect x="22" y="18" width="3" height="4" fill="#32CD32"/>
+          <!-- Legs (crouched after landing) -->
+          <rect x="13" y="24" width="3" height="4" fill="#32CD32"/>
+          <rect x="16" y="24" width="3" height="4" fill="#32CD32"/>
+          <!-- Belly -->
+          <rect x="14" y="18" width="6" height="4" fill="#90EE90"/>
+        </svg>
+      `)
+    ],
+    name: 'Ribbit'
+  },
+  '🐲': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="8" fill="#4169E1"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#4169E1"/>
+          <!-- Snout -->
+          <rect x="8" y="12" width="4" height="4" fill="#4169E1"/>
+          <!-- Eyes -->
+          <rect x="13" y="10" width="2" height="2" fill="#FF0000"/>
+          <rect x="17" y="10" width="2" height="2" fill="#FF0000"/>
+          <!-- Nostrils -->
+          <rect x="9" y="13" width="1" height="1" fill="#000000"/>
+          <rect x="10" y="13" width="1" height="1" fill="#000000"/>
+          <!-- Wings -->
+          <rect x="6" y="14" width="6" height="8" fill="#191970"/>
+          <rect x="20" y="14" width="6" height="8" fill="#191970"/>
+          <!-- Wing details -->
+          <rect x="7" y="16" width="4" height="4" fill="#4169E1"/>
+          <rect x="21" y="16" width="4" height="4" fill="#4169E1"/>
+          <!-- Legs -->
+          <rect x="12" y="24" width="3" height="4" fill="#4169E1"/>
+          <rect x="17" y="24" width="3" height="4" fill="#4169E1"/>
+          <!-- Tail -->
+          <rect x="22" y="20" width="4" height="2" fill="#4169E1"/>
+          <rect x="24" y="18" width="2" height="2" fill="#4169E1"/>
+          <!-- Spikes on back -->
+          <rect x="14" y="14" width="2" height="2" fill="#FF4500"/>
+          <rect x="16" y="14" width="2" height="2" fill="#FF4500"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#4169E1"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#4169E1"/>
+          <!-- Snout -->
+          <rect x="8" y="11" width="4" height="4" fill="#4169E1"/>
+          <!-- Eyes -->
+          <rect x="13" y="9" width="2" height="2" fill="#FF0000"/>
+          <rect x="17" y="9" width="2" height="2" fill="#FF0000"/>
+          <!-- Nostrils -->
+          <rect x="9" y="12" width="1" height="1" fill="#000000"/>
+          <rect x="10" y="12" width="1" height="1" fill="#000000"/>
+          <!-- Wings (slight flap) -->
+          <rect x="5" y="12" width="7" height="9" fill="#191970"/>
+          <rect x="20" y="12" width="7" height="9" fill="#191970"/>
+          <!-- Wing details -->
+          <rect x="6" y="14" width="5" height="5" fill="#4169E1"/>
+          <rect x="21" y="14" width="5" height="5" fill="#4169E1"/>
+          <!-- Legs -->
+          <rect x="12" y="23" width="3" height="4" fill="#4169E1"/>
+          <rect x="17" y="23" width="3" height="4" fill="#4169E1"/>
+          <!-- Tail -->
+          <rect x="22" y="19" width="4" height="2" fill="#4169E1"/>
+          <rect x="24" y="17" width="2" height="2" fill="#4169E1"/>
+          <!-- Spikes on back -->
+          <rect x="14" y="13" width="2" height="2" fill="#FF4500"/>
+          <rect x="16" y="13" width="2" height="2" fill="#FF4500"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#4169E1"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#4169E1"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#4169E1"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FF0000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FF0000"/>
+          <!-- Nostrils with fire breath -->
+          <rect x="6" y="13" width="3" height="1" fill="#FF4500"/>
+          <rect x="5" y="14" width="2" height="1" fill="#FFFF00"/>
+          <!-- Wings (extended) -->
+          <rect x="3" y="10" width="9" height="10" fill="#191970"/>
+          <rect x="20" y="10" width="9" height="10" fill="#191970"/>
+          <!-- Wing details -->
+          <rect x="4" y="12" width="7" height="6" fill="#4169E1"/>
+          <rect x="21" y="12" width="7" height="6" fill="#4169E1"/>
+          <!-- Legs (walking) -->
+          <rect x="11" y="24" width="3" height="4" fill="#4169E1"/>
+          <rect x="18" y="24" width="3" height="4" fill="#4169E1"/>
+          <!-- Tail -->
+          <rect x="23" y="20" width="4" height="2" fill="#4169E1"/>
+          <rect x="25" y="18" width="2" height="2" fill="#4169E1"/>
+          <!-- Spikes on back -->
+          <rect x="15" y="14" width="2" height="2" fill="#FF4500"/>
+          <rect x="17" y="14" width="2" height="2" fill="#FF4500"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#4169E1"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#4169E1"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#4169E1"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FF0000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FF0000"/>
+          <!-- Nostrils -->
+          <rect x="10" y="13" width="1" height="1" fill="#000000"/>
+          <rect x="11" y="13" width="1" height="1" fill="#000000"/>
+          <!-- Wings (folded back) -->
+          <rect x="4" y="12" width="8" height="9" fill="#191970"/>
+          <rect x="20" y="12" width="8" height="9" fill="#191970"/>
+          <!-- Wing details -->
+          <rect x="5" y="14" width="6" height="5" fill="#4169E1"/>
+          <rect x="21" y="14" width="6" height="5" fill="#4169E1"/>
+          <!-- Legs (walking) -->
+          <rect x="13" y="24" width="3" height="4" fill="#4169E1"/>
+          <rect x="16" y="24" width="3" height="4" fill="#4169E1"/>
+          <!-- Tail -->
+          <rect x="23" y="20" width="4" height="2" fill="#4169E1"/>
+          <rect x="25" y="18" width="2" height="2" fill="#4169E1"/>
+          <!-- Spikes on back -->
+          <rect x="15" y="14" width="2" height="2" fill="#FF4500"/>
+          <rect x="17" y="14" width="2" height="2" fill="#FF4500"/>
+        </svg>
+      `)
+    ],
+    name: 'Draco'
+  },
+  '🦅': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="12" y="16" width="8" height="8" fill="#8B4513"/>
+          <!-- Head -->
+          <rect x="14" y="8" width="4" height="8" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="12" y="12" width="2" height="2" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="15" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Wings (spread) -->
+          <rect x="4" y="14" width="8" height="6" fill="#8B4513"/>
+          <rect x="20" y="14" width="8" height="6" fill="#8B4513"/>
+          <!-- Wing tips -->
+          <rect x="2" y="16" width="4" height="4" fill="#654321"/>
+          <rect x="26" y="16" width="4" height="4" fill="#654321"/>
+          <!-- Tail feathers -->
+          <rect x="16" y="24" width="2" height="4" fill="#8B4513"/>
+          <rect x="14" y="26" width="2" height="2" fill="#8B4513"/>
+          <rect x="18" y="26" width="2" height="2" fill="#8B4513"/>
+          <!-- Legs -->
+          <rect x="14" y="24" width="2" height="3" fill="#FFD700"/>
+          <rect x="16" y="24" width="2" height="3" fill="#FFD700"/>
+          <!-- Talons -->
+          <rect x="13" y="27" width="3" height="1" fill="#FFD700"/>
+          <rect x="16" y="27" width="3" height="1" fill="#FFD700"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="12" y="15" width="8" height="8" fill="#8B4513"/>
+          <!-- Head -->
+          <rect x="14" y="7" width="4" height="8" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="12" y="11" width="2" height="2" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="15" y="9" width="2" height="2" fill="#000000"/>
+          <!-- Wings (flapping up) -->
+          <rect x="3" y="10" width="9" height="8" fill="#8B4513"/>
+          <rect x="20" y="10" width="9" height="8" fill="#8B4513"/>
+          <!-- Wing tips -->
+          <rect x="1" y="12" width="5" height="6" fill="#654321"/>
+          <rect x="26" y="12" width="5" height="6" fill="#654321"/>
+          <!-- Tail feathers -->
+          <rect x="16" y="23" width="2" height="4" fill="#8B4513"/>
+          <rect x="14" y="25" width="2" height="2" fill="#8B4513"/>
+          <rect x="18" y="25" width="2" height="2" fill="#8B4513"/>
+          <!-- Legs -->
+          <rect x="14" y="23" width="2" height="3" fill="#FFD700"/>
+          <rect x="16" y="23" width="2" height="3" fill="#FFD700"/>
+          <!-- Talons -->
+          <rect x="13" y="26" width="3" height="1" fill="#FFD700"/>
+          <rect x="16" y="26" width="3" height="1" fill="#FFD700"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (soaring) -->
+          <rect x="13" y="14" width="8" height="8" fill="#8B4513"/>
+          <!-- Head -->
+          <rect x="15" y="6" width="4" height="8" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="13" y="10" width="2" height="2" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="16" y="8" width="2" height="2" fill="#000000"/>
+          <!-- Wings (full spread gliding) -->
+          <rect x="1" y="8" width="12" height="10" fill="#8B4513"/>
+          <rect x="19" y="8" width="12" height="10" fill="#8B4513"/>
+          <!-- Wing details -->
+          <rect x="2" y="10" width="10" height="6" fill="#654321"/>
+          <rect x="20" y="10" width="10" height="6" fill="#654321"/>
+          <!-- Wing tips -->
+          <rect x="0" y="12" width="4" height="4" fill="#A0522D"/>
+          <rect x="28" y="12" width="4" height="4" fill="#A0522D"/>
+          <!-- Tail feathers (spread) -->
+          <rect x="17" y="22" width="2" height="4" fill="#8B4513"/>
+          <rect x="15" y="24" width="2" height="3" fill="#8B4513"/>
+          <rect x="19" y="24" width="2" height="3" fill="#8B4513"/>
+          <!-- Legs (tucked) -->
+          <rect x="15" y="22" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="22" width="2" height="2" fill="#FFD700"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="13" y="16" width="8" height="8" fill="#8B4513"/>
+          <!-- Head -->
+          <rect x="15" y="8" width="4" height="8" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="13" y="12" width="2" height="2" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="16" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Wings (landing position) -->
+          <rect x="5" y="12" width="8" height="8" fill="#8B4513"/>
+          <rect x="19" y="12" width="8" height="8" fill="#8B4513"/>
+          <!-- Wing tips -->
+          <rect x="3" y="14" width="4" height="6" fill="#654321"/>
+          <rect x="25" y="14" width="4" height="6" fill="#654321"/>
+          <!-- Tail feathers -->
+          <rect x="17" y="24" width="2" height="4" fill="#8B4513"/>
+          <rect x="15" y="26" width="2" height="2" fill="#8B4513"/>
+          <rect x="19" y="26" width="2" height="2" fill="#8B4513"/>
+          <!-- Legs (landing) -->
+          <rect x="14" y="24" width="2" height="4" fill="#FFD700"/>
+          <rect x="16" y="24" width="2" height="4" fill="#FFD700"/>
+          <!-- Talons -->
+          <rect x="13" y="28" width="3" height="1" fill="#FFD700"/>
+          <rect x="16" y="28" width="3" height="1" fill="#FFD700"/>
+        </svg>
+      `)
+    ],
+    name: 'Skyfall'
+  },
+  '🐺': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="8" fill="#696969"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#696969"/>
+          <!-- Snout -->
+          <rect x="8" y="12" width="4" height="4" fill="#696969"/>
+          <!-- Ears -->
+          <rect x="12" y="6" width="3" height="3" fill="#696969"/>
+          <rect x="17" y="6" width="3" height="3" fill="#696969"/>
+          <!-- Inner ears -->
+          <rect x="13" y="7" width="1" height="1" fill="#FF69B4"/>
+          <rect x="18" y="7" width="1" height="1" fill="#FF69B4"/>
+          <!-- Eyes -->
+          <rect x="13" y="10" width="2" height="2" fill="#FFFF00"/>
+          <rect x="17" y="10" width="2" height="2" fill="#FFFF00"/>
+          <!-- Nose -->
+          <rect x="9" y="13" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="10" y="15" width="3" height="1" fill="#000000"/>
+          <!-- Arms -->
+          <rect x="8" y="18" width="3" height="4" fill="#696969"/>
+          <rect x="21" y="18" width="3" height="4" fill="#696969"/>
+          <!-- Legs -->
+          <rect x="12" y="24" width="3" height="4" fill="#696969"/>
+          <rect x="17" y="24" width="3" height="4" fill="#696969"/>
+          <!-- Tail -->
+          <rect x="22" y="18" width="2" height="6" fill="#696969"/>
+          <rect x="24" y="20" width="2" height="4" fill="#696969"/>
+          <!-- Belly -->
+          <rect x="13" y="18" width="6" height="4" fill="#D3D3D3"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#696969"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#696969"/>
+          <!-- Snout -->
+          <rect x="8" y="11" width="4" height="4" fill="#696969"/>
+          <!-- Ears -->
+          <rect x="12" y="5" width="3" height="3" fill="#696969"/>
+          <rect x="17" y="5" width="3" height="3" fill="#696969"/>
+          <!-- Inner ears -->
+          <rect x="13" y="6" width="1" height="1" fill="#FF69B4"/>
+          <rect x="18" y="6" width="1" height="1" fill="#FF69B4"/>
+          <!-- Eyes (alert) -->
+          <rect x="13" y="9" width="2" height="2" fill="#FFFF00"/>
+          <rect x="17" y="9" width="2" height="2" fill="#FFFF00"/>
+          <!-- Nose -->
+          <rect x="9" y="12" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="10" y="14" width="3" height="1" fill="#000000"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#696969"/>
+          <rect x="21" y="17" width="3" height="4" fill="#696969"/>
+          <!-- Legs -->
+          <rect x="12" y="23" width="3" height="4" fill="#696969"/>
+          <rect x="17" y="23" width="3" height="4" fill="#696969"/>
+          <!-- Tail (alert position) -->
+          <rect x="22" y="16" width="2" height="7" fill="#696969"/>
+          <rect x="24" y="18" width="2" height="5" fill="#696969"/>
+          <!-- Belly -->
+          <rect x="13" y="17" width="6" height="4" fill="#D3D3D3"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#696969"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#696969"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#696969"/>
+          <!-- Ears -->
+          <rect x="13" y="6" width="3" height="3" fill="#696969"/>
+          <rect x="18" y="6" width="3" height="3" fill="#696969"/>
+          <!-- Inner ears -->
+          <rect x="14" y="7" width="1" height="1" fill="#FF69B4"/>
+          <rect x="19" y="7" width="1" height="1" fill="#FF69B4"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FFFF00"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FFFF00"/>
+          <!-- Nose -->
+          <rect x="10" y="13" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="11" y="15" width="3" height="1" fill="#000000"/>
+          <!-- Arms (running motion) -->
+          <rect x="7" y="17" width="4" height="5" fill="#696969"/>
+          <rect x="21" y="19" width="4" height="3" fill="#696969"/>
+          <!-- Legs (running) -->
+          <rect x="11" y="24" width="3" height="4" fill="#696969"/>
+          <rect x="18" y="24" width="3" height="4" fill="#696969"/>
+          <!-- Tail (running) -->
+          <rect x="23" y="17" width="2" height="7" fill="#696969"/>
+          <rect x="25" y="19" width="2" height="5" fill="#696969"/>
+          <!-- Belly -->
+          <rect x="14" y="18" width="6" height="4" fill="#D3D3D3"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#696969"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#696969"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#696969"/>
+          <!-- Ears -->
+          <rect x="13" y="6" width="3" height="3" fill="#696969"/>
+          <rect x="18" y="6" width="3" height="3" fill="#696969"/>
+          <!-- Inner ears -->
+          <rect x="14" y="7" width="1" height="1" fill="#FF69B4"/>
+          <rect x="19" y="7" width="1" height="1" fill="#FF69B4"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FFFF00"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FFFF00"/>
+          <!-- Nose -->
+          <rect x="10" y="13" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="11" y="15" width="3" height="1" fill="#000000"/>
+          <!-- Arms (running motion) -->
+          <rect x="9" y="19" width="4" height="3" fill="#696969"/>
+          <rect x="23" y="17" width="4" height="5" fill="#696969"/>
+          <!-- Legs (running) -->
+          <rect x="13" y="24" width="3" height="4" fill="#696969"/>
+          <rect x="16" y="24" width="3" height="4" fill="#696969"/>
+          <!-- Tail (running) -->
+          <rect x="21" y="17" width="2" height="7" fill="#696969"/>
+          <rect x="19" y="19" width="2" height="5" fill="#696969"/>
+          <!-- Belly -->
+          <rect x="14" y="18" width="6" height="4" fill="#D3D3D3"/>
+        </svg>
+      `)
+    ],
+    name: 'Fenrir'
+  },
+  '🦊': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="8" fill="#FF8C00"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#FF8C00"/>
+          <!-- Snout -->
+          <rect x="8" y="12" width="4" height="4" fill="#FF8C00"/>
+          <!-- Ears (pointed) -->
+          <rect x="12" y="6" width="3" height="3" fill="#FF8C00"/>
+          <rect x="17" y="6" width="3" height="3" fill="#FF8C00"/>
+          <!-- Ear tips -->
+          <rect x="13" y="5" width="1" height="1" fill="#000000"/>
+          <rect x="18" y="5" width="1" height="1" fill="#000000"/>
+          <!-- Inner ears -->
+          <rect x="13" y="7" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="18" y="7" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Eyes -->
+          <rect x="13" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="17" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Nose -->
+          <rect x="9" y="13" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="10" y="15" width="3" height="1" fill="#000000"/>
+          <!-- Arms -->
+          <rect x="8" y="18" width="3" height="4" fill="#FF8C00"/>
+          <rect x="21" y="18" width="3" height="4" fill="#FF8C00"/>
+          <!-- Legs -->
+          <rect x="12" y="24" width="3" height="4" fill="#FF8C00"/>
+          <rect x="17" y="24" width="3" height="4" fill="#FF8C00"/>
+          <!-- Fluffy tail -->
+          <rect x="22" y="16" width="3" height="8" fill="#FF8C00"/>
+          <rect x="25" y="18" width="2" height="6" fill="#FFFFFF"/>
+          <!-- Belly -->
+          <rect x="13" y="18" width="6" height="4" fill="#FFFFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#FF8C00"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#FF8C00"/>
+          <!-- Snout -->
+          <rect x="8" y="11" width="4" height="4" fill="#FF8C00"/>
+          <!-- Ears (pointed) -->
+          <rect x="12" y="5" width="3" height="3" fill="#FF8C00"/>
+          <rect x="17" y="5" width="3" height="3" fill="#FF8C00"/>
+          <!-- Ear tips -->
+          <rect x="13" y="4" width="1" height="1" fill="#000000"/>
+          <rect x="18" y="4" width="1" height="1" fill="#000000"/>
+          <!-- Inner ears -->
+          <rect x="13" y="6" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="18" y="6" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Eyes (sly look) -->
+          <rect x="13" y="9" width="2" height="1" fill="#000000"/>
+          <rect x="17" y="9" width="2" height="1" fill="#000000"/>
+          <!-- Nose -->
+          <rect x="9" y="12" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="10" y="14" width="3" height="1" fill="#000000"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#FF8C00"/>
+          <rect x="21" y="17" width="3" height="4" fill="#FF8C00"/>
+          <!-- Legs -->
+          <rect x="12" y="23" width="3" height="4" fill="#FF8C00"/>
+          <rect x="17" y="23" width="3" height="4" fill="#FF8C00"/>
+          <!-- Fluffy tail (swishing) -->
+          <rect x="22" y="15" width="3" height="8" fill="#FF8C00"/>
+          <rect x="25" y="17" width="2" height="6" fill="#FFFFFF"/>
+          <!-- Belly -->
+          <rect x="13" y="17" width="6" height="4" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#FF8C00"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#FF8C00"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#FF8C00"/>
+          <!-- Ears (pointed) -->
+          <rect x="13" y="6" width="3" height="3" fill="#FF8C00"/>
+          <rect x="18" y="6" width="3" height="3" fill="#FF8C00"/>
+          <!-- Ear tips -->
+          <rect x="14" y="5" width="1" height="1" fill="#000000"/>
+          <rect x="19" y="5" width="1" height="1" fill="#000000"/>
+          <!-- Inner ears -->
+          <rect x="14" y="7" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="19" y="7" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Nose -->
+          <rect x="10" y="13" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="11" y="15" width="3" height="1" fill="#000000"/>
+          <!-- Arms (trotting) -->
+          <rect x="7" y="17" width="4" height="5" fill="#FF8C00"/>
+          <rect x="21" y="19" width="4" height="3" fill="#FF8C00"/>
+          <!-- Legs (trotting) -->
+          <rect x="11" y="24" width="3" height="4" fill="#FF8C00"/>
+          <rect x="18" y="24" width="3" height="4" fill="#FF8C00"/>
+          <!-- Fluffy tail (bouncing) -->
+          <rect x="23" y="14" width="3" height="10" fill="#FF8C00"/>
+          <rect x="26" y="16" width="2" height="8" fill="#FFFFFF"/>
+          <!-- Belly -->
+          <rect x="14" y="18" width="6" height="4" fill="#FFFFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#FF8C00"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#FF8C00"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#FF8C00"/>
+          <!-- Ears (pointed) -->
+          <rect x="13" y="6" width="3" height="3" fill="#FF8C00"/>
+          <rect x="18" y="6" width="3" height="3" fill="#FF8C00"/>
+          <!-- Ear tips -->
+          <rect x="14" y="5" width="1" height="1" fill="#000000"/>
+          <rect x="19" y="5" width="1" height="1" fill="#000000"/>
+          <!-- Inner ears -->
+          <rect x="14" y="7" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="19" y="7" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#000000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#000000"/>
+          <!-- Nose -->
+          <rect x="10" y="13" width="2" height="2" fill="#000000"/>
+          <!-- Mouth -->
+          <rect x="11" y="15" width="3" height="1" fill="#000000"/>
+          <!-- Arms (trotting) -->
+          <rect x="9" y="19" width="4" height="3" fill="#FF8C00"/>
+          <rect x="23" y="17" width="4" height="5" fill="#FF8C00"/>
+          <!-- Legs (trotting) -->
+          <rect x="13" y="24" width="3" height="4" fill="#FF8C00"/>
+          <rect x="16" y="24" width="3" height="4" fill="#FF8C00"/>
+          <!-- Fluffy tail (bouncing) -->
+          <rect x="21" y="14" width="3" height="10" fill="#FF8C00"/>
+          <rect x="19" y="16" width="2" height="8" fill="#FFFFFF"/>
+          <!-- Belly -->
+          <rect x="14" y="18" width="6" height="4" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    name: 'Vixen'
+  },
+  // Eternal Phoenix - Mythical pet with ethereal flames
+  '⭐': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (ethereal white-gold) -->
+          <rect x="10" y="16" width="12" height="10" fill="#F0F8FF"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#F0F8FF"/>
+          <!-- Eternal flame crest (white-blue flames) -->
+          <rect x="14" y="4" width="2" height="4" fill="#E6E6FA"/>
+          <rect x="16" y="4" width="2" height="4" fill="#F0F8FF"/>
+          <rect x="13" y="2" width="1" height="2" fill="#FFFFFF"/>
+          <rect x="17" y="2" width="1" height="2" fill="#FFFFFF"/>
+          <rect x="15" y="1" width="2" height="1" fill="#87CEEB"/>
+          <!-- Beak (silvery) -->
+          <rect x="14" y="12" width="4" height="2" fill="#C0C0C0"/>
+          <!-- Eyes (ethereal blue) -->
+          <rect x="13" y="10" width="2" height="2" fill="#87CEEB"/>
+          <rect x="17" y="10" width="2" height="2" fill="#87CEEB"/>
+          <rect x="13" y="10" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="17" y="10" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Wings (ethereal with starlight effect) -->
+          <rect x="8" y="18" width="4" height="6" fill="#F0F8FF"/>
+          <rect x="20" y="18" width="4" height="6" fill="#F0F8FF"/>
+          <rect x="6" y="19" width="2" height="4" fill="#E6E6FA"/>
+          <rect x="24" y="19" width="2" height="4" fill="#E6E6FA"/>
+          <rect x="5" y="20" width="1" height="2" fill="#87CEEB"/>
+          <rect x="26" y="20" width="1" height="2" fill="#87CEEB"/>
+          <!-- Feet -->
+          <rect x="12" y="26" width="3" height="3" fill="#C0C0C0"/>
+          <rect x="17" y="26" width="3" height="3" fill="#C0C0C0"/>
+          <!-- Eternal aura (starlight) -->
+          <rect x="8" y="14" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="23" y="15" width="1" height="1" fill="#87CEEB"/>
+          <rect x="6" y="17" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="25" y="18" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Star effects -->
+          <rect x="9" y="12" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="22" y="13" width="1" height="1" fill="#87CEEB"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="10" fill="#F0F8FF"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#F0F8FF"/>
+          <!-- Eternal flame crest (pulsing) -->
+          <rect x="14" y="3" width="2" height="4" fill="#E6E6FA"/>
+          <rect x="16" y="3" width="2" height="4" fill="#F0F8FF"/>
+          <rect x="13" y="1" width="1" height="2" fill="#FFFFFF"/>
+          <rect x="17" y="1" width="1" height="2" fill="#FFFFFF"/>
+          <rect x="15" y="2" width="2" height="1" fill="#87CEEB"/>
+          <!-- Beak -->
+          <rect x="14" y="11" width="4" height="2" fill="#C0C0C0"/>
+          <!-- Eyes (glowing eternal) -->
+          <rect x="13" y="9" width="2" height="2" fill="#87CEEB"/>
+          <rect x="17" y="9" width="2" height="2" fill="#87CEEB"/>
+          <rect x="14" y="9" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="18" y="9" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Wings (intense ethereal glow) -->
+          <rect x="7" y="17" width="5" height="7" fill="#F0F8FF"/>
+          <rect x="20" y="17" width="5" height="7" fill="#F0F8FF"/>
+          <rect x="5" y="18" width="3" height="5" fill="#E6E6FA"/>
+          <rect x="24" y="18" width="3" height="5" fill="#E6E6FA"/>
+          <rect x="4" y="19" width="2" height="3" fill="#87CEEB"/>
+          <rect x="26" y="19" width="2" height="3" fill="#87CEEB"/>
+          <!-- Feet -->
+          <rect x="12" y="25" width="3" height="3" fill="#C0C0C0"/>
+          <rect x="17" y="25" width="3" height="3" fill="#C0C0C0"/>
+          <!-- Enhanced eternal aura -->
+          <rect x="7" y="13" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="24" y="14" width="1" height="1" fill="#87CEEB"/>
+          <rect x="5" y="16" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="26" y="17" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="9" y="12" width="1" height="1" fill="#87CEEB"/>
+          <rect x="22" y="13" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Starlight sparkles -->
+          <rect x="11" y="11" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="20" y="12" width="1" height="1" fill="#87CEEB"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (soaring eternally) -->
+          <rect x="11" y="16" width="12" height="10" fill="#F0F8FF"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#F0F8FF"/>
+          <!-- Eternal flame crest (intense) -->
+          <rect x="15" y="4" width="2" height="4" fill="#E6E6FA"/>
+          <rect x="17" y="4" width="2" height="4" fill="#F0F8FF"/>
+          <rect x="14" y="2" width="1" height="2" fill="#FFFFFF"/>
+          <rect x="18" y="2" width="1" height="2" fill="#FFFFFF"/>
+          <rect x="16" y="1" width="2" height="1" fill="#87CEEB"/>
+          <!-- Beak -->
+          <rect x="15" y="12" width="4" height="2" fill="#C0C0C0"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#87CEEB"/>
+          <rect x="18" y="10" width="2" height="2" fill="#87CEEB"/>
+          <!-- Wings (spread with eternal light) -->
+          <rect x="3" y="12" width="9" height="8" fill="#F0F8FF"/>
+          <rect x="20" y="12" width="9" height="8" fill="#F0F8FF"/>
+          <rect x="1" y="14" width="5" height="6" fill="#E6E6FA"/>
+          <rect x="26" y="14" width="5" height="6" fill="#E6E6FA"/>
+          <rect x="0" y="15" width="3" height="4" fill="#87CEEB"/>
+          <rect x="29" y="15" width="3" height="4" fill="#87CEEB"/>
+          <!-- Feet (flying position) -->
+          <rect x="10" y="26" width="3" height="3" fill="#C0C0C0"/>
+          <rect x="18" y="26" width="3" height="3" fill="#C0C0C0"/>
+          <!-- Eternal light trail -->
+          <rect x="5" y="18" width="2" height="2" fill="#F0F8FF"/>
+          <rect x="3" y="20" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="1" y="22" width="2" height="2" fill="#87CEEB"/>
+          <!-- Intense eternal aura -->
+          <rect x="0" y="12" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="31" y="14" width="1" height="1" fill="#87CEEB"/>
+          <rect x="2" y="10" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="29" y="12" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#F0F8FF"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#F0F8FF"/>
+          <!-- Eternal flame crest -->
+          <rect x="15" y="4" width="2" height="4" fill="#E6E6FA"/>
+          <rect x="17" y="4" width="2" height="4" fill="#F0F8FF"/>
+          <rect x="14" y="2" width="1" height="2" fill="#FFFFFF"/>
+          <rect x="18" y="2" width="1" height="2" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="15" y="12" width="4" height="2" fill="#C0C0C0"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#87CEEB"/>
+          <rect x="18" y="10" width="2" height="2" fill="#87CEEB"/>
+          <!-- Wings (folded with eternal glow) -->
+          <rect x="6" y="16" width="6" height="8" fill="#F0F8FF"/>
+          <rect x="20" y="16" width="6" height="8" fill="#F0F8FF"/>
+          <rect x="5" y="17" width="4" height="6" fill="#E6E6FA"/>
+          <rect x="23" y="17" width="4" height="6" fill="#E6E6FA"/>
+          <!-- Feet (walking) -->
+          <rect x="13" y="26" width="3" height="3" fill="#C0C0C0"/>
+          <rect x="16" y="26" width="3" height="3" fill="#C0C0C0"/>
+          <!-- Eternal aura -->
+          <rect x="4" y="14" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="27" y="15" width="1" height="1" fill="#87CEEB"/>
+          <rect x="7" y="12" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="24" y="13" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    name: 'Eternal Phoenix'
+  },
+  // Golden Phoenix - Legendary pet with golden flames
+  '🔆': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="10" fill="#FFD700"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#FFD700"/>
+          <!-- Golden flame crest -->
+          <rect x="14" y="4" width="2" height="4" fill="#FFA500"/>
+          <rect x="16" y="4" width="2" height="4" fill="#FFD700"/>
+          <rect x="13" y="2" width="1" height="2" fill="#FFFF00"/>
+          <rect x="17" y="2" width="1" height="2" fill="#FFFF00"/>
+          <rect x="15" y="1" width="2" height="1" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="14" y="12" width="4" height="2" fill="#FF8C00"/>
+          <!-- Eyes (golden) -->
+          <rect x="13" y="10" width="2" height="2" fill="#FF8C00"/>
+          <rect x="17" y="10" width="2" height="2" fill="#FF8C00"/>
+          <rect x="13" y="10" width="1" height="1" fill="#FFFF00"/>
+          <rect x="17" y="10" width="1" height="1" fill="#FFFF00"/>
+          <!-- Wings (golden with flame effect) -->
+          <rect x="8" y="18" width="4" height="6" fill="#FFD700"/>
+          <rect x="20" y="18" width="4" height="6" fill="#FFD700"/>
+          <rect x="6" y="19" width="2" height="4" fill="#FFA500"/>
+          <rect x="24" y="19" width="2" height="4" fill="#FFA500"/>
+          <rect x="5" y="20" width="1" height="2" fill="#FF8C00"/>
+          <rect x="26" y="20" width="1" height="2" fill="#FF8C00"/>
+          <!-- Feet -->
+          <rect x="12" y="26" width="3" height="3" fill="#FF8C00"/>
+          <rect x="17" y="26" width="3" height="3" fill="#FF8C00"/>
+          <!-- Golden aura -->
+          <rect x="8" y="14" width="1" height="1" fill="#FFFF00"/>
+          <rect x="23" y="15" width="1" height="1" fill="#FFFF00"/>
+          <rect x="6" y="17" width="1" height="1" fill="#FFD700"/>
+          <rect x="25" y="18" width="1" height="1" fill="#FFD700"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="10" fill="#FFD700"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#FFD700"/>
+          <!-- Golden flame crest (flickering) -->
+          <rect x="14" y="3" width="2" height="4" fill="#FFA500"/>
+          <rect x="16" y="3" width="2" height="4" fill="#FFD700"/>
+          <rect x="13" y="1" width="1" height="2" fill="#FFFF00"/>
+          <rect x="17" y="1" width="1" height="2" fill="#FFFF00"/>
+          <rect x="15" y="2" width="2" height="1" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="14" y="11" width="4" height="2" fill="#FF8C00"/>
+          <!-- Eyes (glowing) -->
+          <rect x="13" y="9" width="2" height="2" fill="#FF8C00"/>
+          <rect x="17" y="9" width="2" height="2" fill="#FF8C00"/>
+          <rect x="14" y="9" width="1" height="1" fill="#FFFF00"/>
+          <rect x="18" y="9" width="1" height="1" fill="#FFFF00"/>
+          <!-- Wings (golden with intense flame) -->
+          <rect x="7" y="17" width="5" height="7" fill="#FFD700"/>
+          <rect x="20" y="17" width="5" height="7" fill="#FFD700"/>
+          <rect x="5" y="18" width="3" height="5" fill="#FFA500"/>
+          <rect x="24" y="18" width="3" height="5" fill="#FFA500"/>
+          <rect x="4" y="19" width="2" height="3" fill="#FF8C00"/>
+          <rect x="26" y="19" width="2" height="3" fill="#FF8C00"/>
+          <!-- Feet -->
+          <rect x="12" y="25" width="3" height="3" fill="#FF8C00"/>
+          <rect x="17" y="25" width="3" height="3" fill="#FF8C00"/>
+          <!-- Golden aura (intense) -->
+          <rect x="7" y="13" width="1" height="1" fill="#FFFF00"/>
+          <rect x="24" y="14" width="1" height="1" fill="#FFFF00"/>
+          <rect x="5" y="16" width="1" height="1" fill="#FFD700"/>
+          <rect x="26" y="17" width="1" height="1" fill="#FFD700"/>
+          <rect x="9" y="12" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="22" y="13" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (soaring) -->
+          <rect x="11" y="16" width="12" height="10" fill="#FFD700"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#FFD700"/>
+          <!-- Golden flame crest (intense) -->
+          <rect x="15" y="4" width="2" height="4" fill="#FFA500"/>
+          <rect x="17" y="4" width="2" height="4" fill="#FFD700"/>
+          <rect x="14" y="2" width="1" height="2" fill="#FFFF00"/>
+          <rect x="18" y="2" width="1" height="2" fill="#FFFF00"/>
+          <rect x="16" y="1" width="2" height="1" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="15" y="12" width="4" height="2" fill="#FF8C00"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FF8C00"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FF8C00"/>
+          <!-- Wings (spread with golden fire) -->
+          <rect x="3" y="12" width="9" height="8" fill="#FFD700"/>
+          <rect x="20" y="12" width="9" height="8" fill="#FFD700"/>
+          <rect x="1" y="14" width="5" height="6" fill="#FFA500"/>
+          <rect x="26" y="14" width="5" height="6" fill="#FFA500"/>
+          <rect x="0" y="15" width="3" height="4" fill="#FF8C00"/>
+          <rect x="29" y="15" width="3" height="4" fill="#FF8C00"/>
+          <!-- Feet (flying position) -->
+          <rect x="10" y="26" width="3" height="3" fill="#FF8C00"/>
+          <rect x="18" y="26" width="3" height="3" fill="#FF8C00"/>
+          <!-- Golden fire trail -->
+          <rect x="5" y="18" width="2" height="2" fill="#FFD700"/>
+          <rect x="3" y="20" width="2" height="2" fill="#FFA500"/>
+          <rect x="1" y="22" width="2" height="2" fill="#FFFF00"/>
+          <!-- Intense golden aura -->
+          <rect x="0" y="12" width="1" height="1" fill="#FFFF00"/>
+          <rect x="31" y="14" width="1" height="1" fill="#FFFF00"/>
+          <rect x="2" y="10" width="1" height="1" fill="#FFD700"/>
+          <rect x="29" y="12" width="1" height="1" fill="#FFD700"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#FFD700"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#FFD700"/>
+          <!-- Golden flame crest -->
+          <rect x="15" y="4" width="2" height="4" fill="#FFA500"/>
+          <rect x="17" y="4" width="2" height="4" fill="#FFD700"/>
+          <rect x="14" y="2" width="1" height="2" fill="#FFFF00"/>
+          <rect x="18" y="2" width="1" height="2" fill="#FFFF00"/>
+          <!-- Beak -->
+          <rect x="15" y="12" width="4" height="2" fill="#FF8C00"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FF8C00"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FF8C00"/>
+          <!-- Wings (folded with golden glow) -->
+          <rect x="6" y="16" width="6" height="8" fill="#FFD700"/>
+          <rect x="20" y="16" width="6" height="8" fill="#FFD700"/>
+          <rect x="5" y="17" width="4" height="6" fill="#FFA500"/>
+          <rect x="23" y="17" width="4" height="6" fill="#FFA500"/>
+          <!-- Feet (walking) -->
+          <rect x="13" y="26" width="3" height="3" fill="#FF8C00"/>
+          <rect x="16" y="26" width="3" height="3" fill="#FF8C00"/>
+          <!-- Golden aura -->
+          <rect x="4" y="14" width="1" height="1" fill="#FFFF00"/>
+          <rect x="27" y="15" width="1" height="1" fill="#FFFF00"/>
+          <rect x="7" y="12" width="1" height="1" fill="#FFD700"/>
+          <rect x="24" y="13" width="1" height="1" fill="#FFD700"/>
+        </svg>
+      `)
+    ],
+    name: 'Golden Phoenix'
+  },
+  // Ancient Dragon - Legendary pet with cosmic energy
+  '💚': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="8" fill="#2E8B57"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#2E8B57"/>
+          <!-- Snout -->
+          <rect x="8" y="12" width="4" height="4" fill="#2E8B57"/>
+          <!-- Eyes (ancient wisdom) -->
+          <rect x="13" y="10" width="2" height="2" fill="#9370DB"/>
+          <rect x="17" y="10" width="2" height="2" fill="#9370DB"/>
+          <rect x="13" y="10" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="17" y="10" width="1" height="1" fill="#E6E6FA"/>
+          <!-- Nostrils -->
+          <rect x="9" y="13" width="1" height="1" fill="#000000"/>
+          <rect x="10" y="13" width="1" height="1" fill="#000000"/>
+          <!-- Wings (ancient runic patterns) -->
+          <rect x="6" y="14" width="6" height="8" fill="#228B22"/>
+          <rect x="20" y="14" width="6" height="8" fill="#228B22"/>
+          <!-- Wing runes -->
+          <rect x="7" y="16" width="1" height="1" fill="#9370DB"/>
+          <rect x="9" y="18" width="1" height="1" fill="#9370DB"/>
+          <rect x="22" y="16" width="1" height="1" fill="#9370DB"/>
+          <rect x="24" y="18" width="1" height="1" fill="#9370DB"/>
+          <!-- Legs -->
+          <rect x="12" y="24" width="3" height="4" fill="#2E8B57"/>
+          <rect x="17" y="24" width="3" height="4" fill="#2E8B57"/>
+          <!-- Tail with ancient spikes -->
+          <rect x="22" y="20" width="4" height="2" fill="#2E8B57"/>
+          <rect x="24" y="18" width="2" height="2" fill="#2E8B57"/>
+          <!-- Ancient spikes on back -->
+          <rect x="14" y="14" width="2" height="2" fill="#9370DB"/>
+          <rect x="16" y="14" width="2" height="2" fill="#9370DB"/>
+          <!-- Ancient aura -->
+          <rect x="6" y="6" width="1" height="1" fill="#9370DB"/>
+          <rect x="25" y="8" width="1" height="1" fill="#9370DB"/>
+          <rect x="4" y="12" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="27" y="14" width="1" height="1" fill="#E6E6FA"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#2E8B57"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#2E8B57"/>
+          <!-- Snout -->
+          <rect x="8" y="11" width="4" height="4" fill="#2E8B57"/>
+          <!-- Eyes (glowing with ancient power) -->
+          <rect x="13" y="9" width="2" height="2" fill="#9370DB"/>
+          <rect x="17" y="9" width="2" height="2" fill="#9370DB"/>
+          <rect x="12" y="8" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="19" y="8" width="1" height="1" fill="#E6E6FA"/>
+          <!-- Nostrils -->
+          <rect x="9" y="12" width="1" height="1" fill="#000000"/>
+          <rect x="10" y="12" width="1" height="1" fill="#000000"/>
+          <!-- Wings (pulsing with magic) -->
+          <rect x="5" y="12" width="7" height="9" fill="#228B22"/>
+          <rect x="20" y="12" width="7" height="9" fill="#228B22"/>
+          <!-- Magical runes (pulsing) -->
+          <rect x="6" y="14" width="2" height="2" fill="#9370DB"/>
+          <rect x="8" y="16" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="22" y="14" width="2" height="2" fill="#9370DB"/>
+          <rect x="24" y="16" width="2" height="2" fill="#E6E6FA"/>
+          <!-- Legs -->
+          <rect x="12" y="23" width="3" height="4" fill="#2E8B57"/>
+          <rect x="17" y="23" width="3" height="4" fill="#2E8B57"/>
+          <!-- Tail -->
+          <rect x="22" y="19" width="4" height="2" fill="#2E8B57"/>
+          <rect x="24" y="17" width="2" height="2" fill="#2E8B57"/>
+          <!-- Ancient spikes (glowing) -->
+          <rect x="14" y="13" width="2" height="2" fill="#9370DB"/>
+          <rect x="16" y="13" width="2" height="2" fill="#E6E6FA"/>
+          <!-- Ancient aura (enhanced) -->
+          <rect x="5" y="5" width="1" height="1" fill="#9370DB"/>
+          <rect x="26" y="7" width="1" height="1" fill="#9370DB"/>
+          <rect x="3" y="11" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="28" y="13" width="1" height="1" fill="#E6E6FA"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#2E8B57"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#2E8B57"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#2E8B57"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#9370DB"/>
+          <rect x="18" y="10" width="2" height="2" fill="#9370DB"/>
+          <!-- Nostrils with ancient breath -->
+          <rect x="6" y="13" width="3" height="1" fill="#9370DB"/>
+          <rect x="5" y="14" width="2" height="1" fill="#E6E6FA"/>
+          <!-- Wings (extended with runic magic) -->
+          <rect x="3" y="10" width="9" height="10" fill="#228B22"/>
+          <rect x="20" y="10" width="9" height="10" fill="#228B22"/>
+          <!-- Enhanced magical runes -->
+          <rect x="4" y="12" width="2" height="2" fill="#9370DB"/>
+          <rect x="6" y="14" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="8" y="16" width="2" height="2" fill="#9370DB"/>
+          <rect x="22" y="12" width="2" height="2" fill="#9370DB"/>
+          <rect x="24" y="14" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="26" y="16" width="2" height="2" fill="#9370DB"/>
+          <!-- Legs (powerful stride) -->
+          <rect x="11" y="24" width="3" height="4" fill="#2E8B57"/>
+          <rect x="18" y="24" width="3" height="4" fill="#2E8B57"/>
+          <!-- Tail -->
+          <rect x="23" y="20" width="4" height="2" fill="#2E8B57"/>
+          <rect x="25" y="18" width="2" height="2" fill="#2E8B57"/>
+          <!-- Ancient power trail -->
+          <rect x="2" y="18" width="2" height="2" fill="#9370DB"/>
+          <rect x="1" y="20" width="2" height="2" fill="#E6E6FA"/>
+          <!-- Powerful ancient aura -->
+          <rect x="0" y="12" width="1" height="1" fill="#9370DB"/>
+          <rect x="31" y="14" width="1" height="1" fill="#9370DB"/>
+          <rect x="2" y="8" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="29" y="10" width="1" height="1" fill="#E6E6FA"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#2E8B57"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#2E8B57"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#2E8B57"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#9370DB"/>
+          <rect x="18" y="10" width="2" height="2" fill="#9370DB"/>
+          <!-- Nostrils -->
+          <rect x="10" y="13" width="1" height="1" fill="#000000"/>
+          <rect x="11" y="13" width="1" height="1" fill="#000000"/>
+          <!-- Wings (ancient power) -->
+          <rect x="4" y="12" width="8" height="9" fill="#228B22"/>
+          <rect x="20" y="12" width="8" height="9" fill="#228B22"/>
+          <!-- Runic patterns -->
+          <rect x="5" y="14" width="2" height="2" fill="#9370DB"/>
+          <rect x="7" y="16" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="21" y="14" width="2" height="2" fill="#9370DB"/>
+          <rect x="23" y="16" width="2" height="2" fill="#E6E6FA"/>
+          <!-- Legs (walking) -->
+          <rect x="13" y="24" width="3" height="4" fill="#2E8B57"/>
+          <rect x="16" y="24" width="3" height="4" fill="#2E8B57"/>
+          <!-- Tail -->
+          <rect x="23" y="20" width="4" height="2" fill="#2E8B57"/>
+          <rect x="25" y="18" width="2" height="2" fill="#2E8B57"/>
+          <!-- Ancient aura -->
+          <rect x="3" y="10" width="1" height="1" fill="#9370DB"/>
+          <rect x="28" y="12" width="1" height="1" fill="#9370DB"/>
+          <rect x="6" y="8" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="25" y="10" width="1" height="1" fill="#E6E6FA"/>
+        </svg>
+      `)
+    ],
+    name: 'Ancient Dragon'
+  },
+  // Cosmic Wolf - Legendary pet with starfield pattern
+  '🌌': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="8" fill="#191970"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#191970"/>
+          <!-- Snout -->
+          <rect x="8" y="12" width="4" height="4" fill="#191970"/>
+          <!-- Ears -->
+          <rect x="12" y="6" width="3" height="3" fill="#191970"/>
+          <rect x="17" y="6" width="3" height="3" fill="#191970"/>
+          <!-- Inner ears -->
+          <rect x="13" y="7" width="1" height="1" fill="#4169E1"/>
+          <rect x="18" y="7" width="1" height="1" fill="#4169E1"/>
+          <!-- Eyes (cosmic stars) -->
+          <rect x="13" y="10" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="17" y="10" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="13" y="10" width="1" height="1" fill="#FFFF00"/>
+          <rect x="17" y="10" width="1" height="1" fill="#FFFF00"/>
+          <!-- Nose -->
+          <rect x="9" y="13" width="2" height="2" fill="#4169E1"/>
+          <!-- Mouth -->
+          <rect x="10" y="15" width="3" height="1" fill="#E6E6FA"/>
+          <!-- Arms -->
+          <rect x="8" y="18" width="3" height="4" fill="#191970"/>
+          <rect x="21" y="18" width="3" height="4" fill="#191970"/>
+          <!-- Legs -->
+          <rect x="12" y="24" width="3" height="4" fill="#191970"/>
+          <rect x="17" y="24" width="3" height="4" fill="#191970"/>
+          <!-- Cosmic tail -->
+          <rect x="22" y="18" width="2" height="6" fill="#191970"/>
+          <rect x="24" y="20" width="2" height="4" fill="#4169E1"/>
+          <!-- Star patterns on body -->
+          <rect x="13" y="18" width="1" height="1" fill="#FFFF00"/>
+          <rect x="17" y="19" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="15" y="20" width="1" height="1" fill="#FFFF00"/>
+          <!-- Cosmic aura -->
+          <rect x="6" y="6" width="1" height="1" fill="#FFFF00"/>
+          <rect x="25" y="8" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="4" y="12" width="1" height="1" fill="#4169E1"/>
+          <rect x="27" y="14" width="1" height="1" fill="#FFFF00"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#191970"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#191970"/>
+          <!-- Snout -->
+          <rect x="8" y="11" width="4" height="4" fill="#191970"/>
+          <!-- Ears -->
+          <rect x="12" y="5" width="3" height="3" fill="#191970"/>
+          <rect x="17" y="5" width="3" height="3" fill="#191970"/>
+          <!-- Inner ears -->
+          <rect x="13" y="6" width="1" height="1" fill="#4169E1"/>
+          <rect x="18" y="6" width="1" height="1" fill="#4169E1"/>
+          <!-- Eyes (twinkling stars) -->
+          <rect x="13" y="9" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="17" y="9" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="14" y="9" width="1" height="1" fill="#FFFF00"/>
+          <rect x="18" y="9" width="1" height="1" fill="#FFFF00"/>
+          <!-- Nose -->
+          <rect x="9" y="12" width="2" height="2" fill="#4169E1"/>
+          <!-- Mouth -->
+          <rect x="10" y="14" width="3" height="1" fill="#E6E6FA"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#191970"/>
+          <rect x="21" y="17" width="3" height="4" fill="#191970"/>
+          <!-- Legs -->
+          <rect x="12" y="23" width="3" height="4" fill="#191970"/>
+          <rect x="17" y="23" width="3" height="4" fill="#191970"/>
+          <!-- Cosmic tail (pulsing) -->
+          <rect x="22" y="17" width="2" height="6" fill="#191970"/>
+          <rect x="24" y="19" width="2" height="4" fill="#4169E1"/>
+          <!-- Enhanced star patterns -->
+          <rect x="13" y="17" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="17" y="18" width="1" height="1" fill="#FFFF00"/>
+          <rect x="15" y="19" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="18" y="20" width="1" height="1" fill="#FFFF00"/>
+          <!-- Enhanced cosmic aura -->
+          <rect x="5" y="5" width="1" height="1" fill="#FFFF00"/>
+          <rect x="26" y="7" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="3" y="11" width="1" height="1" fill="#4169E1"/>
+          <rect x="28" y="13" width="1" height="1" fill="#FFFF00"/>
+          <rect x="7" y="4" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="24" y="6" width="1" height="1" fill="#4169E1"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#191970"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#191970"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#191970"/>
+          <!-- Ears -->
+          <rect x="13" y="6" width="3" height="3" fill="#191970"/>
+          <rect x="18" y="6" width="3" height="3" fill="#191970"/>
+          <!-- Inner ears -->
+          <rect x="14" y="7" width="1" height="1" fill="#4169E1"/>
+          <rect x="19" y="7" width="1" height="1" fill="#4169E1"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="18" y="10" width="2" height="2" fill="#E6E6FA"/>
+          <!-- Nose -->
+          <rect x="10" y="13" width="2" height="2" fill="#4169E1"/>
+          <!-- Mouth -->
+          <rect x="11" y="15" width="3" height="1" fill="#E6E6FA"/>
+          <!-- Arms (cosmic running) -->
+          <rect x="7" y="17" width="4" height="5" fill="#191970"/>
+          <rect x="21" y="19" width="4" height="3" fill="#191970"/>
+          <!-- Legs (running) -->
+          <rect x="11" y="24" width="3" height="4" fill="#191970"/>
+          <rect x="18" y="24" width="3" height="4" fill="#191970"/>
+          <!-- Cosmic tail (streaming) -->
+          <rect x="23" y="17" width="2" height="7" fill="#191970"/>
+          <rect x="25" y="19" width="2" height="5" fill="#4169E1"/>
+          <!-- Cosmic star trail -->
+          <rect x="6" y="20" width="1" height="1" fill="#FFFF00"/>
+          <rect x="4" y="22" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="2" y="24" width="1" height="1" fill="#4169E1"/>
+          <rect x="26" y="18" width="1" height="1" fill="#FFFF00"/>
+          <rect x="28" y="20" width="1" height="1" fill="#E6E6FA"/>
+          <!-- Intense cosmic aura -->
+          <rect x="0" y="14" width="1" height="1" fill="#FFFF00"/>
+          <rect x="31" y="16" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="2" y="10" width="1" height="1" fill="#4169E1"/>
+          <rect x="29" y="12" width="1" height="1" fill="#FFFF00"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#191970"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#191970"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#191970"/>
+          <!-- Ears -->
+          <rect x="13" y="6" width="3" height="3" fill="#191970"/>
+          <rect x="18" y="6" width="3" height="3" fill="#191970"/>
+          <!-- Inner ears -->
+          <rect x="14" y="7" width="1" height="1" fill="#4169E1"/>
+          <rect x="19" y="7" width="1" height="1" fill="#4169E1"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#E6E6FA"/>
+          <rect x="18" y="10" width="2" height="2" fill="#E6E6FA"/>
+          <!-- Nose -->
+          <rect x="10" y="13" width="2" height="2" fill="#4169E1"/>
+          <!-- Mouth -->
+          <rect x="11" y="15" width="3" height="1" fill="#E6E6FA"/>
+          <!-- Arms (cosmic running) -->
+          <rect x="9" y="19" width="4" height="3" fill="#191970"/>
+          <rect x="23" y="17" width="4" height="5" fill="#191970"/>
+          <!-- Legs (running) -->
+          <rect x="13" y="24" width="3" height="4" fill="#191970"/>
+          <rect x="16" y="24" width="3" height="4" fill="#191970"/>
+          <!-- Cosmic tail (streaming) -->
+          <rect x="21" y="17" width="2" height="7" fill="#191970"/>
+          <rect x="19" y="19" width="2" height="5" fill="#4169E1"/>
+          <!-- Cosmic star patterns -->
+          <rect x="14" y="18" width="1" height="1" fill="#FFFF00"/>
+          <rect x="16" y="19" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="18" y="20" width="1" height="1" fill="#4169E1"/>
+          <!-- Cosmic aura -->
+          <rect x="3" y="12" width="1" height="1" fill="#FFFF00"/>
+          <rect x="28" y="14" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="5" y="8" width="1" height="1" fill="#4169E1"/>
+          <rect x="26" y="10" width="1" height="1" fill="#FFFF00"/>
+        </svg>
+      `)
+    ],
+    name: 'Cosmic Wolf'
+  },
+  // Fortune Spirit - Legendary pet with ethereal appearance
+  '✨': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (semi-transparent ethereal) -->
+          <rect x="10" y="16" width="12" height="8" fill="#E6E6FA" opacity="0.8"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#E6E6FA" opacity="0.8"/>
+          <!-- Ethereal glow outline -->
+          <rect x="9" y="15" width="14" height="10" fill="#DDA0DD" opacity="0.4"/>
+          <rect x="11" y="7" width="10" height="10" fill="#DDA0DD" opacity="0.4"/>
+          <!-- Eyes (magical sparkles) -->
+          <rect x="13" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="12" y="9" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="19" y="9" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Ethereal features -->
+          <rect x="15" y="12" width="2" height="1" fill="#DDA0DD"/>
+          <rect x="14" y="14" width="4" height="1" fill="#DDA0DD"/>
+          <!-- Floating ethereal limbs -->
+          <rect x="8" y="18" width="3" height="4" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="21" y="18" width="3" height="4" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="12" y="24" width="3" height="4" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="17" y="24" width="3" height="4" fill="#E6E6FA" opacity="0.6"/>
+          <!-- Ethereal tail -->
+          <rect x="22" y="18" width="2" height="6" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="24" y="20" width="2" height="4" fill="#DDA0DD" opacity="0.6"/>
+          <!-- Fortune sparkles around body -->
+          <rect x="11" y="16" width="1" height="1" fill="#FFD700"/>
+          <rect x="18" y="17" width="1" height="1" fill="#FFFF00"/>
+          <rect x="14" y="19" width="1" height="1" fill="#FFD700"/>
+          <rect x="16" y="21" width="1" height="1" fill="#FFFF00"/>
+          <!-- Ethereal aura -->
+          <rect x="6" y="6" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="25" y="8" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="4" y="12" width="1" height="1" fill="#FFD700"/>
+          <rect x="27" y="14" width="1" height="1" fill="#FFFF00"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (pulsing ethereal) -->
+          <rect x="10" y="15" width="12" height="8" fill="#E6E6FA" opacity="0.9"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#E6E6FA" opacity="0.9"/>
+          <!-- Enhanced ethereal glow -->
+          <rect x="9" y="14" width="14" height="10" fill="#DDA0DD" opacity="0.5"/>
+          <rect x="11" y="6" width="10" height="10" fill="#DDA0DD" opacity="0.5"/>
+          <!-- Eyes (glowing brighter) -->
+          <rect x="13" y="9" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="9" width="2" height="2" fill="#FFD700"/>
+          <rect x="12" y="8" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="19" y="8" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="14" y="8" width="1" height="1" fill="#FFFF00"/>
+          <rect x="18" y="8" width="1" height="1" fill="#FFFF00"/>
+          <!-- Ethereal features -->
+          <rect x="15" y="11" width="2" height="1" fill="#DDA0DD"/>
+          <rect x="14" y="13" width="4" height="1" fill="#DDA0DD"/>
+          <!-- Floating limbs (more ethereal) -->
+          <rect x="8" y="17" width="3" height="4" fill="#E6E6FA" opacity="0.7"/>
+          <rect x="21" y="17" width="3" height="4" fill="#E6E6FA" opacity="0.7"/>
+          <rect x="12" y="23" width="3" height="4" fill="#E6E6FA" opacity="0.7"/>
+          <rect x="17" y="23" width="3" height="4" fill="#E6E6FA" opacity="0.7"/>
+          <!-- Ethereal tail (flowing) -->
+          <rect x="22" y="17" width="2" height="6" fill="#E6E6FA" opacity="0.7"/>
+          <rect x="24" y="19" width="2" height="4" fill="#DDA0DD" opacity="0.7"/>
+          <!-- Enhanced fortune sparkles -->
+          <rect x="11" y="15" width="1" height="1" fill="#FFFF00"/>
+          <rect x="18" y="16" width="1" height="1" fill="#FFD700"/>
+          <rect x="14" y="18" width="1" height="1" fill="#FFFF00"/>
+          <rect x="16" y="20" width="1" height="1" fill="#FFD700"/>
+          <rect x="19" y="19" width="1" height="1" fill="#FFFF00"/>
+          <!-- Enhanced ethereal aura -->
+          <rect x="5" y="5" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="26" y="7" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="3" y="11" width="1" height="1" fill="#FFD700"/>
+          <rect x="28" y="13" width="1" height="1" fill="#FFFF00"/>
+          <rect x="7" y="4" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="24" y="6" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (floating ethereal) -->
+          <rect x="11" y="14" width="12" height="8" fill="#E6E6FA" opacity="0.8"/>
+          <!-- Head -->
+          <rect x="13" y="6" width="8" height="8" fill="#E6E6FA" opacity="0.8"/>
+          <!-- Flowing ethereal aura -->
+          <rect x="10" y="13" width="14" height="10" fill="#DDA0DD" opacity="0.4"/>
+          <rect x="12" y="5" width="10" height="10" fill="#DDA0DD" opacity="0.4"/>
+          <!-- Eyes -->
+          <rect x="14" y="8" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="8" width="2" height="2" fill="#FFD700"/>
+          <!-- Ethereal features -->
+          <rect x="16" y="10" width="2" height="1" fill="#DDA0DD"/>
+          <rect x="15" y="12" width="4" height="1" fill="#DDA0DD"/>
+          <!-- Floating limbs (flowing motion) -->
+          <rect x="7" y="16" width="4" height="5" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="21" y="18" width="4" height="3" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="11" y="22" width="3" height="4" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="18" y="22" width="3" height="4" fill="#E6E6FA" opacity="0.6"/>
+          <!-- Ethereal tail (streaming) -->
+          <rect x="23" y="16" width="2" height="7" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="25" y="18" width="2" height="5" fill="#DDA0DD" opacity="0.6"/>
+          <!-- Fortune sparkle trail -->
+          <rect x="5" y="18" width="1" height="1" fill="#FFD700"/>
+          <rect x="3" y="20" width="1" height="1" fill="#FFFF00"/>
+          <rect x="1" y="22" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="26" y="16" width="1" height="1" fill="#FFD700"/>
+          <rect x="28" y="18" width="1" height="1" fill="#FFFF00"/>
+          <!-- Intense ethereal aura -->
+          <rect x="0" y="12" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="31" y="14" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="2" y="8" width="1" height="1" fill="#FFD700"/>
+          <rect x="29" y="10" width="1" height="1" fill="#FFFF00"/>
+          <rect x="4" y="6" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="27" y="8" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (ethereal floating) -->
+          <rect x="11" y="16" width="12" height="8" fill="#E6E6FA" opacity="0.8"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#E6E6FA" opacity="0.8"/>
+          <!-- Ethereal aura -->
+          <rect x="10" y="15" width="14" height="10" fill="#DDA0DD" opacity="0.4"/>
+          <rect x="12" y="7" width="10" height="10" fill="#DDA0DD" opacity="0.4"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FFD700"/>
+          <!-- Ethereal features -->
+          <rect x="16" y="12" width="2" height="1" fill="#DDA0DD"/>
+          <rect x="15" y="14" width="4" height="1" fill="#DDA0DD"/>
+          <!-- Floating limbs -->
+          <rect x="9" y="18" width="4" height="3" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="23" y="16" width="4" height="5" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="13" y="24" width="3" height="4" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="16" y="24" width="3" height="4" fill="#E6E6FA" opacity="0.6"/>
+          <!-- Ethereal tail -->
+          <rect x="21" y="16" width="2" height="7" fill="#E6E6FA" opacity="0.6"/>
+          <rect x="19" y="18" width="2" height="5" fill="#DDA0DD" opacity="0.6"/>
+          <!-- Fortune sparkles -->
+          <rect x="14" y="18" width="1" height="1" fill="#FFD700"/>
+          <rect x="16" y="19" width="1" height="1" fill="#FFFF00"/>
+          <rect x="18" y="20" width="1" height="1" fill="#DDA0DD"/>
+          <!-- Ethereal aura -->
+          <rect x="3" y="10" width="1" height="1" fill="#DDA0DD"/>
+          <rect x="28" y="12" width="1" height="1" fill="#E6E6FA"/>
+          <rect x="5" y="6" width="1" height="1" fill="#FFD700"/>
+          <rect x="26" y="8" width="1" height="1" fill="#FFFF00"/>
+        </svg>
+      `)
+    ],
+    name: 'Fortune Spirit'
+  },
+  // Royal Griffin - Legendary pet with majestic appearance
+  '👑': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (royal purple) -->
+          <rect x="12" y="16" width="8" height="8" fill="#800080"/>
+          <!-- Head (eagle-like) -->
+          <rect x="14" y="8" width="4" height="8" fill="#FFFFFF"/>
+          <!-- Royal crown -->
+          <rect x="13" y="6" width="6" height="2" fill="#FFD700"/>
+          <rect x="14" y="4" width="1" height="2" fill="#FFD700"/>
+          <rect x="16" y="4" width="1" height="2" fill="#FFD700"/>
+          <rect x="18" y="4" width="1" height="2" fill="#FFD700"/>
+          <!-- Crown jewels -->
+          <rect x="14" y="5" width="1" height="1" fill="#FF0000"/>
+          <rect x="16" y="5" width="1" height="1" fill="#0000FF"/>
+          <rect x="18" y="5" width="1" height="1" fill="#00FF00"/>
+          <!-- Beak (golden) -->
+          <rect x="12" y="12" width="2" height="2" fill="#FFD700"/>
+          <!-- Eyes (royal blue) -->
+          <rect x="15" y="10" width="2" height="2" fill="#4169E1"/>
+          <!-- Wings (majestic spread) -->
+          <rect x="4" y="14" width="8" height="6" fill="#800080"/>
+          <rect x="20" y="14" width="8" height="6" fill="#800080"/>
+          <!-- Wing patterns (royal) -->
+          <rect x="5" y="15" width="6" height="1" fill="#FFD700"/>
+          <rect x="6" y="17" width="4" height="1" fill="#FFD700"/>
+          <rect x="21" y="15" width="6" height="1" fill="#FFD700"/>
+          <rect x="22" y="17" width="4" height="1" fill="#FFD700"/>
+          <!-- Wing tips -->
+          <rect x="2" y="16" width="4" height="4" fill="#4B0082"/>
+          <rect x="26" y="16" width="4" height="4" fill="#4B0082"/>
+          <!-- Tail feathers (royal) -->
+          <rect x="16" y="24" width="2" height="4" fill="#800080"/>
+          <rect x="14" y="26" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="26" width="2" height="2" fill="#FFD700"/>
+          <!-- Legs (golden talons) -->
+          <rect x="14" y="24" width="2" height="3" fill="#FFD700"/>
+          <rect x="16" y="24" width="2" height="3" fill="#FFD700"/>
+          <!-- Talons -->
+          <rect x="13" y="27" width="3" height="1" fill="#FFD700"/>
+          <rect x="16" y="27" width="3" height="1" fill="#FFD700"/>
+          <!-- Royal aura -->
+          <rect x="6" y="6" width="1" height="1" fill="#FFD700"/>
+          <rect x="25" y="8" width="1" height="1" fill="#4169E1"/>
+          <rect x="4" y="12" width="1" height="1" fill="#800080"/>
+          <rect x="27" y="14" width="1" height="1" fill="#FFD700"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="12" y="15" width="8" height="8" fill="#800080"/>
+          <!-- Head -->
+          <rect x="14" y="7" width="4" height="8" fill="#FFFFFF"/>
+          <!-- Royal crown (glowing) -->
+          <rect x="13" y="5" width="6" height="2" fill="#FFD700"/>
+          <rect x="14" y="3" width="1" height="2" fill="#FFD700"/>
+          <rect x="16" y="3" width="1" height="2" fill="#FFD700"/>
+          <rect x="18" y="3" width="1" height="2" fill="#FFD700"/>
+          <!-- Crown jewels (sparkling) -->
+          <rect x="14" y="4" width="1" height="1" fill="#FF0000"/>
+          <rect x="16" y="4" width="1" height="1" fill="#0000FF"/>
+          <rect x="18" y="4" width="1" height="1" fill="#00FF00"/>
+          <rect x="15" y="2" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="17" y="2" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="12" y="11" width="2" height="2" fill="#FFD700"/>
+          <!-- Eyes (majestic) -->
+          <rect x="15" y="9" width="2" height="2" fill="#4169E1"/>
+          <rect x="16" y="8" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Wings (fluttering majestically) -->
+          <rect x="3" y="13" width="9" height="7" fill="#800080"/>
+          <rect x="20" y="13" width="9" height="7" fill="#800080"/>
+          <!-- Enhanced wing patterns -->
+          <rect x="4" y="14" width="7" height="1" fill="#FFD700"/>
+          <rect x="5" y="16" width="5" height="1" fill="#FFD700"/>
+          <rect x="6" y="18" width="3" height="1" fill="#4169E1"/>
+          <rect x="21" y="14" width="7" height="1" fill="#FFD700"/>
+          <rect x="22" y="16" width="5" height="1" fill="#FFD700"/>
+          <rect x="23" y="18" width="3" height="1" fill="#4169E1"/>
+          <!-- Wing tips -->
+          <rect x="1" y="15" width="4" height="5" fill="#4B0082"/>
+          <rect x="27" y="15" width="4" height="5" fill="#4B0082"/>
+          <!-- Tail feathers -->
+          <rect x="16" y="23" width="2" height="4" fill="#800080"/>
+          <rect x="14" y="25" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="25" width="2" height="2" fill="#FFD700"/>
+          <!-- Legs -->
+          <rect x="14" y="23" width="2" height="3" fill="#FFD700"/>
+          <rect x="16" y="23" width="2" height="3" fill="#FFD700"/>
+          <!-- Talons -->
+          <rect x="13" y="26" width="3" height="1" fill="#FFD700"/>
+          <rect x="16" y="26" width="3" height="1" fill="#FFD700"/>
+          <!-- Enhanced royal aura -->
+          <rect x="5" y="5" width="1" height="1" fill="#FFD700"/>
+          <rect x="26" y="7" width="1" height="1" fill="#4169E1"/>
+          <rect x="3" y="11" width="1" height="1" fill="#800080"/>
+          <rect x="28" y="13" width="1" height="1" fill="#FFD700"/>
+          <rect x="7" y="3" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="24" y="5" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (soaring majestically) -->
+          <rect x="13" y="14" width="8" height="8" fill="#800080"/>
+          <!-- Head -->
+          <rect x="15" y="6" width="4" height="8" fill="#FFFFFF"/>
+          <!-- Royal crown -->
+          <rect x="14" y="4" width="6" height="2" fill="#FFD700"/>
+          <rect x="15" y="2" width="1" height="2" fill="#FFD700"/>
+          <rect x="17" y="2" width="1" height="2" fill="#FFD700"/>
+          <rect x="19" y="2" width="1" height="2" fill="#FFD700"/>
+          <!-- Crown jewels -->
+          <rect x="15" y="3" width="1" height="1" fill="#FF0000"/>
+          <rect x="17" y="3" width="1" height="1" fill="#0000FF"/>
+          <rect x="19" y="3" width="1" height="1" fill="#00FF00"/>
+          <!-- Beak -->
+          <rect x="13" y="10" width="2" height="2" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="16" y="8" width="2" height="2" fill="#4169E1"/>
+          <!-- Wings (majestic spread) -->
+          <rect x="1" y="8" width="12" height="10" fill="#800080"/>
+          <rect x="19" y="8" width="12" height="10" fill="#800080"/>
+          <!-- Royal wing patterns -->
+          <rect x="2" y="10" width="10" height="1" fill="#FFD700"/>
+          <rect x="3" y="12" width="8" height="1" fill="#FFD700"/>
+          <rect x="4" y="14" width="6" height="1" fill="#4169E1"/>
+          <rect x="20" y="10" width="10" height="1" fill="#FFD700"/>
+          <rect x="21" y="12" width="8" height="1" fill="#FFD700"/>
+          <rect x="22" y="14" width="6" height="1" fill="#4169E1"/>
+          <!-- Wing tips -->
+          <rect x="0" y="12" width="4" height="6" fill="#4B0082"/>
+          <rect x="28" y="12" width="4" height="6" fill="#4B0082"/>
+          <!-- Tail feathers (spread) -->
+          <rect x="17" y="22" width="2" height="4" fill="#800080"/>
+          <rect x="15" y="24" width="2" height="3" fill="#FFD700"/>
+          <rect x="19" y="24" width="2" height="3" fill="#FFD700"/>
+          <!-- Legs (tucked for flight) -->
+          <rect x="15" y="22" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="22" width="2" height="2" fill="#FFD700"/>
+          <!-- Majestic aura trail -->
+          <rect x="0" y="10" width="1" height="1" fill="#FFD700"/>
+          <rect x="31" y="12" width="1" height="1" fill="#4169E1"/>
+          <rect x="2" y="6" width="1" height="1" fill="#800080"/>
+          <rect x="29" y="8" width="1" height="1" fill="#FFD700"/>
+          <rect x="4" y="4" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="27" y="6" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="13" y="16" width="8" height="8" fill="#800080"/>
+          <!-- Head -->
+          <rect x="15" y="8" width="4" height="8" fill="#FFFFFF"/>
+          <!-- Royal crown -->
+          <rect x="14" y="6" width="6" height="2" fill="#FFD700"/>
+          <rect x="15" y="4" width="1" height="2" fill="#FFD700"/>
+          <rect x="17" y="4" width="1" height="2" fill="#FFD700"/>
+          <rect x="19" y="4" width="1" height="2" fill="#FFD700"/>
+          <!-- Crown jewels -->
+          <rect x="15" y="5" width="1" height="1" fill="#FF0000"/>
+          <rect x="17" y="5" width="1" height="1" fill="#0000FF"/>
+          <rect x="19" y="5" width="1" height="1" fill="#00FF00"/>
+          <!-- Beak -->
+          <rect x="13" y="12" width="2" height="2" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="16" y="10" width="2" height="2" fill="#4169E1"/>
+          <!-- Wings (landing position) -->
+          <rect x="5" y="12" width="8" height="8" fill="#800080"/>
+          <rect x="19" y="12" width="8" height="8" fill="#800080"/>
+          <!-- Wing patterns -->
+          <rect x="6" y="14" width="6" height="1" fill="#FFD700"/>
+          <rect x="7" y="16" width="4" height="1" fill="#FFD700"/>
+          <rect x="20" y="14" width="6" height="1" fill="#FFD700"/>
+          <rect x="21" y="16" width="4" height="1" fill="#FFD700"/>
+          <!-- Wing tips -->
+          <rect x="3" y="14" width="4" height="6" fill="#4B0082"/>
+          <rect x="25" y="14" width="4" height="6" fill="#4B0082"/>
+          <!-- Tail feathers -->
+          <rect x="17" y="24" width="2" height="4" fill="#800080"/>
+          <rect x="15" y="26" width="2" height="2" fill="#FFD700"/>
+          <rect x="19" y="26" width="2" height="2" fill="#FFD700"/>
+          <!-- Legs (landing) -->
+          <rect x="14" y="24" width="2" height="4" fill="#FFD700"/>
+          <rect x="16" y="24" width="2" height="4" fill="#FFD700"/>
+          <!-- Talons -->
+          <rect x="13" y="28" width="3" height="1" fill="#FFD700"/>
+          <rect x="16" y="28" width="3" height="1" fill="#FFD700"/>
+          <!-- Royal aura -->
+          <rect x="3" y="10" width="1" height="1" fill="#FFD700"/>
+          <rect x="28" y="12" width="1" height="1" fill="#4169E1"/>
+          <rect x="6" y="8" width="1" height="1" fill="#800080"/>
+          <rect x="25" y="10" width="1" height="1" fill="#FFD700"/>
+        </svg>
+      `)
+    ],
+    name: 'Royal Griffin'
+  },
+  // Diamond Dog - Rare pet with diamond decorations
+  '💎': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="8" fill="#C0C0C0"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#C0C0C0"/>
+          <!-- Snout -->
+          <rect x="8" y="12" width="4" height="4" fill="#C0C0C0"/>
+          <!-- Ears -->
+          <rect x="12" y="6" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="17" y="6" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Eyes -->
+          <rect x="13" y="10" width="2" height="2" fill="#00FFFF"/>
+          <rect x="17" y="10" width="2" height="2" fill="#00FFFF"/>
+          <!-- Nose -->
+          <rect x="9" y="13" width="2" height="2" fill="#000000"/>
+          <!-- Diamond collar -->
+          <rect x="11" y="15" width="10" height="2" fill="#FFD700"/>
+          <rect x="13" y="14" width="2" height="1" fill="#00FFFF"/>
+          <rect x="17" y="14" width="2" height="1" fill="#00FFFF"/>
+          <!-- Arms -->
+          <rect x="8" y="18" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="21" y="18" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Legs -->
+          <rect x="12" y="24" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="17" y="24" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Tail with diamond tip -->
+          <rect x="22" y="18" width="2" height="6" fill="#C0C0C0"/>
+          <rect x="24" y="20" width="2" height="2" fill="#00FFFF"/>
+          <!-- Diamond markings -->
+          <rect x="14" y="18" width="1" height="1" fill="#00FFFF"/>
+          <rect x="17" y="18" width="1" height="1" fill="#00FFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#C0C0C0"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#C0C0C0"/>
+          <!-- Snout -->
+          <rect x="8" y="11" width="4" height="4" fill="#C0C0C0"/>
+          <!-- Ears -->
+          <rect x="12" y="5" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="17" y="5" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Eyes (sparkling) -->
+          <rect x="13" y="9" width="2" height="2" fill="#00FFFF"/>
+          <rect x="17" y="9" width="2" height="2" fill="#00FFFF"/>
+          <rect x="12" y="8" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="19" y="8" width="1" height="1" fill="#FFFFFF"/>
+          <!-- Nose -->
+          <rect x="9" y="12" width="2" height="2" fill="#000000"/>
+          <!-- Diamond collar -->
+          <rect x="11" y="14" width="10" height="2" fill="#FFD700"/>
+          <rect x="13" y="13" width="2" height="1" fill="#00FFFF"/>
+          <rect x="17" y="13" width="2" height="1" fill="#00FFFF"/>
+          <!-- Arms -->
+          <rect x="8" y="17" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="21" y="17" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Legs -->
+          <rect x="12" y="23" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="17" y="23" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Tail with diamond tip -->
+          <rect x="22" y="17" width="2" height="6" fill="#C0C0C0"/>
+          <rect x="24" y="19" width="2" height="2" fill="#00FFFF"/>
+          <!-- Diamond markings -->
+          <rect x="14" y="17" width="1" height="1" fill="#00FFFF"/>
+          <rect x="17" y="17" width="1" height="1" fill="#00FFFF"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#C0C0C0"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#C0C0C0"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#C0C0C0"/>
+          <!-- Ears -->
+          <rect x="13" y="6" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="18" y="6" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#00FFFF"/>
+          <rect x="18" y="10" width="2" height="2" fill="#00FFFF"/>
+          <!-- Nose -->
+          <rect x="10" y="13" width="2" height="2" fill="#000000"/>
+          <!-- Diamond collar -->
+          <rect x="12" y="15" width="10" height="2" fill="#FFD700"/>
+          <rect x="14" y="14" width="2" height="1" fill="#00FFFF"/>
+          <rect x="18" y="14" width="2" height="1" fill="#00FFFF"/>
+          <!-- Arms (running) -->
+          <rect x="7" y="17" width="4" height="5" fill="#C0C0C0"/>
+          <rect x="21" y="19" width="4" height="3" fill="#C0C0C0"/>
+          <!-- Legs (running) -->
+          <rect x="11" y="24" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="18" y="24" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Tail (wagging) -->
+          <rect x="23" y="17" width="2" height="7" fill="#C0C0C0"/>
+          <rect x="25" y="19" width="2" height="3" fill="#00FFFF"/>
+          <!-- Diamond trail effect -->
+          <rect x="6" y="20" width="1" height="1" fill="#00FFFF"/>
+          <rect x="8" y="22" width="1" height="1" fill="#00FFFF"/>
+          <rect x="26" y="18" width="1" height="1" fill="#00FFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#C0C0C0"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#C0C0C0"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#C0C0C0"/>
+          <!-- Ears -->
+          <rect x="13" y="6" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="18" y="6" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#00FFFF"/>
+          <rect x="18" y="10" width="2" height="2" fill="#00FFFF"/>
+          <!-- Nose -->
+          <rect x="10" y="13" width="2" height="2" fill="#000000"/>
+          <!-- Diamond collar -->
+          <rect x="12" y="15" width="10" height="2" fill="#FFD700"/>
+          <rect x="14" y="14" width="2" height="1" fill="#00FFFF"/>
+          <rect x="18" y="14" width="2" height="1" fill="#00FFFF"/>
+          <!-- Arms (running) -->
+          <rect x="9" y="19" width="4" height="3" fill="#C0C0C0"/>
+          <rect x="23" y="17" width="4" height="5" fill="#C0C0C0"/>
+          <!-- Legs (running) -->
+          <rect x="13" y="24" width="3" height="4" fill="#C0C0C0"/>
+          <rect x="16" y="24" width="3" height="4" fill="#C0C0C0"/>
+          <!-- Tail (wagging) -->
+          <rect x="21" y="17" width="2" height="7" fill="#C0C0C0"/>
+          <rect x="19" y="19" width="2" height="3" fill="#00FFFF"/>
+          <!-- Diamond trail effect -->
+          <rect x="7" y="18" width="1" height="1" fill="#00FFFF"/>
+          <rect x="25" y="20" width="1" height="1" fill="#00FFFF"/>
+          <rect x="27" y="16" width="1" height="1" fill="#00FFFF"/>
+        </svg>
+      `)
+    ],
+    name: 'Diamond Dog'
+  },
+  // Lucky Dragon - Rare pet with magical aura
+  '🐉': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="8" fill="#00FF00"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#00FF00"/>
+          <!-- Snout -->
+          <rect x="8" y="12" width="4" height="4" fill="#00FF00"/>
+          <!-- Eyes (magical) -->
+          <rect x="13" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="10" width="2" height="2" fill="#FFD700"/>
+          <!-- Nostrils -->
+          <rect x="9" y="13" width="1" height="1" fill="#000000"/>
+          <rect x="10" y="13" width="1" height="1" fill="#000000"/>
+          <!-- Wings -->
+          <rect x="6" y="14" width="6" height="8" fill="#32CD32"/>
+          <rect x="20" y="14" width="6" height="8" fill="#32CD32"/>
+          <!-- Wing details -->
+          <rect x="7" y="16" width="4" height="4" fill="#7CFC00"/>
+          <rect x="21" y="16" width="4" height="4" fill="#7CFC00"/>
+          <!-- Legs -->
+          <rect x="12" y="24" width="3" height="4" fill="#00FF00"/>
+          <rect x="17" y="24" width="3" height="4" fill="#00FF00"/>
+          <!-- Tail -->
+          <rect x="22" y="20" width="4" height="2" fill="#00FF00"/>
+          <rect x="24" y="18" width="2" height="2" fill="#00FF00"/>
+          <!-- Lucky clover markings -->
+          <rect x="14" y="18" width="2" height="2" fill="#7CFC00"/>
+          <rect x="13" y="19" width="1" height="1" fill="#228B22"/>
+          <rect x="15" y="19" width="1" height="1" fill="#228B22"/>
+          <rect x="14" y="20" width="1" height="1" fill="#228B22"/>
+          <rect x="16" y="18" width="2" height="2" fill="#7CFC00"/>
+          <rect x="15" y="19" width="1" height="1" fill="#228B22"/>
+          <rect x="17" y="19" width="1" height="1" fill="#228B22"/>
+          <rect x="16" y="20" width="1" height="1" fill="#228B22"/>
+          <!-- Lucky aura -->
+          <rect x="6" y="6" width="1" height="1" fill="#FFD700"/>
+          <rect x="25" y="8" width="1" height="1" fill="#FFD700"/>
+          <rect x="4" y="12" width="1" height="1" fill="#FFD700"/>
+          <rect x="27" y="14" width="1" height="1" fill="#FFD700"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="8" fill="#00FF00"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#00FF00"/>
+          <!-- Snout -->
+          <rect x="8" y="11" width="4" height="4" fill="#00FF00"/>
+          <!-- Eyes (glowing) -->
+          <rect x="13" y="9" width="2" height="2" fill="#FFD700"/>
+          <rect x="17" y="9" width="2" height="2" fill="#FFD700"/>
+          <rect x="12" y="8" width="1" height="1" fill="#FFFF00"/>
+          <rect x="19" y="8" width="1" height="1" fill="#FFFF00"/>
+          <!-- Nostrils -->
+          <rect x="9" y="12" width="1" height="1" fill="#000000"/>
+          <rect x="10" y="12" width="1" height="1" fill="#000000"/>
+          <!-- Wings (slight flap) -->
+          <rect x="5" y="12" width="7" height="9" fill="#32CD32"/>
+          <rect x="20" y="12" width="7" height="9" fill="#32CD32"/>
+          <!-- Wing details -->
+          <rect x="6" y="14" width="5" height="5" fill="#7CFC00"/>
+          <rect x="21" y="14" width="5" height="5" fill="#7CFC00"/>
+          <!-- Legs -->
+          <rect x="12" y="23" width="3" height="4" fill="#00FF00"/>
+          <rect x="17" y="23" width="3" height="4" fill="#00FF00"/>
+          <!-- Tail -->
+          <rect x="22" y="19" width="4" height="2" fill="#00FF00"/>
+          <rect x="24" y="17" width="2" height="2" fill="#00FF00"/>
+          <!-- Lucky clover markings -->
+          <rect x="14" y="17" width="2" height="2" fill="#7CFC00"/>
+          <rect x="16" y="17" width="2" height="2" fill="#7CFC00"/>
+          <!-- Lucky aura (animated) -->
+          <rect x="5" y="5" width="1" height="1" fill="#FFD700"/>
+          <rect x="26" y="7" width="1" height="1" fill="#FFD700"/>
+          <rect x="3" y="11" width="1" height="1" fill="#FFD700"/>
+          <rect x="28" y="13" width="1" height="1" fill="#FFD700"/>
+          <rect x="7" y="4" width="1" height="1" fill="#FFFF00"/>
+          <rect x="24" y="6" width="1" height="1" fill="#FFFF00"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#00FF00"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#00FF00"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#00FF00"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FFD700"/>
+          <!-- Nostrils with lucky sparkles -->
+          <rect x="6" y="13" width="3" height="1" fill="#FFD700"/>
+          <rect x="5" y="14" width="2" height="1" fill="#7CFC00"/>
+          <!-- Wings (extended flying) -->
+          <rect x="3" y="10" width="9" height="10" fill="#32CD32"/>
+          <rect x="20" y="10" width="9" height="10" fill="#32CD32"/>
+          <!-- Wing details -->
+          <rect x="4" y="12" width="7" height="6" fill="#7CFC00"/>
+          <rect x="21" y="12" width="7" height="6" fill="#7CFC00"/>
+          <!-- Legs (flying position) -->
+          <rect x="11" y="24" width="3" height="4" fill="#00FF00"/>
+          <rect x="18" y="24" width="3" height="4" fill="#00FF00"/>
+          <!-- Tail -->
+          <rect x="23" y="20" width="4" height="2" fill="#00FF00"/>
+          <rect x="25" y="18" width="2" height="2" fill="#00FF00"/>
+          <!-- Lucky trail -->
+          <rect x="5" y="18" width="2" height="2" fill="#7CFC00"/>
+          <rect x="4" y="19" width="1" height="1" fill="#228B22"/>
+          <rect x="6" y="19" width="1" height="1" fill="#228B22"/>
+          <rect x="5" y="20" width="1" height="1" fill="#228B22"/>
+          <!-- Lucky aura trail -->
+          <rect x="2" y="12" width="1" height="1" fill="#FFD700"/>
+          <rect x="1" y="16" width="1" height="1" fill="#FFD700"/>
+          <rect x="30" y="14" width="1" height="1" fill="#FFD700"/>
+          <rect x="29" y="18" width="1" height="1" fill="#FFD700"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="8" fill="#00FF00"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#00FF00"/>
+          <!-- Snout -->
+          <rect x="9" y="12" width="4" height="4" fill="#00FF00"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FFD700"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FFD700"/>
+          <!-- Nostrils -->
+          <rect x="10" y="13" width="1" height="1" fill="#000000"/>
+          <rect x="11" y="13" width="1" height="1" fill="#000000"/>
+          <!-- Wings (folded back) -->
+          <rect x="4" y="12" width="8" height="9" fill="#32CD32"/>
+          <rect x="20" y="12" width="8" height="9" fill="#32CD32"/>
+          <!-- Wing details -->
+          <rect x="5" y="14" width="6" height="5" fill="#7CFC00"/>
+          <rect x="21" y="14" width="6" height="5" fill="#7CFC00"/>
+          <!-- Legs (walking) -->
+          <rect x="13" y="24" width="3" height="4" fill="#00FF00"/>
+          <rect x="16" y="24" width="3" height="4" fill="#00FF00"/>
+          <!-- Tail -->
+          <rect x="23" y="20" width="4" height="2" fill="#00FF00"/>
+          <rect x="25" y="18" width="2" height="2" fill="#00FF00"/>
+          <!-- Lucky clover markings -->
+          <rect x="14" y="18" width="2" height="2" fill="#7CFC00"/>
+          <rect x="16" y="18" width="2" height="2" fill="#7CFC00"/>
+          <!-- Lucky aura -->
+          <rect x="3" y="10" width="1" height="1" fill="#FFD700"/>
+          <rect x="28" y="12" width="1" height="1" fill="#FFD700"/>
+          <rect x="6" y="8" width="1" height="1" fill="#FFD700"/>
+          <rect x="25" y="16" width="1" height="1" fill="#FFD700"/>
+        </svg>
+      `)
+    ],
+    name: 'Lucky Dragon'
+  },
+  // Phoenix Chick - Rare pet with fire effects
+  '🔥': {
+    idle: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="16" width="12" height="10" fill="#FF4500"/>
+          <!-- Head -->
+          <rect x="12" y="8" width="8" height="8" fill="#FF6347"/>
+          <!-- Flame crest -->
+          <rect x="14" y="4" width="2" height="4" fill="#FF0000"/>
+          <rect x="16" y="4" width="2" height="4" fill="#FF4500"/>
+          <rect x="13" y="2" width="1" height="2" fill="#FFFF00"/>
+          <rect x="17" y="2" width="1" height="2" fill="#FFFF00"/>
+          <!-- Beak -->
+          <rect x="14" y="12" width="4" height="2" fill="#FFD700"/>
+          <!-- Eyes (fiery) -->
+          <rect x="13" y="10" width="2" height="2" fill="#FF0000"/>
+          <rect x="17" y="10" width="2" height="2" fill="#FF0000"/>
+          <rect x="13" y="10" width="1" height="1" fill="#FFFF00"/>
+          <rect x="17" y="10" width="1" height="1" fill="#FFFF00"/>
+          <!-- Wings (flame-like) -->
+          <rect x="8" y="18" width="4" height="6" fill="#FF6347"/>
+          <rect x="20" y="18" width="4" height="6" fill="#FF6347"/>
+          <rect x="6" y="19" width="2" height="4" fill="#FF4500"/>
+          <rect x="24" y="19" width="2" height="4" fill="#FF4500"/>
+          <rect x="5" y="20" width="1" height="2" fill="#FF0000"/>
+          <rect x="26" y="20" width="1" height="2" fill="#FF0000"/>
+          <!-- Feet -->
+          <rect x="12" y="26" width="3" height="3" fill="#FFD700"/>
+          <rect x="17" y="26" width="3" height="3" fill="#FFD700"/>
+          <!-- Fire aura -->
+          <rect x="8" y="14" width="1" height="1" fill="#FFFF00"/>
+          <rect x="23" y="15" width="1" height="1" fill="#FFFF00"/>
+          <rect x="6" y="17" width="1" height="1" fill="#FF0000"/>
+          <rect x="25" y="18" width="1" height="1" fill="#FF0000"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="10" y="15" width="12" height="10" fill="#FF4500"/>
+          <!-- Head -->
+          <rect x="12" y="7" width="8" height="8" fill="#FF6347"/>
+          <!-- Flame crest (flickering) -->
+          <rect x="14" y="3" width="2" height="4" fill="#FF0000"/>
+          <rect x="16" y="3" width="2" height="4" fill="#FF4500"/>
+          <rect x="13" y="1" width="1" height="2" fill="#FFFF00"/>
+          <rect x="17" y="1" width="1" height="2" fill="#FFFF00"/>
+          <rect x="15" y="2" width="2" height="1" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="14" y="11" width="4" height="2" fill="#FFD700"/>
+          <!-- Eyes (glowing) -->
+          <rect x="13" y="9" width="2" height="2" fill="#FF0000"/>
+          <rect x="17" y="9" width="2" height="2" fill="#FF0000"/>
+          <rect x="14" y="9" width="1" height="1" fill="#FFFF00"/>
+          <rect x="18" y="9" width="1" height="1" fill="#FFFF00"/>
+          <!-- Wings (flame-like, fluttering) -->
+          <rect x="7" y="17" width="5" height="7" fill="#FF6347"/>
+          <rect x="20" y="17" width="5" height="7" fill="#FF6347"/>
+          <rect x="5" y="18" width="3" height="5" fill="#FF4500"/>
+          <rect x="24" y="18" width="3" height="5" fill="#FF4500"/>
+          <rect x="4" y="19" width="2" height="3" fill="#FF0000"/>
+          <rect x="26" y="19" width="2" height="3" fill="#FF0000"/>
+          <!-- Feet -->
+          <rect x="12" y="25" width="3" height="3" fill="#FFD700"/>
+          <rect x="17" y="25" width="3" height="3" fill="#FFD700"/>
+          <!-- Fire aura (animated) -->
+          <rect x="7" y="13" width="1" height="1" fill="#FFFF00"/>
+          <rect x="24" y="14" width="1" height="1" fill="#FFFF00"/>
+          <rect x="5" y="16" width="1" height="1" fill="#FF0000"/>
+          <rect x="26" y="17" width="1" height="1" fill="#FF0000"/>
+          <rect x="9" y="12" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="22" y="13" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    walking: [
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body (leaning forward) -->
+          <rect x="11" y="16" width="12" height="10" fill="#FF4500"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#FF6347"/>
+          <!-- Flame crest (intense) -->
+          <rect x="15" y="4" width="2" height="4" fill="#FF0000"/>
+          <rect x="17" y="4" width="2" height="4" fill="#FF4500"/>
+          <rect x="14" y="2" width="1" height="2" fill="#FFFF00"/>
+          <rect x="18" y="2" width="1" height="2" fill="#FFFF00"/>
+          <rect x="16" y="1" width="2" height="1" fill="#FFFFFF"/>
+          <!-- Beak -->
+          <rect x="15" y="12" width="4" height="2" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FF0000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FF0000"/>
+          <!-- Wings (spread with fire) -->
+          <rect x="5" y="15" width="6" height="8" fill="#FF6347"/>
+          <rect x="21" y="15" width="6" height="8" fill="#FF6347"/>
+          <rect x="3" y="16" width="4" height="6" fill="#FF4500"/>
+          <rect x="25" y="16" width="4" height="6" fill="#FF4500"/>
+          <rect x="1" y="17" width="3" height="4" fill="#FF0000"/>
+          <rect x="28" y="17" width="3" height="4" fill="#FF0000"/>
+          <!-- Feet (running) -->
+          <rect x="10" y="26" width="3" height="3" fill="#FFD700"/>
+          <rect x="18" y="26" width="3" height="3" fill="#FFD700"/>
+          <!-- Fire trail -->
+          <rect x="6" y="20" width="2" height="2" fill="#FF4500"/>
+          <rect x="4" y="22" width="2" height="2" fill="#FF0000"/>
+          <rect x="2" y="24" width="2" height="2" fill="#FFFF00"/>
+          <!-- Intense fire aura -->
+          <rect x="0" y="14" width="1" height="1" fill="#FFFF00"/>
+          <rect x="31" y="16" width="1" height="1" fill="#FFFF00"/>
+          <rect x="2" y="12" width="1" height="1" fill="#FF0000"/>
+          <rect x="29" y="14" width="1" height="1" fill="#FF0000"/>
+          <rect x="4" y="10" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="27" y="12" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `),
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <rect x="11" y="16" width="12" height="10" fill="#FF4500"/>
+          <!-- Head -->
+          <rect x="13" y="8" width="8" height="8" fill="#FF6347"/>
+          <!-- Flame crest -->
+          <rect x="15" y="4" width="2" height="4" fill="#FF0000"/>
+          <rect x="17" y="4" width="2" height="4" fill="#FF4500"/>
+          <rect x="14" y="2" width="1" height="2" fill="#FFFF00"/>
+          <rect x="18" y="2" width="1" height="2" fill="#FFFF00"/>
+          <!-- Beak -->
+          <rect x="15" y="12" width="4" height="2" fill="#FFD700"/>
+          <!-- Eyes -->
+          <rect x="14" y="10" width="2" height="2" fill="#FF0000"/>
+          <rect x="18" y="10" width="2" height="2" fill="#FF0000"/>
+          <!-- Wings (folded with fire glow) -->
+          <rect x="7" y="17" width="5" height="7" fill="#FF6347"/>
+          <rect x="20" y="17" width="5" height="7" fill="#FF6347"/>
+          <rect x="6" y="18" width="3" height="5" fill="#FF4500"/>
+          <rect x="23" y="18" width="3" height="5" fill="#FF4500"/>
+          <!-- Feet (walking) -->
+          <rect x="13" y="26" width="3" height="3" fill="#FFD700"/>
+          <rect x="16" y="26" width="3" height="3" fill="#FFD700"/>
+          <!-- Fire aura -->
+          <rect x="5" y="15" width="1" height="1" fill="#FFFF00"/>
+          <rect x="26" y="16" width="1" height="1" fill="#FFFF00"/>
+          <rect x="8" y="13" width="1" height="1" fill="#FF0000"/>
+          <rect x="23" y="14" width="1" height="1" fill="#FF0000"/>
+          <rect x="10" y="11" width="1" height="1" fill="#FFFFFF"/>
+          <rect x="21" y="12" width="1" height="1" fill="#FFFFFF"/>
+        </svg>
+      `)
+    ],
+    name: 'Phoenix Chick'
   }
 };
 
@@ -851,7 +2993,9 @@ const PokemonPet = ({ pet, position, petId }: PetProps) => {
   const [direction, setDirection] = useState(1);
   const [currentPosition, setCurrentPosition] = useState(position);
   
-  const sprite = pokemonPetSprites[pet.pet_type.sprite_emoji] || pokemonPetSprites['🐣'];
+  // Use pet type ID to get correct sprite, fallback to sprite_emoji, then default
+  const spriteKey = petIdToSpriteMap[pet.pet_type.id?.toString()] || pet.pet_type.sprite_emoji || '🐣';
+  const sprite = pokemonPetSprites[spriteKey] || pokemonPetSprites['🐣'];
   
   // Position animation with Pokemon-style movement
   const [{ x, y }, api] = useSpring(() => ({
@@ -1152,14 +3296,14 @@ export const PetGarden = () => {
                   <CardContent className="p-4 text-center">
                     <div className="mb-2">
                       <img 
-                        src={pokemonPetSprites[pet.pet_type.sprite_emoji]?.idle[0] || pokemonPetSprites['🐣'].idle[0]}
-                        alt={pokemonPetSprites[pet.pet_type.sprite_emoji]?.name || 'Pet'}
+                        src={(pokemonPetSprites[petIdToSpriteMap[pet.pet_type.id?.toString()] || pet.pet_type.sprite_emoji] || pokemonPetSprites['🐣']).idle[0]}
+                        alt={(pokemonPetSprites[petIdToSpriteMap[pet.pet_type.id?.toString()] || pet.pet_type.sprite_emoji] || pokemonPetSprites['🐣']).name}
                         className="w-16 h-16 mx-auto pixel-perfect pokemon-inventory-sprite"
                         style={{ imageRendering: 'pixelated' }}
                       />
                     </div>
                     <h3 className="font-bold mb-2 text-blue-900">
-                      {pokemonPetSprites[pet.pet_type.sprite_emoji]?.name || pet.pet_type.name}
+                      {(pokemonPetSprites[petIdToSpriteMap[pet.pet_type.id?.toString()] || pet.pet_type.sprite_emoji] || pokemonPetSprites['🐣']).name}
                     </h3>
                     <Badge className={`mb-2 ${rarityColors[pet.pet_type.rarity as keyof typeof rarityColors]} text-white border-2 border-black`}>
                       {pet.pet_type.rarity.toUpperCase()}
