@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
+import { usePetSystem } from "@/hooks/usePetSystem";
 import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ const WheelOfFortune = () => {
   const [gameEnded, setGameEnded] = useState(false);
   const { toast } = useToast();
   const { trackGameWin, trackGamePlay, trackBet, trackGameLoss } = useQuestTracker();
+  const { activePetBoosts } = usePetSystem();
 
   useEffect(() => {
     if (profile) {
@@ -93,9 +95,65 @@ const WheelOfFortune = () => {
     }
 
     // Generate random result with weighted probabilities
+    // Apply luck boost from active pets
+    const luckBoost = activePetBoosts.find(boost => boost.trait_type === 'luck_boost');
+    const luckMultiplier = luckBoost ? luckBoost.total_boost : 1.0;
+    
     const random = Math.random();
     let targetSectionIndex: number;
 
+    // If user has selected bet, improve their odds for that color
+    if (selectedBet !== "itlog" && luckMultiplier > 1.0) {
+      const baseOdds = random;
+      const improvedOdds = baseOdds / luckMultiplier;
+      
+      // Calculate if the improved odds should win the selected bet
+      let shouldWinSelectedBet = false;
+      if (selectedBet === "red" && improvedOdds >= 0.4125 && improvedOdds < 0.825) {
+        shouldWinSelectedBet = true;
+      } else if (selectedBet === "black" && (improvedOdds < 0.4125 || improvedOdds >= 0.825)) {
+        shouldWinSelectedBet = true;
+      } else if (selectedBet === "green" && improvedOdds >= 0.075 && improvedOdds < 0.175) {
+        shouldWinSelectedBet = true;
+      } else if (selectedBet === "gold" && improvedOdds >= 0.025 && improvedOdds < 0.075) {
+        shouldWinSelectedBet = true;
+      } else if (selectedBet === "purple" && improvedOdds < 0.025) {
+        shouldWinSelectedBet = true;
+      }
+      
+      if (shouldWinSelectedBet) {
+        // Force a win on the selected bet
+        if (selectedBet === "red") {
+          targetSectionIndex = Math.random() < 0.5 ? 0 : 5;
+        } else if (selectedBet === "black") {
+          targetSectionIndex = Math.random() < 0.5 ? 1 : 6;
+        } else if (selectedBet === "green") {
+          targetSectionIndex = 2;
+        } else if (selectedBet === "gold") {
+          targetSectionIndex = 3;
+        } else if (selectedBet === "purple") {
+          targetSectionIndex = 4;
+        } else {
+          // Fallback to normal probability
+          if (random < 0.000005) { // 0.0005% chance for $ITLOG (very low)
+      targetSectionIndex = 7; // $ITLOG section
+          } else if (random < 0.025) { // 2% chance for purple
+            targetSectionIndex = 4; // Purple section
+          } else if (random < 0.075) { // 5% chance for gold
+            targetSectionIndex = 3; // Gold section
+          } else if (random < 0.175) { // 10% chance for green
+            targetSectionIndex = 2; // Green section
+          } else if (random < 0.5875) { // 41.25% chance for red
+            targetSectionIndex = Math.random() < 0.5 ? 0 : 5; // Red sections (0 or 5)
+          } else { // 41.25% chance for black
+            targetSectionIndex = Math.random() < 0.5 ? 1 : 6; // Black sections (1 or 6)
+          }
+        }
+        return;
+      }
+    }
+
+    // Normal probability without luck boost forcing a win
     if (random < 0.000005) { // 0.0005% chance for $ITLOG (very low)
       targetSectionIndex = 7; // $ITLOG section
     } else if (random < 0.025) { // 2% chance for purple
@@ -311,6 +369,21 @@ const WheelOfFortune = () => {
                   <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
                 </CardContent>
               </Card>
+
+              {/* Luck Boost Indicator */}
+              {activePetBoosts.find(boost => boost.trait_type === 'luck_boost') && (
+                <Card className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 border-green-500/30">
+                  <CardContent className="p-4 text-center">
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white font-bold text-xl">🌟</span>
+                    </div>
+                    <p className="text-sm font-semibold mb-1 text-green-400">Luck Boost Active!</p>
+                    <p className="text-xs text-muted-foreground">
+                      +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Betting */}
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">

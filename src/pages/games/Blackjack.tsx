@@ -11,6 +11,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useActivityTracker } from "@/hooks/useActivityTracker";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
+import { usePetSystem } from "@/hooks/usePetSystem";
 
 type CardType = {
   suit: string;
@@ -36,6 +37,7 @@ const Blackjack = () => {
   const [sessionId] = useState(`blackjack_session_${Date.now()}`);
   const [sessionStartTime] = useState(Date.now());
   const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
+  const { activePetBoosts } = usePetSystem();
 
   useEffect(() => {
     if (profile) {
@@ -68,6 +70,37 @@ const Blackjack = () => {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
+    
+    // Apply luck boost by potentially reordering cards to favor player
+    const luckBoost = activePetBoosts.find(boost => boost.trait_type === 'luck_boost');
+    if (luckBoost && luckBoost.total_boost > 1.0) {
+      const luckBias = luckBoost.total_boost - 1.0;
+      const shouldApplyLuck = Math.random() < luckBias;
+      
+      if (shouldApplyLuck) {
+        // Move some good cards (Aces, 10s, face cards) towards the top
+        const goodCards = shuffled.filter(card => card.numValue === 11 || card.numValue === 10);
+        const otherCards = shuffled.filter(card => card.numValue !== 11 && card.numValue !== 10);
+        
+        // Take 2-3 good cards and put them in player positions (0, 2, 4, 6...)
+        const goodCardsToMove = goodCards.slice(0, Math.min(3, goodCards.length));
+        const remainingGoodCards = goodCards.slice(goodCardsToMove.length);
+        
+        // Rebuild deck with good cards in player-favorable positions
+        const newDeck = [...otherCards, ...remainingGoodCards];
+        goodCardsToMove.forEach((card, index) => {
+          const playerPosition = index * 2; // Positions 0, 2, 4
+          if (playerPosition < newDeck.length) {
+            newDeck.splice(playerPosition, 0, card);
+          } else {
+            newDeck.unshift(card);
+          }
+        });
+        
+        return newDeck;
+      }
+    }
+    
     return shuffled;
   };
 
@@ -472,6 +505,21 @@ const Blackjack = () => {
                   <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
                 </CardContent>
               </Card>
+
+              {/* Luck Boost Indicator */}
+              {activePetBoosts.find(boost => boost.trait_type === 'luck_boost') && (
+                <Card className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 border-green-500/30">
+                  <CardContent className="p-4 text-center">
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white font-bold text-xl">🌟</span>
+                    </div>
+                    <p className="text-sm font-semibold mb-1 text-green-400">Luck Boost Active!</p>
+                    <p className="text-xs text-muted-foreground">
+                      +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Bet Amount */}
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">

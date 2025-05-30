@@ -48,6 +48,7 @@ const Earn = () => {
   } = useFarmingSessions();
 
   const { trackFarmingClaim, trackStaking } = useActivityTracker();
+  const { activePetBoosts } = usePetSystem();
 
   const handleStartStaking = () => {
     const amount = parseFloat(stakingAmount);
@@ -61,8 +62,8 @@ const Earn = () => {
 
   const handleHarvestFarming = async () => {
     await harvestFarming();
-    // Track farming claim activity (0.02 tokens earned)
-    trackFarmingClaim(0.02);
+    // Track farming claim activity (0.002 base tokens, actual amount may be higher with boosts)
+    trackFarmingClaim(0.002);
   };
 
   const handleClaimStaking = async () => {
@@ -154,7 +155,12 @@ const Earn = () => {
                     <span className="text-black font-bold text-xl">₿</span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Earn 0.02 $ITLOG every 5 minutes
+                    Earn 0.0021 $ITLOG every 5 minutes
+                    {activePetBoosts.some(boost => boost.trait_type === 'farming_boost' || boost.trait_type === 'token_multiplier') && (
+                      <span className="text-green-400 ml-1">
+                        (+ pet boosts!)
+                      </span>
+                    )}
                   </p>
                   <p className="text-lg font-semibold">
                     Status: {farmingSession ? 'Active' : 'Inactive'}

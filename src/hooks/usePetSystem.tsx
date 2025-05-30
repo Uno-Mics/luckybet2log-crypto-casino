@@ -1,5 +1,5 @@
-
 import { useState, useEffect, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
@@ -52,7 +52,8 @@ type PlacePetResponse = {
 export const usePetSystem = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  
+  const queryClient = useQueryClient();
+
   const [eggTypes, setEggTypes] = useState<EggType[]>([]);
   const [userEggs, setUserEggs] = useState<UserEggQueryResult[]>([]);
   const [userPets, setUserPets] = useState<UserPetQueryResult[]>([]);
@@ -66,7 +67,7 @@ export const usePetSystem = () => {
         .from("egg_types")
         .select("*")
         .order("price");
-      
+
       if (error) throw error;
       setEggTypes(data || []);
     } catch (error) {
@@ -87,7 +88,7 @@ export const usePetSystem = () => {
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
-      
+
       if (error) throw error;
       setUserEggs((data || []) as unknown as UserEggQueryResult[]);
     } catch (error) {
@@ -108,7 +109,7 @@ export const usePetSystem = () => {
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
-      
+
       if (error) throw error;
       setUserPets((data || []) as unknown as UserPetQueryResult[]);
     } catch (error) {
@@ -124,7 +125,7 @@ export const usePetSystem = () => {
       const { data, error } = await supabase.rpc("get_user_pet_boosts", {
         p_user_id: user.id
       });
-      
+
       if (error) throw error;
       setActivePetBoosts(data || []);
     } catch (error) {
@@ -164,6 +165,7 @@ export const usePetSystem = () => {
             description: "You successfully purchased an egg!"
           });
           loadUserEggs();
+          queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile query
         } else {
           toast({
             title: "Purchase failed",
@@ -179,6 +181,7 @@ export const usePetSystem = () => {
             description: `You spent ${response.tokens_spent || 0} $ITLOG tokens.`
           });
           loadUserEggs();
+          queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile query
         } else {
           toast({
             title: "Purchase failed",

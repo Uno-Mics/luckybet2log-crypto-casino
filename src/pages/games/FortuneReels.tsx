@@ -4,6 +4,7 @@ import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
+import { usePetSystem } from "@/hooks/usePetSystem";
 import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const FortuneReels = () => {
   const { toast } = useToast();
   const { isBanned } = useBannedCheck();
   const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
+  const { activePetBoosts } = usePetSystem();
 
   useEffect(() => {
     if (profile) {
@@ -99,24 +101,31 @@ const FortuneReels = () => {
         clearInterval(animate);
         
         // Generate final result with weighted probabilities based on your image
+        // Apply luck boost from active pets
+        const luckBoost = activePetBoosts.find(boost => boost.trait_type === 'luck_boost');
+        const luckMultiplier = luckBoost ? luckBoost.total_boost : 1.0;
+        
         const random = Math.random() * 100; // Convert to percentage for easier comparison
         let finalReels: string[];
         
-        if (random < 0.1) { // 0.1% chance for $ITLOG jackpot
+        // Apply luck boost to winning chances (reduce the random threshold for better odds)
+        const adjustedRandom = random / luckMultiplier;
+        
+        if (adjustedRandom < 0.1) { // 0.1% chance for $ITLOG jackpot (improved with luck)
           finalReels = ["🪙", "🪙", "🪙"];
-        } else if (random < 1.1) { // 1% chance for sevens (1.1 - 0.1 = 1%)
+        } else if (adjustedRandom < 1.1) { // 1% chance for sevens (improved with luck)
           finalReels = ["7️⃣", "7️⃣", "7️⃣"];
-        } else if (random < 2.6) { // 1.5% chance for stars (2.6 - 1.1 = 1.5%)
+        } else if (adjustedRandom < 2.6) { // 1.5% chance for stars (improved with luck)
           finalReels = ["⭐", "⭐", "⭐"];
-        } else if (random < 4.6) { // 2% chance for diamonds (4.6 - 2.6 = 2%)
+        } else if (adjustedRandom < 4.6) { // 2% chance for diamonds (improved with luck)
           finalReels = ["💎", "💎", "💎"];
-        } else if (random < 7.1) { // 2.5% chance for bells (7.1 - 4.6 = 2.5%)
+        } else if (adjustedRandom < 7.1) { // 2.5% chance for bells (improved with luck)
           finalReels = ["🔔", "🔔", "🔔"];
-        } else if (random < 10.1) { // 3% chance for peaches (10.1 - 7.1 = 3%)
+        } else if (adjustedRandom < 10.1) { // 3% chance for peaches (improved with luck)
           finalReels = ["🍑", "🍑", "🍑"];
-        } else if (random < 14.1) { // 4% chance for lemons (14.1 - 10.1 = 4%)
+        } else if (adjustedRandom < 14.1) { // 4% chance for lemons (improved with luck)
           finalReels = ["🍋", "🍋", "🍋"];
-        } else if (random < 20.1) { // 6% chance for cherries (20.1 - 14.1 = 6%)
+        } else if (adjustedRandom < 20.1) { // 6% chance for cherries (improved with luck)
           finalReels = ["🍒", "🍒", "🍒"];
         } else {
           // 80.9% chance for no match - generate random non-matching combination
@@ -286,6 +295,21 @@ const FortuneReels = () => {
                   <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
                 </CardContent>
               </Card>
+
+              {/* Luck Boost Indicator */}
+              {activePetBoosts.find(boost => boost.trait_type === 'luck_boost') && (
+                <Card className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 border-green-500/30">
+                  <CardContent className="p-4 text-center">
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white font-bold text-xl">🌟</span>
+                    </div>
+                    <p className="text-sm font-semibold mb-1 text-green-400">Luck Boost Active!</p>
+                    <p className="text-xs text-muted-foreground">
+                      +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Bet Amount */}
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">

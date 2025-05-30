@@ -198,7 +198,7 @@ BEGIN
   RETURN QUERY
   SELECT 
     pt.trait_type,
-    SUM(pt.trait_value - 1) + 1 as total_boost -- Combine additive boosts
+    1 + SUM(pt.trait_value - 1) as total_boost -- Properly combine additive boosts
   FROM user_pets up
   JOIN pet_types pt ON up.pet_type_id = pt.id
   WHERE up.user_id = p_user_id AND up.is_active = true

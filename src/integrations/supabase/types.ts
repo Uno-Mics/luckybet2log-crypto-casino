@@ -731,6 +731,13 @@ export type Database = {
           total_boost: number
         }[]
       }
+      harvest_farming_rewards: {
+        Args: {
+          p_user_id: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

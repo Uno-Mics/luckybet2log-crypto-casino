@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
+import { usePetSystem } from "@/hooks/usePetSystem";
 import BannedOverlay from "@/components/BannedOverlay";
 
 type TileState = "hidden" | "safe" | "mine" | "itlog";
@@ -33,6 +34,7 @@ const Mines = () => {
   const { profile, updateBalance } = useProfile();
   const { isBanned } = useBannedCheck();
   const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
+  const { activePetBoosts } = usePetSystem();
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
@@ -56,8 +58,21 @@ const Mines = () => {
       [allPositions[i], allPositions[j]] = [allPositions[j], allPositions[i]];
     }
 
-    // Take first mineCount positions for mines
-    const minePositions = new Set(allPositions.slice(0, mineCount));
+    // Apply luck boost by potentially reducing effective mine count or repositioning mines
+    let effectiveMineCount = mineCount;
+    const luckBoost = activePetBoosts.find(boost => boost.trait_type === 'luck_boost');
+    if (luckBoost && luckBoost.total_boost > 1.0) {
+      const luckBias = luckBoost.total_boost - 1.0;
+      const shouldApplyLuck = Math.random() < luckBias;
+      
+      if (shouldApplyLuck) {
+        // Reduce effective mine count by 1 (but minimum 1 mine)
+        effectiveMineCount = Math.max(1, mineCount - 1);
+      }
+    }
+
+    // Take first effectiveMineCount positions for mines
+    const minePositions = new Set(allPositions.slice(0, effectiveMineCount));
 
     // 5% chance for $ITLOG token
     const hasItlog = Math.random() < 0.05;
@@ -330,6 +345,21 @@ const Mines = () => {
                   <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
                 </CardContent>
               </Card>
+
+              {/* Luck Boost Indicator */}
+              {activePetBoosts.find(boost => boost.trait_type === 'luck_boost') && (
+                <Card className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 border-green-500/30">
+                  <CardContent className="p-4 text-center">
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white font-bold text-xl">🌟</span>
+                    </div>
+                    <p className="text-sm font-semibold mb-1 text-green-400">Luck Boost Active!</p>
+                    <p className="text-xs text-muted-foreground">
+                      +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Game Settings */}
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">

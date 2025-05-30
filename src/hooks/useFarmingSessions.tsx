@@ -165,48 +165,35 @@ export const useFarmingSessions = () => {
     if (!farmingSession || farmingProgress < 100 || !user) return;
 
     try {
-      let tokensEarned = 0.02;
-      
-      // Apply pet boosts
-      const farmingBoost = activePetBoosts.find(boost => boost.trait_type === 'farming_boost');
-      const tokenMultiplier = activePetBoosts.find(boost => boost.trait_type === 'token_multiplier');
-      
-      if (farmingBoost) {
-        tokensEarned *= farmingBoost.total_boost;
-      }
-      if (tokenMultiplier) {
-        tokensEarned *= tokenMultiplier.total_boost;
-      }
-
-      // Update user's itlog balance using the database function
-      const { error: updateError } = await supabase.rpc("update_user_balance", {
+      // Use the database function to handle the reward calculation with proper boosts
+      const { data: result, error: updateError } = await supabase.rpc("harvest_farming_rewards", {
         p_user_id: user.id,
-        p_itlog_change: tokensEarned,
+        p_session_id: farmingSession.id,
       });
 
       if (updateError) throw updateError;
 
-      // Add to earning history
-      const { error: historyError } = await supabase
-        .from("earning_history")
-        .insert({
-          user_id: user.id,
-          session_type: "farming",
-          tokens_earned: tokensEarned,
+      // Type the result properly as the JSON response from the database function
+      const harvestResult = result as {
+        success: boolean;
+        error?: string;
+        reward: number;
+        base_reward: number;
+        farming_boost: number;
+        token_multiplier: number;
+        total_earned: number;
+      };
+
+      if (!harvestResult.success) {
+        toast({
+          title: "Error",
+          description: harvestResult.error || "Failed to harvest reward.",
+          variant: "destructive",
         });
+        return;
+      }
 
-      if (historyError) throw historyError;
-
-      // Update session with tokens earned and restart with new timestamp
-      const { error: sessionError } = await supabase
-        .from("farming_sessions")
-        .update({
-          tokens_earned: tokensEarned,
-          started_at: new Date().toISOString(), // Restart with new timestamp
-        })
-        .eq("id", farmingSession.id);
-
-      if (sessionError) throw sessionError;
+      const tokensEarned = harvestResult.reward;
 
       // Update local state to restart progress
       setFarmingSession({
@@ -222,7 +209,7 @@ export const useFarmingSessions = () => {
 
       toast({
         title: "Farming reward harvested!",
-        description: `You earned ${tokensEarned} $ITLOG tokens! Farming continues...`,
+        description: `You earned ${tokensEarned.toFixed(6)} $ITLOG tokens! Farming continues...`,
       });
     } catch (error) {
       console.error("Error harvesting farming reward:", error);
@@ -340,11 +327,11 @@ export const useFarmingSessions = () => {
     try {
       const stakeAmount = stakingSession.stake_amount || 0;
       let tokensEarned = stakeAmount * 0.000005; // 0.000005 of staked amount as ITLOG tokens
-      
+
       // Apply pet boosts
       const stakingBoost = activePetBoosts.find(boost => boost.trait_type === 'staking_boost');
       const tokenMultiplier = activePetBoosts.find(boost => boost.trait_type === 'token_multiplier');
-      
+
       if (stakingBoost) {
         tokensEarned *= stakingBoost.total_boost;
       }
