@@ -705,6 +705,28 @@ export type Database = {
         }
         Returns: undefined
       }
+      clear_user_data: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      reset_all_php_balances: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      reset_all_coins: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      reset_all_itlog_tokens: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      reset_all_balances: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       check_balance_quests: {
         Args: {
           p_user_id: string
@@ -821,6 +843,33 @@ export type Database = {
       admin_delete_user: {
         Args: {
           target_user_id: string
+        }
+        Returns: Json
+      }
+      execute_sql: {
+        Args: {
+          sql_query: string
+        }
+        Returns: Json
+      }
+      admin_give_custom_amounts: {
+        Args: {
+          p_user_ids: string[]
+          p_php_amount?: number
+          p_coins_amount?: number
+          p_itlog_amount?: number
+        }
+        Returns: Json
+      }
+      admin_reset_all_balances: {
+        Args: {
+          p_balance_type: string
+        }
+        Returns: Json
+      }
+      admin_clear_user_data: {
+        Args: {
+          p_user_id: string
         }
         Returns: Json
       }
