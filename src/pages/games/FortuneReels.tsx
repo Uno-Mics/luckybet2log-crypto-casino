@@ -164,6 +164,23 @@ const FortuneReels = () => {
             // Track the win for quest progress (convert ITLOG to coin equivalent for tracking)
             await trackGameWin(reward * 0.01, 'fortune-reels'); // Assuming 1 ITLOG = 0.01 coins equivalent
             
+            // Add to game history for $ITLOG win
+            await addHistoryEntry({
+              game_type: 'fortune-reels',
+              bet_amount: betAmount,
+              result_type: 'win',
+              win_amount: reward, // Store ITLOG amount in win_amount
+              loss_amount: 0,
+              multiplier: reward / betAmount, // Calculate effective multiplier
+              game_details: { 
+                reels: finalReels,
+                combination,
+                symbols: finalReels,
+                isItlogWin: true,
+                itlogReward: reward
+              }
+            });
+            
             toast({
               title: "🎉 $ITLOG JACKPOT! 🎉",
               description: `Three $ITLOG symbols! You won ${reward.toLocaleString()} $ITLOG tokens!`,

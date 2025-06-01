@@ -208,6 +208,24 @@ const Mines = () => {
       }).then(async () => {
         // Track the win for quest progress (convert ITLOG to coin equivalent for tracking)
         await trackGameWin(reward * 0.01, 'mines'); // Assuming 1 ITLOG = 0.01 coins equivalent
+        
+        // Add to game history for $ITLOG win
+        await addHistoryEntry({
+          game_type: 'mines',
+          bet_amount: parseFloat(currentBet),
+          result_type: 'win',
+          win_amount: reward, // Store ITLOG amount in win_amount
+          loss_amount: 0,
+          multiplier: reward / parseFloat(currentBet), // Calculate effective multiplier
+          game_details: { 
+            tilesRevealed, 
+            minesCount: parseInt(minesCount),
+            hitMine: false,
+            position: index,
+            isItlogWin: true,
+            itlogReward: reward
+          }
+        });
       });
 
       // Reveal all tiles

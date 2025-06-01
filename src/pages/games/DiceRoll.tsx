@@ -161,6 +161,24 @@ const DiceRoll = () => {
             // Track the win for quest progress (convert ITLOG to coin equivalent for tracking)
             await trackGameWin(reward * 0.01, 'dice-roll'); // Assuming 1 ITLOG = 0.01 coins equivalent
             
+            // Add to game history for $ITLOG win
+            await addHistoryEntry({
+              game_type: 'dice-roll',
+              bet_amount: betAmount,
+              result_type: 'win',
+              win_amount: reward, // Store ITLOG amount in win_amount
+              loss_amount: 0,
+              multiplier: reward / betAmount, // Calculate effective multiplier
+              game_details: { 
+                prediction, 
+                targetNumber, 
+                finalRoll,
+                isWin: true,
+                isItlogWin: true,
+                itlogReward: reward
+              }
+            });
+            
             toast({
               title: "🎉 $ITLOG TOKEN WON! 🎉",
               description: `You rolled ${finalRoll} and won ${reward.toLocaleString()} $ITLOG tokens!`,

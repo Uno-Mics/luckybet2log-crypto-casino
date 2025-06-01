@@ -212,6 +212,23 @@ const WheelOfFortune = () => {
             // Track the win for quest progress (convert ITLOG to coin equivalent for tracking)
             await trackGameWin(itlogReward * 0.01, 'wheel-of-fortune'); // Assuming 1 ITLOG = 0.01 coins equivalent
 
+            // Add to game history for $ITLOG win
+            await addHistoryEntry({
+              game_type: 'wheel-of-fortune',
+              bet_amount: betAmount,
+              result_type: 'win',
+              win_amount: itlogReward, // Store ITLOG amount in win_amount
+              loss_amount: 0,
+              multiplier: 500, // 500x for $ITLOG
+              game_details: { 
+                selectedBet,
+                wheelResult: result,
+                sectionIndex: actualSectionIndex,
+                isItlogWin: true,
+                itlogReward: itlogReward
+              }
+            });
+
             toast({
               title: "🎉 $ITLOG TOKEN WON! 🎉",
               description: `You hit the exclusive $ITLOG token and won ${itlogReward.toLocaleString()} $ITLOG tokens!`,

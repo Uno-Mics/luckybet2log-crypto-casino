@@ -129,22 +129,48 @@ export const useGameHistory = (gameType?: string) => {
     if (!user) return;
 
     try {
-      let query = supabase
+      console.log('Clearing game history...', { gameTypeToClean, userId: user.id });
+
+      // First get the IDs of records that will be deleted for logging
+      let selectQuery = supabase
+        .from('game_history')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (gameTypeToClean) {
+        selectQuery = selectQuery.eq('game_type', gameTypeToClean);
+      }
+
+      const { data: recordsToDelete } = await selectQuery;
+      console.log('Records to delete:', recordsToDelete);
+
+      // Now delete the records
+      let deleteQuery = supabase
         .from('game_history')
         .delete()
         .eq('user_id', user.id);
 
       if (gameTypeToClean) {
-        query = query.eq('game_type', gameTypeToClean);
+        deleteQuery = deleteQuery.eq('game_type', gameTypeToClean);
       }
 
-      const { error } = await query;
-      if (error) throw error;
+      const { error, count } = await deleteQuery;
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
 
+      console.log('Successfully deleted from database. Count:', count);
+
+      // Clear local state immediately
       setHistory([]);
+      
+      // Reset game counter
+      gameCounterRef.current = 0;
+
       toast({
         title: "Success",
-        description: "Game history cleared",
+        description: `Game history cleared (${count || 0} records removed)`,
       });
     } catch (error) {
       console.error('Error clearing game history:', error);
@@ -237,8 +263,17 @@ export const useGameHistory = (gameType?: string) => {
             },
             (payload) => {
               console.log('Real-time DELETE:', payload);
-              const deletedId = payload.old.id;
-              setHistory(prevHistory => prevHistory.filter(entry => entry.id !== deletedId));
+              const deletedEntry = payload.old as GameHistoryEntry;
+              
+              // Only process if it matches our game type filter (or no filter)
+              if (!gameType || deletedEntry.game_type === gameType) {
+                console.log('Processing DELETE for entry:', deletedEntry.id);
+                setHistory(prevHistory => {
+                  const newHistory = prevHistory.filter(entry => entry.id !== deletedEntry.id);
+                  console.log('History after DELETE:', newHistory.length);
+                  return newHistory;
+                });
+              }
             }
           )
           .subscribe((status, err) => {
@@ -267,7 +302,7 @@ export const useGameHistory = (gameType?: string) => {
         subscriptionRef.current = null;
       }
     };
-  }, [user, gameType, fetchHistory]);
+  }, [user, gameType, fetchHistory, refreshTrigger]);
 
   const refreshHistory = async () => {
     console.log('Manual refresh triggered');
