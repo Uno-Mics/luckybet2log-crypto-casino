@@ -12,6 +12,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
+import { useGameHistory } from "@/hooks/useGameHistory";
+import GameHistory from "@/components/GameHistory";
 import BannedOverlay from "@/components/BannedOverlay";
 
 const DiceRoll = () => {
@@ -29,6 +31,12 @@ const DiceRoll = () => {
   const { isBanned } = useBannedCheck();
   const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
+  const { addHistoryEntry, history } = useGameHistory('dice-roll');
+
+  // Debug: Log when history changes
+  useEffect(() => {
+    console.log('DiceRoll: Game history updated, length:', history.length);
+  }, [history]);
 
   useEffect(() => {
     if (profile) {
@@ -185,6 +193,22 @@ const DiceRoll = () => {
             // Track the win for quest progress
             await trackGameWin(winnings, 'dice-roll');
             
+            // Add to game history
+            await addHistoryEntry({
+              game_type: 'dice-roll',
+              bet_amount: betAmount,
+              result_type: 'win',
+              win_amount: winnings,
+              loss_amount: 0,
+              multiplier,
+              game_details: { 
+                prediction, 
+                targetNumber, 
+                finalRoll,
+                isWin: true
+              }
+            });
+            
             toast({
               title: "Winner!",
               description: `You rolled ${finalRoll} and won ${winnings.toFixed(2)} coins!`
@@ -197,6 +221,22 @@ const DiceRoll = () => {
             });
           });
         } else {
+          // Add to game history for loss
+          addHistoryEntry({
+            game_type: 'dice-roll',
+            bet_amount: betAmount,
+            result_type: 'loss',
+            win_amount: 0,
+            loss_amount: betAmount,
+            multiplier: 0,
+            game_details: { 
+              prediction, 
+              targetNumber, 
+              finalRoll,
+              isWin: false
+            }
+          });
+          
           toast({
             title: "Better luck next time!",
             description: `You rolled ${finalRoll}. Try again!`,
@@ -231,7 +271,7 @@ const DiceRoll = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Dice Display */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-center">Dice Roll</CardTitle>
@@ -321,6 +361,9 @@ const DiceRoll = () => {
                   </Button>
                 </CardContent>
               </Card>
+
+              {/* Game History */}
+              <GameHistory gameType="dice-roll" maxHeight="300px" />
             </div>
 
             {/* Controls */}
@@ -444,6 +487,8 @@ const DiceRoll = () => {
                   </p>
                 </CardContent>
               </Card>
+
+              
 
               {/* Recent Rolls */}
               {lastRoll && (

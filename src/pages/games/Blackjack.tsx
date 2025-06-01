@@ -12,6 +12,8 @@ import { useActivityTracker } from "@/hooks/useActivityTracker";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
+import { useGameHistory } from "@/hooks/useGameHistory";
+import GameHistory from "@/components/GameHistory";
 
 type CardType = {
   suit: string;
@@ -38,6 +40,7 @@ const Blackjack = () => {
   const [sessionStartTime] = useState(Date.now());
   const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
+  const { addHistoryEntry } = useGameHistory();
 
   useEffect(() => {
     if (profile) {
@@ -70,22 +73,22 @@ const Blackjack = () => {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    
+
     // Apply luck boost by potentially reordering cards to favor player
     const luckBoost = activePetBoosts.find(boost => boost.trait_type === 'luck_boost');
     if (luckBoost && luckBoost.total_boost > 1.0) {
       const luckBias = luckBoost.total_boost - 1.0;
       const shouldApplyLuck = Math.random() < luckBias;
-      
+
       if (shouldApplyLuck) {
         // Move some good cards (Aces, 10s, face cards) towards the top
         const goodCards = shuffled.filter(card => card.numValue === 11 || card.numValue === 10);
         const otherCards = shuffled.filter(card => card.numValue !== 11 && card.numValue !== 10);
-        
+
         // Take 2-3 good cards and put them in player positions (0, 2, 4, 6...)
         const goodCardsToMove = goodCards.slice(0, Math.min(3, goodCards.length));
         const remainingGoodCards = goodCards.slice(goodCardsToMove.length);
-        
+
         // Rebuild deck with good cards in player-favorable positions
         const newDeck = [...otherCards, ...remainingGoodCards];
         goodCardsToMove.forEach((card, index) => {
@@ -96,11 +99,11 @@ const Blackjack = () => {
             newDeck.unshift(card);
           }
         });
-        
+
         return newDeck;
       }
     }
-    
+
     return shuffled;
   };
 
@@ -210,6 +213,15 @@ const Blackjack = () => {
           setBalance(prev => prev + winnings);
           trackGameWin(winnings, 'blackjack');
           trackActivityGameWin('blackjack', winnings, sessionId);
+          addHistoryEntry({
+            game_type: 'blackjack',
+            bet_amount: betAmount,
+            result_type: 'win',
+            win_amount: winnings,
+            loss_amount: 0,
+            multiplier: 2.5,
+            game_details: { result: 'blackjack', playerCards: initialPlayerCards, dealerCards: initialDealerCards }
+          });
           toast({
             title: "Blackjack!",
             description: `You won ${winnings.toFixed(2)} coins with a natural blackjack!`
@@ -224,6 +236,15 @@ const Blackjack = () => {
       } else {
         setGameResult("dealer_blackjack");
         trackActivityGameLoss('blackjack', betAmount, sessionId);
+        addHistoryEntry({
+          game_type: 'blackjack',
+          bet_amount: betAmount,
+          result_type: 'loss',
+          win_amount: 0,
+          loss_amount: betAmount,
+          multiplier: 0,
+          game_details: { result: 'dealer_blackjack', playerCards: initialPlayerCards, dealerCards: initialDealerCards }
+        });
         toast({
           title: "Dealer Blackjack",
           description: "Dealer has blackjack. You lose.",
@@ -257,6 +278,15 @@ const Blackjack = () => {
       setGameStarted(false);
       setShowDealerCards(true);
       trackActivityGameLoss('blackjack', betAmount, sessionId);
+      addHistoryEntry({
+        game_type: 'blackjack',
+        bet_amount: betAmount,
+        result_type: 'loss',
+        win_amount: 0,
+        loss_amount: betAmount,
+        multiplier: 0,
+        game_details: { result: 'bust', playerTotal: newTotal, playerCards: newPlayerCards }
+      });
       toast({
         title: "Bust!",
         description: "You went over 21. You lose.",
@@ -294,6 +324,15 @@ const Blackjack = () => {
         setBalance(prev => prev + winnings);
         trackGameWin(winnings, 'blackjack');
         trackActivityGameWin('blackjack', winnings, sessionId);
+        addHistoryEntry({
+          game_type: 'blackjack',
+          bet_amount: betAmount,
+          result_type: 'win',
+          win_amount: winnings,
+          loss_amount: 0,
+          multiplier: 2,
+          game_details: { result: 'dealer_bust', playerTotal, dealerTotal: currentDealerTotal, dealerCards: currentDealerCards }
+        });
         toast({
           title: "Dealer Bust!",
           description: `Dealer went over 21. You won ${winnings.toFixed(2)} coins!`
@@ -314,6 +353,15 @@ const Blackjack = () => {
         setBalance(prev => prev + winnings);
         trackGameWin(winnings, 'blackjack');
         trackActivityGameWin('blackjack', winnings, sessionId);
+        addHistoryEntry({
+          game_type: 'blackjack',
+          bet_amount: betAmount,
+          result_type: 'win',
+          win_amount: winnings,
+          loss_amount: 0,
+          multiplier: 2,
+          game_details: { result: 'win', playerTotal, dealerTotal: currentDealerTotal, dealerCards: currentDealerCards }
+        });
         toast({
           title: "You Win!",
           description: `You beat the dealer! Won ${winnings.toFixed(2)} coins!`
@@ -328,6 +376,15 @@ const Blackjack = () => {
     } else if (playerTotal < currentDealerTotal) {
       setGameResult("lose");
       trackActivityGameLoss('blackjack', betAmount, sessionId);
+      addHistoryEntry({
+        game_type: 'blackjack',
+        bet_amount: betAmount,
+        result_type: 'loss',
+        win_amount: 0,
+        loss_amount: betAmount,
+        multiplier: 0,
+        game_details: { result: 'lose', playerTotal, dealerTotal: currentDealerTotal, dealerCards: currentDealerCards }
+      });
       toast({
         title: "You Lose",
         description: "Dealer has a higher hand.",
@@ -341,6 +398,15 @@ const Blackjack = () => {
         setBalance(prev => prev + betAmount);
         trackGameWin(betAmount, 'blackjack'); // Push is a win of the bet amount
         trackActivityGameWin('blackjack', betAmount, sessionId);
+        addHistoryEntry({
+          game_type: 'blackjack',
+          bet_amount: betAmount,
+          result_type: 'push',
+          win_amount: betAmount,
+          loss_amount: 0,
+          multiplier: 1,
+          game_details: { result: 'push', playerTotal, dealerTotal: currentDealerTotal, dealerCards: currentDealerCards }
+        });
         toast({
           title: "Push!",
           description: "Same total. Bet returned."
@@ -492,6 +558,8 @@ const Blackjack = () => {
                       </>
                     )}
                   </div>
+                  {/* Game History */}
+                  <GameHistory gameType="blackjack" maxHeight="300px" />
                 </CardContent>
               </Card>
             </div>

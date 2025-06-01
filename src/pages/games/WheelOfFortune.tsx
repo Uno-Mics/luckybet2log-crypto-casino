@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
+import { useGameHistory } from "@/hooks/useGameHistory";
+import GameHistory from "@/components/GameHistory";
 
 const WheelOfFortune = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -23,6 +25,7 @@ const WheelOfFortune = () => {
   const { toast } = useToast();
   const { trackGameWin, trackGamePlay, trackBet, trackGameLoss } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
+  const { addHistoryEntry } = useGameHistory();
 
   useEffect(() => {
     if (profile) {
@@ -238,6 +241,21 @@ const WheelOfFortune = () => {
           // Track the win for quest progress
           await trackGameWin(winnings, 'wheel-of-fortune');
 
+          // Add to game history
+          await addHistoryEntry({
+            game_type: 'wheel-of-fortune',
+            bet_amount: betAmount,
+            result_type: 'win',
+            win_amount: winnings,
+            loss_amount: 0,
+            multiplier: actualResult.multiplier,
+            game_details: { 
+              selectedBet,
+              wheelResult: result,
+              sectionIndex: actualSectionIndex
+            }
+          });
+
           toast({
             title: "Congratulations!",
             description: `You won ${winnings.toFixed(2)} coins with ${actualResult.multiplier}x multiplier!`
@@ -252,6 +270,21 @@ const WheelOfFortune = () => {
       } else {
         // Track the loss for quest progress
         trackGameLoss('wheel-of-fortune');
+
+        // Add to game history
+        addHistoryEntry({
+          game_type: 'wheel-of-fortune',
+          bet_amount: betAmount,
+          result_type: 'loss',
+          win_amount: 0,
+          loss_amount: betAmount,
+          multiplier: 0,
+          game_details: { 
+            selectedBet,
+            wheelResult: result,
+            sectionIndex: actualSectionIndex
+          }
+        });
 
         toast({
           title: "Better luck next time!",
@@ -287,7 +320,7 @@ const WheelOfFortune = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Wheel */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-center">Wheel of Fortune</CardTitle>
@@ -358,6 +391,9 @@ const WheelOfFortune = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Game History */}
+              <GameHistory gameType="wheel-of-fortune" maxHeight="300px" />
             </div>
 
             {/* Controls */}
@@ -462,6 +498,8 @@ const WheelOfFortune = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              
 
               {/* $ITLOG Info */}
               <Card className="bg-gradient-to-r from-gold-600/10 to-amber-600/10 border-gold-500/30">

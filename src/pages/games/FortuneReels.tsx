@@ -5,6 +5,8 @@ import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
+import { useGameHistory } from "@/hooks/useGameHistory";
+import GameHistory from "@/components/GameHistory";
 import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +26,7 @@ const FortuneReels = () => {
   const { isBanned } = useBannedCheck();
   const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
+  const { addHistoryEntry } = useGameHistory();
 
   useEffect(() => {
     if (profile) {
@@ -184,6 +187,21 @@ const FortuneReels = () => {
             // Track the win for quest progress
             await trackGameWin(winnings, 'fortune-reels');
             
+            // Add to game history
+            await addHistoryEntry({
+              game_type: 'fortune-reels',
+              bet_amount: betAmount,
+              result_type: 'win',
+              win_amount: winnings,
+              loss_amount: 0,
+              multiplier: payTable[key],
+              game_details: { 
+                reels: finalReels,
+                combination,
+                symbols: finalReels
+              }
+            });
+            
             toast({
               title: "Winner!",
               description: `You won ${winnings.toFixed(2)} coins with ${payTable[key]}x multiplier!`
@@ -198,6 +216,21 @@ const FortuneReels = () => {
         } else {
           // Track the loss for quest progress
           trackGameLoss('fortune-reels');
+          
+          // Add to game history
+          addHistoryEntry({
+            game_type: 'fortune-reels',
+            bet_amount: betAmount,
+            result_type: 'loss',
+            win_amount: 0,
+            loss_amount: betAmount,
+            multiplier: 0,
+            game_details: { 
+              reels: finalReels,
+              combination,
+              symbols: finalReels
+            }
+          });
           
           toast({
             title: "No match",
@@ -232,7 +265,7 @@ const FortuneReels = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Slot Machine */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-center">Slot Machine</CardTitle>
@@ -284,6 +317,9 @@ const FortuneReels = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Game History */}
+              <GameHistory gameType="fortune-reels" maxHeight="300px" />
             </div>
 
             {/* Controls and Info */}
@@ -372,6 +408,8 @@ const FortuneReels = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              
 
               {/* $ITLOG Info */}
               <Card className="bg-gradient-to-r from-gold-600/10 to-amber-600/10 border-gold-500/30">

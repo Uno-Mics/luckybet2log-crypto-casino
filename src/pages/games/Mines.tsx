@@ -11,6 +11,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
+import { useGameHistory } from "@/hooks/useGameHistory";
+import GameHistory from "@/components/GameHistory";
 import BannedOverlay from "@/components/BannedOverlay";
 
 type TileState = "hidden" | "safe" | "mine" | "itlog";
@@ -35,6 +37,7 @@ const Mines = () => {
   const { isBanned } = useBannedCheck();
   const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
+  const { addHistoryEntry } = useGameHistory();
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
@@ -160,6 +163,22 @@ const Mines = () => {
       // Track the loss for quest progress
       trackGameLoss('mines');
       
+      // Add to game history
+      addHistoryEntry({
+        game_type: 'mines',
+        bet_amount: parseFloat(currentBet),
+        result_type: 'loss',
+        win_amount: 0,
+        loss_amount: parseFloat(currentBet),
+        multiplier: currentMultiplier,
+        game_details: { 
+          tilesRevealed, 
+          minesCount: parseInt(minesCount),
+          hitMine: true,
+          position: index
+        }
+      });
+      
       // Reveal all tiles
       newBoard.forEach((tile, i) => {
         if (tile === "hidden") {
@@ -231,6 +250,21 @@ const Mines = () => {
 
       // Track the win for quest progress
       await trackGameWin(winnings, 'mines');
+
+      // Add to game history
+      await addHistoryEntry({
+        game_type: 'mines',
+        bet_amount: parseFloat(currentBet),
+        result_type: 'win',
+        win_amount: winnings,
+        loss_amount: 0,
+        multiplier: currentMultiplier,
+        game_details: { 
+          tilesRevealed, 
+          minesCount: parseInt(minesCount),
+          cashedOut: true 
+        }
+      });
 
       // Reset game state to allow new settings
       setGameStarted(false);
@@ -305,7 +339,7 @@ const Mines = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Game Board */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -334,6 +368,9 @@ const Mines = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Game History */}
+              <GameHistory gameType="mines" maxHeight="300px" />
             </div>
 
             {/* Game Controls */}
@@ -417,6 +454,8 @@ const Mines = () => {
                   </p>
                 </CardContent>
               </Card>
+
+              
 
               {/* Game Stats */}
               {gameStarted && (
