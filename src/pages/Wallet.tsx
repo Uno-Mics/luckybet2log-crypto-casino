@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import BannedOverlay from "@/components/BannedOverlay";
@@ -28,6 +28,44 @@ const Wallet = () => {
   const { profile, updateBalance } = useProfile();
   const { user } = useAuth();
   const { trackCurrencyConversion, trackItlogExchange } = useActivityTracker();
+
+  // Set up real-time subscription for balance updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('wallet-balance-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Show notification when balance is updated by admin
+          const newProfile = payload.new;
+          if (newProfile && profile) {
+            const phpDiff = newProfile.php_balance - profile.php_balance;
+            const coinsDiff = newProfile.coins - profile.coins;
+            const itlogDiff = newProfile.itlog_tokens - profile.itlog_tokens;
+            
+            if (phpDiff !== 0 || coinsDiff !== 0 || itlogDiff !== 0) {
+              toast({
+                title: "Balance Updated",
+                description: `Your balance has been updated by an administrator.${phpDiff !== 0 ? ` PHP: ${phpDiff > 0 ? '+' : ''}₱${phpDiff.toFixed(2)}` : ''}${coinsDiff !== 0 ? ` Coins: ${coinsDiff > 0 ? '+' : ''}${coinsDiff.toFixed(2)}` : ''}${itlogDiff !== 0 ? ` $ITLOG: ${itlogDiff > 0 ? '+' : ''}${itlogDiff.toFixed(4)}` : ''}`,
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, profile, toast]);
 
   if (!profile) return null;
 

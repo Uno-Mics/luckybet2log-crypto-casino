@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import NotificationBell from "@/components/NotificationBell";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,9 +15,35 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { toast } = useToast();
   const { profile } = useProfile();
+
+  // Set up real-time subscription for profile updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('profile-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Force refresh profile data when balance changes
+          window.location.reload();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
   
 
   const navigation = [

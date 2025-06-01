@@ -462,11 +462,25 @@ const Admin = () => {
       const successCount = results.filter(r => r.success).length;
       const failureCount = results.filter(r => !r.success).length;
       
+      // Invalidate all relevant queries to update UI immediately
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      
+      // Invalidate profile queries for all affected users to update navbar and other components
+      results.forEach(result => {
+        if (result.success) {
+          queryClient.invalidateQueries({ queryKey: ['profile', result.userId] });
+        }
+      });
+      
+      // Also invalidate the general profile query to ensure current user's data is fresh
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      
+      // Invalidate any wallet-related queries
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
       
       toast({
         title: "Custom amounts distributed",
-        description: `Successfully updated ${successCount} users${failureCount > 0 ? `, ${failureCount} failed` : ''}.`,
+        description: `Successfully updated ${successCount} users${failureCount > 0 ? `, ${failureCount} failed` : ''}. Balances have been updated.`,
       });
     },
   });
@@ -474,41 +488,96 @@ const Admin = () => {
   // Reset all balances mutation
   const resetAllBalances = useMutation({
     mutationFn: async ({ balanceType }: { balanceType: 'php' | 'coins' | 'itlog' | 'all' }) => {
+      console.log('Attempting to reset balances for type:', balanceType);
+      
       let result;
       
-      switch (balanceType) {
-        case 'php':
-          result = await supabase.rpc('reset_all_php_balances');
-          break;
-        case 'coins':
-          result = await supabase.rpc('reset_all_coins');
-          break;
-        case 'itlog':
-          result = await supabase.rpc('reset_all_itlog_tokens');
-          break;
-        case 'all':
-          result = await supabase.rpc('reset_all_balances');
-          break;
-        default:
-          throw new Error('Invalid balance type');
+      try {
+        switch (balanceType) {
+          case 'php':
+            result = await supabase.rpc('reset_all_php_balances');
+            break;
+          case 'coins':
+            result = await supabase.rpc('reset_all_coins');
+            break;
+          case 'itlog':
+            result = await supabase.rpc('reset_all_itlog_tokens');
+            break;
+          case 'all':
+            result = await supabase.rpc('reset_all_balances');
+            break;
+          default:
+            throw new Error('Invalid balance type');
+        }
+        
+        console.log('Reset result details:', {
+          data: result.data,
+          error: result.error,
+          status: result.status,
+          statusText: result.statusText
+        });
+        
+        const { data, error } = result;
+        
+        if (error) {
+          console.error('Supabase RPC error details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+          throw new Error(`Database error: ${error.message}${error.details ? ` - ${error.details}` : ''}`);
+        }
+        
+        if (data === false) {
+          throw new Error('Reset operation failed - the database function returned false. Check server logs for details.');
+        }
+        
+        if (data !== true) {
+          console.warn('Unexpected response from reset function:', data);
+        }
+        
+        return { success: true, balanceType, result: data };
+      } catch (error) {
+        console.error('Reset balances error:', error);
+        throw error;
       }
-      
-      const { data, error } = result;
-      if (error) throw error;
-      if (!data) throw new Error('Failed to reset balances');
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
+      console.log('Reset balances success:', result);
+      
+      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      
+      const balanceTypeMap = {
+        'php': 'PHP balances',
+        'coins': 'Coins',
+        'itlog': 'ITLOG tokens',
+        'all': 'all balances'
+      };
+      
       toast({
         title: "Balances reset successfully",
-        description: "All user balances have been reset to zero.",
+        description: `All user ${balanceTypeMap[variables.balanceType]} have been reset to zero.`,
       });
     },
     onError: (error: Error) => {
-      console.error('Reset balances error:', error);
+      console.error('Reset balances mutation error:', error);
+      
+      let errorMessage = "Failed to reset balances. Please try again.";
+      
+      if (error.message.includes('function') && error.message.includes('does not exist')) {
+        errorMessage = "Reset function not found. Please ensure database migrations are applied.";
+      } else if (error.message.includes('Database error')) {
+        errorMessage = "Database error occurred. Please check server logs.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error resetting balances",
-        description: error?.message || "Failed to reset balances. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -606,9 +675,32 @@ const Admin = () => {
             <TabsContent value="users" className="space-y-6">
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Users className="w-5 h-5 mr-2" />
-                    User Management
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Users className="w-5 h-5 mr-2" />
+                      User Management
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-muted-foreground">
+                        {selectedUsers.length} selected
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (selectedUsers.length === users?.length) {
+                            // If all users are selected, deselect all
+                            setSelectedUsers([]);
+                          } else {
+                            // Select all users
+                            setSelectedUsers(users?.map(user => user.user_id) || []);
+                          }
+                        }}
+                        className="ml-2"
+                      >
+                        {selectedUsers.length === users?.length ? 'Deselect All' : 'Select All'}
+                      </Button>
+                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
