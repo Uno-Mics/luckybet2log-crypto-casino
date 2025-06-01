@@ -1,18 +1,20 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface GameHistoryEntry {
   id: string;
+  user_id: string;
   game_type: string;
   bet_amount: number;
-  result_type: 'win' | 'loss' | 'push';
+  result_type: string;
   win_amount: number;
   loss_amount: number;
   multiplier: number;
-  game_details: any;
+  game_details: Json;
   created_at: string;
 }
 
@@ -23,9 +25,9 @@ export const useGameHistory = (gameType?: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const gameCounterRef = useRef(0);
-  const subscriptionRef = useRef<any>(null);
+  const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  const fetchHistory = async (limit = 50) => {
+  const fetchHistory = useCallback(async (limit = 50) => {
     if (!user) return;
 
     setLoading(true);
@@ -44,7 +46,7 @@ export const useGameHistory = (gameType?: string) => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setHistory(data || []);
+      setHistory((data as GameHistoryEntry[]) || []);
     } catch (error) {
       console.error('Error fetching game history:', error);
       toast({
@@ -55,14 +57,22 @@ export const useGameHistory = (gameType?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, gameType, toast]);
 
-  const addHistoryEntry = async (entry: Omit<GameHistoryEntry, 'id' | 'created_at'>) => {
+  const addHistoryEntry = async (entry: {
+    game_type: string;
+    bet_amount: number;
+    result_type: string;
+    win_amount: number;
+    loss_amount: number;
+    multiplier: number;
+    game_details: Json;
+  }) => {
     if (!user) return;
 
     try {
       console.log('Adding game history entry:', entry);
-      
+
       const { data, error } = await supabase
         .from('game_history')
         .insert({
@@ -171,7 +181,7 @@ export const useGameHistory = (gameType?: string) => {
   useEffect(() => {
     if (user) {
       fetchHistory();
-      
+
       // Set up real-time subscription for game history updates
       const setupSubscription = () => {
         // Clean up existing subscription
@@ -182,7 +192,7 @@ export const useGameHistory = (gameType?: string) => {
 
         // Create a unique channel name to avoid conflicts
         const channelName = `game_history_${user.id}_${gameType || 'all'}_${Date.now()}`;
-        
+
         const channel = supabase
           .channel(channelName)
           .on(
@@ -195,7 +205,7 @@ export const useGameHistory = (gameType?: string) => {
             },
             (payload) => {
               console.log('Real-time INSERT:', payload);
-              
+
               const newEntry = payload.new as GameHistoryEntry;
               // Only add if it matches the current game type filter (or no filter)
               if (!gameType || newEntry.game_type === gameType) {
@@ -244,7 +254,7 @@ export const useGameHistory = (gameType?: string) => {
 
       // Small delay to ensure user is properly set
       const timer = setTimeout(setupSubscription, 100);
-      
+
       return () => {
         clearTimeout(timer);
       };
@@ -257,7 +267,7 @@ export const useGameHistory = (gameType?: string) => {
         subscriptionRef.current = null;
       }
     };
-  }, [user, gameType]);
+  }, [user, gameType, fetchHistory]);
 
   const refreshHistory = async () => {
     console.log('Manual refresh triggered');

@@ -385,6 +385,45 @@ export type Database = {
           }
         ]
       }
+      game_history: {
+        Row: {
+          id: string
+          user_id: string
+          game_type: string
+          bet_amount: number
+          result_type: string
+          win_amount: number
+          loss_amount: number
+          multiplier: number
+          game_details: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          game_type: string
+          bet_amount: number
+          result_type: string
+          win_amount?: number
+          loss_amount?: number
+          multiplier?: number
+          game_details?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          game_type?: string
+          bet_amount?: number
+          result_type?: string
+          win_amount?: number
+          loss_amount?: number
+          multiplier?: number
+          game_details?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
       user_activities: {
         Row: {
           id: string
