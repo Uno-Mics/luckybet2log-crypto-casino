@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
@@ -14,6 +15,7 @@ import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
 import GameHistory from "@/components/GameHistory";
+import { Spades, Hearts, Diamond, Club, Sparkles, TrendingUp, Target } from "lucide-react";
 
 type CardType = {
   suit: string;
@@ -74,25 +76,21 @@ const Blackjack = () => {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
-    // Apply luck boost by potentially reordering cards to favor player
     const luckBoost = activePetBoosts.find(boost => boost.trait_type === 'luck_boost');
     if (luckBoost && luckBoost.total_boost > 1.0) {
       const luckBias = luckBoost.total_boost - 1.0;
       const shouldApplyLuck = Math.random() < luckBias;
 
       if (shouldApplyLuck) {
-        // Move some good cards (Aces, 10s, face cards) towards the top
         const goodCards = shuffled.filter(card => card.numValue === 11 || card.numValue === 10);
         const otherCards = shuffled.filter(card => card.numValue !== 11 && card.numValue !== 10);
 
-        // Take 2-3 good cards and put them in player positions (0, 2, 4, 6...)
         const goodCardsToMove = goodCards.slice(0, Math.min(3, goodCards.length));
         const remainingGoodCards = goodCards.slice(goodCardsToMove.length);
 
-        // Rebuild deck with good cards in player-favorable positions
         const newDeck = [...otherCards, ...remainingGoodCards];
         goodCardsToMove.forEach((card, index) => {
-          const playerPosition = index * 2; // Positions 0, 2, 4
+          const playerPosition = index * 2;
           if (playerPosition < newDeck.length) {
             newDeck.splice(playerPosition, 0, card);
           } else {
@@ -120,7 +118,6 @@ const Blackjack = () => {
       }
     });
 
-    // Adjust for aces
     while (total > 21 && aces > 0) {
       total -= 10;
       aces--;
@@ -147,7 +144,6 @@ const Blackjack = () => {
       return;
     }
 
-    // Update balance immediately and in database
     try {
       await updateBalance.mutateAsync({
         coinsChange: -betAmount
@@ -164,7 +160,6 @@ const Blackjack = () => {
 
     const deck = createDeck();
 
-    // Deal initial cards
     const [playerCard1, deck1] = dealCard(deck);
     const [dealerCard1, deck2] = dealCard(deck1);
     const [playerCard2, deck3] = dealCard(deck2);
@@ -181,7 +176,6 @@ const Blackjack = () => {
     setGameResult(null);
     setShowDealerCards(false);
 
-    // Check for natural blackjack
     const playerBJ = calculateTotal(initialPlayerCards) === 21;
     const dealerBJ = calculateTotal(initialDealerCards) === 21;
 
@@ -205,7 +199,7 @@ const Blackjack = () => {
           });
         });
       } else if (playerBJ) {
-        const winnings = betAmount * 2.5; // 3:2 payout
+        const winnings = betAmount * 2.5;
         setGameResult("blackjack");
         updateBalance.mutateAsync({
           coinsChange: winnings
@@ -302,7 +296,6 @@ const Blackjack = () => {
     let currentDealerCards = [...dealerCards];
     let currentDealerTotal = dealerTotal;
 
-    // Dealer draws until 17 or higher
     while (currentDealerTotal < 17) {
       const deck = createDeck();
       const [newCard] = dealCard(deck);
@@ -313,7 +306,6 @@ const Blackjack = () => {
     setDealerCards(currentDealerCards);
     setDealerTotal(currentDealerTotal);
 
-    // Determine winner
     const betAmount = parseFloat(currentBet);
     if (currentDealerTotal > 21) {
       setGameResult("dealer_bust");
@@ -396,7 +388,7 @@ const Blackjack = () => {
         coinsChange: betAmount
       }).then(() => {
         setBalance(prev => prev + betAmount);
-        trackGameWin(betAmount, 'blackjack'); // Push is a win of the bet amount
+        trackGameWin(betAmount, 'blackjack');
         trackActivityGameWin('blackjack', betAmount, sessionId);
         addHistoryEntry({
           game_type: 'blackjack',
@@ -426,19 +418,19 @@ const Blackjack = () => {
   const renderCard = (card: CardType, hidden = false) => {
     if (hidden) {
       return (
-        <div className="w-16 h-24 bg-blue-600 rounded border-2 border-white flex items-center justify-center">
-          <span className="text-white text-2xl">?</span>
+        <div className="w-20 h-28 sm:w-24 sm:h-32 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl border-2 border-blue-400 flex items-center justify-center shadow-lg">
+          <div className="text-white text-3xl font-bold">?</div>
         </div>
       );
     }
 
     const isRed = card.suit === "♥" || card.suit === "♦";
     return (
-      <div className="w-16 h-24 bg-white rounded border-2 border-gray-300 flex flex-col items-center justify-center">
-        <span className={`text-lg font-bold ${isRed ? "text-red-500" : "text-black"}`}>
+      <div className="w-20 h-28 sm:w-24 sm:h-32 bg-gradient-to-br from-white to-gray-100 rounded-xl border-2 border-gray-300 flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300">
+        <span className={`text-lg sm:text-xl font-bold ${isRed ? "text-red-500" : "text-black"}`}>
           {card.value}
         </span>
-        <span className={`text-lg ${isRed ? "text-red-500" : "text-black"}`}>
+        <span className={`text-2xl sm:text-3xl ${isRed ? "text-red-500" : "text-black"}`}>
           {card.suit}
         </span>
       </div>
@@ -457,66 +449,58 @@ const Blackjack = () => {
   return (
     <Layout>
       {isBanned && <BannedOverlay reason={reason} />}
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                Blackjack
-              </span>
+      <div className="casino-game-container py-8">
+        <div className="responsive-container">
+          <div className="casino-game-header">
+            <h1 className="casino-game-title">
+              Blackjack
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="casino-game-subtitle">
               Get as close to 21 as possible without going over!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Game Table */}
-            <div className="lg:col-span-2">
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-center">Blackjack Table</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                  {/* Dealer's Hand */}
+          <div className="responsive-grid">
+            <div className="responsive-game-grid">
+              <div className="casino-game-area">
+                <h2 className="casino-game-area-title">Blackjack Table</h2>
+                
+                <div className="space-y-8">
                   <div className="text-center">
-                    <h3 className="text-lg font-semibold mb-4">
+                    <h3 className="text-xl font-bold mb-4 text-gray-300">
                       Dealer's Hand {showDealerCards && `(${dealerTotal})`}
                     </h3>
-                    <div className="flex justify-center space-x-2">
+                    <div className="flex justify-center space-x-3 mb-6">
                       {dealerCards.map((card, index) => (
-                        <div key={index}>
+                        <div key={index} className="transform hover:scale-105 transition-transform duration-200">
                           {renderCard(card, index === 1 && !showDealerCards)}
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Player's Hand */}
                   <div className="text-center">
-                    <h3 className="text-lg font-semibold mb-4">
+                    <h3 className="text-xl font-bold mb-4 text-white">
                       Your Hand ({playerTotal})
                     </h3>
-                    <div className="flex justify-center space-x-2 mb-6">
+                    <div className="flex justify-center space-x-3 mb-6">
                       {playerCards.map((card, index) => (
-                        <div key={index}>
+                        <div key={index} className="transform hover:scale-105 transition-transform duration-200">
                           {renderCard(card)}
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Game Result */}
                   {gameResult && (
-                    <div className="text-center">
+                    <div className="text-center mb-6">
                       <Badge 
-                        variant="secondary" 
-                        className={`text-lg px-6 py-3 ${
+                        className={`text-xl px-8 py-4 rounded-full font-bold shadow-lg ${
                           ["win", "blackjack", "dealer_bust"].includes(gameResult) 
-                            ? "glow-green" 
+                            ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-emerald-500/50" 
                             : gameResult === "push" 
-                            ? "glow-blue" 
-                            : "glow-red"
+                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-blue-500/50" 
+                            : "bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-red-500/50"
                         }`}
                       >
                         {gameResult === "win" && "You Win!"}
@@ -530,119 +514,115 @@ const Blackjack = () => {
                     </div>
                   )}
 
-                  {/* Game Controls */}
                   <div className="flex justify-center space-x-4">
                     {!gameStarted ? (
                       <Button 
                         onClick={startNewGame} 
-                        className="glow-purple px-8 py-3"
-                        size="lg"
+                        className="casino-primary-button max-w-xs"
                       >
                         Deal Cards ({currentBet} coins)
                       </Button>
                     ) : (
-                      <>
+                      <div className="flex flex-col sm:flex-row gap-4">
                         <Button 
                           onClick={hit} 
-                          className="glow-green px-6 py-3"
+                          className="casino-secondary-button max-w-xs"
                           disabled={playerTotal >= 21}
                         >
                           Hit
                         </Button>
                         <Button 
                           onClick={stand} 
-                          className="glow-blue px-6 py-3"
+                          className="casino-danger-button max-w-xs"
                         >
                           Stand
                         </Button>
-                      </>
+                      </div>
                     )}
                   </div>
-                  {/* Game History */}
-                  <GameHistory gameType="blackjack" maxHeight="300px" />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+
+              <GameHistory gameType="blackjack" maxHeight="400px" />
             </div>
 
-            {/* Controls and Info */}
-            <div className="space-y-6">
-              {/* Balance */}
-              <Card className="bg-card/50 backdrop-blur-sm border-blue-500/30">
-                <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Coins Balance</p>
-                  <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
-                </CardContent>
-              </Card>
+            <div className="responsive-control-panel">
+              <div className="casino-balance-card">
+                <p className="casino-balance-label">Coins Balance</p>
+                <p className="casino-balance-amount">{balance.toFixed(2)}</p>
+              </div>
 
-              {/* Luck Boost Indicator */}
               {activePetBoosts.find(boost => boost.trait_type === 'luck_boost') && (
-                <Card className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 border-green-500/30">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <span className="text-white font-bold text-xl">🌟</span>
-                    </div>
-                    <p className="text-sm font-semibold mb-1 text-green-400">Luck Boost Active!</p>
-                    <p className="text-xs text-muted-foreground">
-                      +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="casino-luck-boost-card">
+                  <div className="casino-luck-icon">
+                    <Sparkles className="text-white font-bold text-xl" />
+                  </div>
+                  <p className="text-lg font-bold mb-2 text-emerald-400">Luck Boost Active!</p>
+                  <p className="text-sm text-gray-300">
+                    +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
+                  </p>
+                </div>
               )}
 
-              {/* Bet Amount */}
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle>Bet Amount</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select value={currentBet} onValueChange={setCurrentBet} disabled={gameStarted}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {betAmounts.map(amount => (
-                        <SelectItem key={amount} value={amount}>{amount} coins</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </Card>
+              <div className="casino-settings-card">
+                <h3 className="casino-settings-title">
+                  <Target className="w-6 h-6 inline mr-2" />
+                  Bet Amount
+                </h3>
+                <Select value={currentBet} onValueChange={setCurrentBet} disabled={gameStarted}>
+                  <SelectTrigger className="casino-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {betAmounts.map(amount => (
+                      <SelectItem key={amount} value={amount}>{amount} coins</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              {/* Game Rules */}
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle>Rules</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm space-y-2">
-                  <p>• Get as close to 21 without going over</p>
-                  <p>• Face cards (J, Q, K) = 10</p>
-                  <p>• Aces = 11 or 1 (auto-adjusted)</p>
-                  <p>• Dealer stands on 17</p>
-                  <p>• Blackjack pays 3:2</p>
-                  <p>• Regular wins pay 2:1</p>
-                </CardContent>
-              </Card>
+              <div className="casino-stats-card">
+                <h3 className="casino-stats-title">
+                  <TrendingUp className="w-5 h-5 inline mr-2" />
+                  Game Rules
+                </h3>
+                <div className="space-y-3 text-sm">
+                  <div className="casino-stat-row">
+                    <span className="casino-stat-label">Goal</span>
+                    <span className="casino-stat-value">Get to 21</span>
+                  </div>
+                  <div className="casino-stat-row">
+                    <span className="casino-stat-label">Face Cards</span>
+                    <span className="casino-stat-value">Worth 10</span>
+                  </div>
+                  <div className="casino-stat-row">
+                    <span className="casino-stat-label">Aces</span>
+                    <span className="casino-stat-value">11 or 1</span>
+                  </div>
+                  <div className="casino-stat-row">
+                    <span className="casino-stat-label">Dealer Stands</span>
+                    <span className="casino-stat-value">On 17</span>
+                  </div>
+                </div>
+              </div>
 
-              {/* Payouts */}
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle>Payouts</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div className="flex justify-between">
+              <div className="casino-payout-card">
+                <h3 className="casino-payout-title">Payouts</h3>
+                <div className="space-y-3">
+                  <div className="casino-payout-row">
                     <span>Blackjack</span>
-                    <span className="text-green-400">2.5x</span>
+                    <span className="casino-payout-multiplier">2.5x</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="casino-payout-row">
                     <span>Regular Win</span>
-                    <span className="text-green-400">2x</span>
+                    <span className="casino-payout-multiplier">2x</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="casino-payout-row">
                     <span>Push</span>
-                    <span className="text-blue-400">Bet Returned</span>
+                    <span className="text-blue-400 font-bold">Bet Returned</span>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         </div>

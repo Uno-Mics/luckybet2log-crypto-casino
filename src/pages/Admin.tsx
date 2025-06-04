@@ -662,14 +662,29 @@ const Admin = () => {
           </div>
 
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7">
-              <TabsTrigger value="users">User Management</TabsTrigger>
-              <TabsTrigger value="deposits">Deposit Requests</TabsTrigger>
-              <TabsTrigger value="withdrawals">Withdrawal Requests</TabsTrigger>
-              <TabsTrigger value="appeals">Appeals</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="giveaway">Custom Amounts</TabsTrigger>
-              <TabsTrigger value="danger">Danger Zone</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 h-auto gap-1 p-1">
+              <TabsTrigger value="users" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
+                <span className="hidden sm:inline">User Management</span>
+                <span className="sm:hidden">Users</span>
+              </TabsTrigger>
+              <TabsTrigger value="deposits" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
+                <span className="hidden sm:inline">Deposit Requests</span>
+                <span className="sm:hidden">Deposits</span>
+              </TabsTrigger>
+              <TabsTrigger value="withdrawals" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
+                <span className="hidden sm:inline">Withdrawal Requests</span>
+                <span className="sm:hidden">Withdrawals</span>
+              </TabsTrigger>
+              <TabsTrigger value="appeals" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Appeals</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm px-1 sm:px-3 py-2">Analytics</TabsTrigger>
+              <TabsTrigger value="giveaway" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
+                <span className="hidden sm:inline">Custom Amounts</span>
+                <span className="sm:hidden">Custom</span>
+              </TabsTrigger>
+              <TabsTrigger value="danger" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
+                <span className="hidden sm:inline">Danger Zone</span>
+                <span className="sm:hidden">Danger</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="users" className="space-y-6">
@@ -706,8 +721,8 @@ const Admin = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {users?.map((user) => (
-                      <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-4">
+                      <div key={user.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg space-y-3 sm:space-y-0">
+                        <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1">
                           <input
                             type="checkbox"
                             checked={selectedUsers.includes(user.user_id)}
@@ -718,107 +733,116 @@ const Admin = () => {
                                 setSelectedUsers(selectedUsers.filter(id => id !== user.user_id));
                               }
                             }}
-                            className="w-4 h-4"
+                            className="w-4 h-4 mt-1 sm:mt-0"
                           />
-                          <div>
-                            <p className="font-semibold">{user.username}</p>
-                            <p className="text-sm text-muted-foreground">{user.wallet_id}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            {user.is_admin && <Badge variant="secondary">Admin</Badge>}
-                            {user.is_banned && <Badge variant="destructive">Banned</Badge>}
-                            {user.is_suspended && <Badge variant="outline">Suspended</Badge>}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                              <div className="mb-2 sm:mb-0">
+                                <p className="font-semibold text-sm sm:text-base truncate">{user.username}</p>
+                                <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.wallet_id}</p>
+                              </div>
+                              <div className="flex flex-wrap gap-1 sm:gap-2">
+                                {user.is_admin && <Badge variant="secondary" className="text-xs">Admin</Badge>}
+                                {user.is_banned && <Badge variant="destructive" className="text-xs">Banned</Badge>}
+                                {user.is_suspended && <Badge variant="outline" className="text-xs">Suspended</Badge>}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm">₱{Number(user.php_balance).toFixed(2)}</span>
-                          <Button
-                            variant={user.is_banned ? "outline" : "destructive"}
-                            size="sm"
-                            onClick={() => toggleUserBan.mutate({ 
-                              userId: user.user_id, 
-                              banned: !user.is_banned 
-                            })}
-                          >
-                            {user.is_banned ? 'Unban' : 'Ban'}
-                          </Button>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                          <span className="text-sm font-medium">₱{Number(user.php_balance).toFixed(2)}</span>
+                          <div className="flex space-x-2 w-full sm:w-auto">
+                            <Button
+                              variant={user.is_banned ? "outline" : "destructive"}
+                              size="sm"
+                              className="flex-1 sm:flex-none text-xs"
+                              onClick={() => toggleUserBan.mutate({ 
+                                userId: user.user_id, 
+                                banned: !user.is_banned 
+                              })}
+                            >
+                              {user.is_banned ? 'Unban' : 'Ban'}
+                            </Button>
                           <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-orange-500 text-orange-400"
-                              >
-                                <UserX className="w-4 h-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Clear User Data</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to clear all data and progress for user "{user.username}"? 
-                                  This will remove:
-                                  <ul className="mt-2 ml-4 list-disc">
-                                    <li>All balances (PHP, Coins, ITLOG tokens)</li>
-                                    <li>Game history and earnings</li>
-                                    <li>Quest progress and rewards</li>
-                                    <li>Pet collection and farming sessions</li>
-                                    <li>Transaction history</li>
-                                  </ul>
-                                  <br />
-                                  <strong>This action cannot be undone.</strong>
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => clearUserData.mutate({ userId: user.user_id })}
-                                  className="bg-orange-600 hover:bg-orange-700"
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-orange-500 text-orange-400 flex-1 sm:flex-none text-xs"
                                 >
-                                  Clear Data
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete User Account</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to permanently delete user "{user.username}"? 
-                                  This action will remove all user data including:
-                                  <ul className="mt-2 ml-4 list-disc">
-                                    <li>Profile and account information</li>
-                                    <li>Wallet balance and transaction history</li>
-                                    <li>Deposits and withdrawals</li>
-                                    <li>Game activity and earnings</li>
-                                    <li>Appeals and notifications</li>
-                                    <li>Pet collection and farming sessions</li>
-                                  </ul>
-                                  <br />
-                                  <strong>This action cannot be undone.</strong>
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => deleteUser.mutate({ userId: user.user_id })}
-                                  className="bg-red-600 hover:bg-red-700"
+                                  <UserX className="w-4 h-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">Clear</span>
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="mx-4 max-w-lg">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Clear User Data</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to clear all data and progress for user "{user.username}"? 
+                                    This will remove:
+                                    <ul className="mt-2 ml-4 list-disc text-sm">
+                                      <li>All balances (PHP, Coins, ITLOG tokens)</li>
+                                      <li>Game history and earnings</li>
+                                      <li>Quest progress and rewards</li>
+                                      <li>Pet collection and farming sessions</li>
+                                      <li>Transaction history</li>
+                                    </ul>
+                                    <br />
+                                    <strong>This action cannot be undone.</strong>
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => clearUserData.mutate({ userId: user.user_id })}
+                                    className="bg-orange-600 hover:bg-orange-700"
+                                  >
+                                    Clear Data
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="bg-red-600 hover:bg-red-700 flex-1 sm:flex-none text-xs"
                                 >
-                                  Delete Permanently
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                  <Trash2 className="w-4 h-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">Delete</span>
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="mx-4 max-w-lg">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete User Account</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to permanently delete user "{user.username}"? 
+                                    This action will remove all user data including:
+                                    <ul className="mt-2 ml-4 list-disc text-sm">
+                                      <li>Profile and account information</li>
+                                      <li>Wallet balance and transaction history</li>
+                                      <li>Deposits and withdrawals</li>
+                                      <li>Game activity and earnings</li>
+                                      <li>Appeals and notifications</li>
+                                      <li>Pet collection and farming sessions</li>
+                                    </ul>
+                                    <br />
+                                    <strong>This action cannot be undone.</strong>
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteUser.mutate({ userId: user.user_id })}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Delete Permanently
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -838,9 +862,9 @@ const Admin = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {deposits?.map((deposit) => (
-                      <div key={deposit.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <p className="font-semibold">{deposit.username}</p>
+                      <div key={deposit.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg space-y-3 sm:space-y-0">
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm sm:text-base">{deposit.username}</p>
                           <p className="text-sm text-muted-foreground">
                             ₱{Number(deposit.amount).toFixed(2)} via {deposit.payment_method}
                           </p>
@@ -848,11 +872,11 @@ const Admin = () => {
                             {new Date(deposit.created_at).toLocaleString()}
                           </p>
                         </div>
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 w-full sm:w-auto">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-red-500 text-red-400"
+                            className="border-red-500 text-red-400 flex-1 sm:flex-none text-xs"
                             onClick={() => processDeposit.mutate({ 
                               depositId: deposit.id, 
                               approve: false 
@@ -862,7 +886,7 @@ const Admin = () => {
                           </Button>
                           <Button
                             size="sm"
-                            className="glow-green"
+                            className="glow-green flex-1 sm:flex-none text-xs"
                             onClick={() => processDeposit.mutate({ 
                               depositId: deposit.id, 
                               approve: true 
@@ -909,17 +933,19 @@ const Admin = () => {
 
                         <div className="bg-muted/50 p-3 rounded">
                           <p className="text-sm font-medium mb-1">Bank Details:</p>
-                          <p className="text-sm text-muted-foreground">Bank: {withdrawal.bank_name}</p>
-                          <p className="text-sm text-muted-foreground">Account Name: {withdrawal.bank_account_name}</p>
-                          <p className="text-sm text-muted-foreground">Account Number: {withdrawal.bank_account_number}</p>
+                          <div className="space-y-1">
+                            <p className="text-xs sm:text-sm text-muted-foreground break-words">Bank: {withdrawal.bank_name}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground break-words">Account Name: {withdrawal.bank_account_name}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground break-all">Account Number: {withdrawal.bank_account_number}</p>
+                          </div>
                         </div>
 
                         {withdrawal.status === 'pending' && (
-                          <div className="flex space-x-2">
+                          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-red-500 text-red-400"
+                              className="border-red-500 text-red-400 w-full sm:w-auto text-xs"
                               onClick={() => processWithdrawal.mutate({ 
                                 withdrawalId: withdrawal.id, 
                                 approve: false,
@@ -930,7 +956,7 @@ const Admin = () => {
                             </Button>
                             <Button
                               size="sm"
-                              className="glow-green"
+                              className="glow-green w-full sm:w-auto text-xs"
                               onClick={() => processWithdrawal.mutate({ 
                                 withdrawalId: withdrawal.id, 
                                 approve: true,
@@ -1006,11 +1032,11 @@ const Admin = () => {
                         )}
 
                         {appeal.status === 'pending' && (
-                          <div className="flex space-x-2">
+                          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-red-500 text-red-400"
+                              className="border-red-500 text-red-400 w-full sm:w-auto text-xs"
                               onClick={() => processAppeal.mutate({ 
                                 appealId: appeal.id, 
                                 approve: false,
@@ -1021,7 +1047,7 @@ const Admin = () => {
                             </Button>
                             <Button
                               size="sm"
-                              className="glow-green"
+                              className="glow-green w-full sm:w-auto text-xs"
                               onClick={() => processAppeal.mutate({ 
                                 appealId: appeal.id, 
                                 approve: true,
@@ -1060,7 +1086,7 @@ const Admin = () => {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">PHP Amount</label>
                       <input
@@ -1068,7 +1094,7 @@ const Admin = () => {
                         value={customPhpAmount}
                         onChange={(e) => setCustomPhpAmount(e.target.value)}
                         placeholder="0.00"
-                        className="w-full p-2 border rounded-md bg-background"
+                        className="w-full p-3 border rounded-md bg-background text-sm"
                       />
                     </div>
                     <div className="space-y-2">
@@ -1078,10 +1104,10 @@ const Admin = () => {
                         value={customCoinsAmount}
                         onChange={(e) => setCustomCoinsAmount(e.target.value)}
                         placeholder="0"
-                        className="w-full p-2 border rounded-md bg-background"
+                        className="w-full p-3 border rounded-md bg-background text-sm"
                       />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 sm:col-span-2 lg:col-span-1">
                       <label className="text-sm font-medium">$ITLOG Tokens</label>
                       <input
                         type="number"
@@ -1089,7 +1115,7 @@ const Admin = () => {
                         onChange={(e) => setCustomItlogAmount(e.target.value)}
                         placeholder="0.00000000"
                         step="0.00000001"
-                        className="w-full p-2 border rounded-md bg-background"
+                        className="w-full p-3 border rounded-md bg-background text-sm"
                       />
                     </div>
                   </div>
@@ -1143,9 +1169,9 @@ const Admin = () => {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Reset All User Balances</h3>
+                      <h3 className="text-base sm:text-lg font-semibold">Reset All User Balances</h3>
                       
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -1265,7 +1291,7 @@ const Admin = () => {
             </TabsContent>
 
             <TabsContent value="analytics" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
                 <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
                   <CardContent className="p-6 text-center">
                     <TrendingUp className="w-8 h-8 mx-auto mb-2 text-green-400" />

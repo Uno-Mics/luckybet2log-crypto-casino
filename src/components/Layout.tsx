@@ -100,7 +100,7 @@ const Layout = ({ children }: LayoutProps) => {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-1 xl:space-x-2 flex-1 justify-center max-w-4xl">
+            <div className="hidden lg:flex items-center space-x-2 flex-1 justify-center">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href;
@@ -108,16 +108,16 @@ const Layout = ({ children }: LayoutProps) => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`group flex items-center space-x-2 px-3 py-2 xl:px-4 xl:py-3 rounded-xl transition-all duration-300 text-sm xl:text-base ${
+                    className={`group flex items-center space-x-2 px-4 py-3 rounded-xl transition-all duration-300 text-base ${
                       isActive
                         ? "bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-white shadow-lg"
                         : "text-muted-foreground hover:text-white hover:bg-white/5"
                     }`}
                   >
-                    <Icon className={`w-4 h-4 xl:w-5 xl:h-5 transition-colors duration-300 ${isActive ? 'text-white' : item.color}`} />
-                    <span className="font-medium whitespace-nowrap">{item.name}</span>
+                    <Icon className={`w-5 h-5 transition-colors duration-300 ${isActive ? 'text-white' : item.color}`} />
+                    <span className="font-medium whitespace-nowrap text-sm">{item.name}</span>
                     {isActive && (
-                      <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse"></div>
+                      <div className="w-1.5 h-1.5 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse"></div>
                     )}
                   </Link>
                 );
@@ -125,24 +125,22 @@ const Layout = ({ children }: LayoutProps) => {
             </div>
 
             {/* Enhanced Right Side */}
-            <div className="flex items-center space-x-2 xl:space-x-3">
-              {/* Enhanced Balance Display */}
-              <div className="hidden md:flex items-center space-x-2 xl:space-x-4">
-                <div className="glass rounded-xl px-2 py-1 xl:px-4 xl:py-2 border border-white/10">
-                  <div className="flex items-center space-x-2 xl:space-x-4 text-xs xl:text-sm">
-                    <div className="flex items-center space-x-1 xl:space-x-2">
-                      <div className="w-1.5 h-1.5 xl:w-2 xl:h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <span className="text-muted-foreground">PHP:</span>
-                      <span className="font-bold text-green-400">
-                        ₱{profile?.php_balance.toFixed(2) || "0.00"}
+            <div className="flex items-center space-x-1">
+              {/* Compact Balance Display */}
+              <div className="hidden lg:flex items-center space-x-1">
+                <div className="glass rounded-lg px-2 py-1 border border-white/10">
+                  <div className="flex items-center space-x-2 text-xs">
+                    <div className="flex items-center space-x-1">
+                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                      <span className="text-green-400 font-bold">
+                        ₱{profile?.php_balance.toFixed(0) || "0"}
                       </span>
                     </div>
-                    <div className="w-px h-3 xl:h-4 bg-white/20"></div>
-                    <div className="flex items-center space-x-1 xl:space-x-2">
-                      <div className="w-1.5 h-1.5 xl:w-2 xl:h-2 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full animate-pulse"></div>
-                      <span className="text-muted-foreground">$ITLOG:</span>
+                    <div className="w-px h-3 bg-white/20"></div>
+                    <div className="flex items-center space-x-1">
+                      <div className="w-1.5 h-1.5 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full"></div>
                       <span className="font-bold text-gradient-gold">
-                        {profile?.itlog_tokens?.toFixed(4) || "0.0000"}
+                        {profile?.itlog_tokens?.toFixed(2) || "0.00"}
                       </span>
                     </div>
                   </div>
@@ -150,7 +148,7 @@ const Layout = ({ children }: LayoutProps) => {
               </div>
               
               {/* Mobile Balance Indicator */}
-              <div className="sm:hidden glass rounded-xl px-3 py-2 border border-white/10">
+              <div className="lg:hidden glass rounded-lg px-2 py-1 border border-white/10">
                 <div className="flex flex-col text-xs space-y-1">
                   <span className="text-green-400 font-bold">₱{profile?.php_balance.toFixed(0) || "0"}</span>
                   <span className="text-gradient-gold font-bold">{profile?.itlog_tokens?.toFixed(2) || "0.00"}</span>
@@ -165,64 +163,64 @@ const Layout = ({ children }: LayoutProps) => {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="lg:hidden glass rounded-xl p-3 hover:bg-white/10 border border-white/10"
+                    className="lg:hidden glass rounded-lg p-2 hover:bg-white/10 border border-white/10"
                   >
-                    <Menu className="w-5 h-5" />
+                    <Menu className="w-4 h-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-80 glass border-l border-white/10 backdrop-blur-2xl">
+                <SheetContent side="right" className="w-[280px] sm:w-80 glass border-l border-white/10 backdrop-blur-2xl z-[200]">
                   <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   <SheetDescription className="sr-only">Navigate through your casino dashboard</SheetDescription>
                   <div className="flex flex-col h-full">
                     {/* Mobile Menu Header */}
-                    <div className="flex items-center justify-between mb-8">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 itlog-token rounded-xl flex items-center justify-center">
-                          <span className="text-black font-bold">₿</span>
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 itlog-token rounded-lg flex items-center justify-center">
+                          <span className="text-black font-bold text-sm">₿</span>
                         </div>
                         <div>
-                          <h2 className="font-bold text-lg text-gradient">Menu</h2>
-                          <p className="text-xs text-muted-foreground">Navigate your casino</p>
+                          <h2 className="font-bold text-base text-gradient">Menu</h2>
+                          <p className="text-xs text-muted-foreground">Navigate</p>
                         </div>
                       </div>
                       <SheetClose asChild>
-                        <Button variant="ghost" size="sm" className="rounded-xl">
+                        <Button variant="ghost" size="sm" className="rounded-lg p-1">
                           <X className="w-4 h-4" />
                         </Button>
                       </SheetClose>
                     </div>
                     
                     {/* Enhanced Balance Display */}
-                    <div className="glass rounded-2xl p-6 mb-6 border border-white/10">
-                      <h3 className="font-semibold mb-4 text-gradient">Your Balance</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-xl border border-green-500/20">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                              <span className="text-white font-bold text-sm">₱</span>
+                    <div className="glass rounded-xl p-4 mb-4 border border-white/10">
+                      <h3 className="font-semibold mb-3 text-sm text-gradient">Your Balance</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-2 bg-green-500/10 rounded-lg border border-green-500/20">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-6 h-6 bg-green-500 rounded-md flex items-center justify-center">
+                              <span className="text-white font-bold text-xs">₱</span>
                             </div>
-                            <span className="text-muted-foreground">PHP Balance</span>
+                            <span className="text-muted-foreground text-sm">PHP</span>
                           </div>
-                          <span className="font-bold text-green-400">
-                            ₱{profile?.php_balance.toFixed(2) || "0.00"}
+                          <span className="font-bold text-green-400 text-sm">
+                            ₱{profile?.php_balance.toFixed(0) || "0"}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 itlog-token rounded-lg flex items-center justify-center">
-                              <span className="text-black font-bold text-sm">₿</span>
+                        <div className="flex items-center justify-between p-2 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-6 h-6 itlog-token rounded-md flex items-center justify-center">
+                              <span className="text-black font-bold text-xs">₿</span>
                             </div>
-                            <span className="text-muted-foreground">$ITLOG Tokens</span>
+                            <span className="text-muted-foreground text-sm">$ITLOG</span>
                           </div>
-                          <span className="font-bold text-gradient-gold">
-                            {profile?.itlog_tokens?.toFixed(4) || "0.0000"}
+                          <span className="font-bold text-gradient-gold text-sm">
+                            {profile?.itlog_tokens?.toFixed(2) || "0.00"}
                           </span>
                         </div>
                       </div>
                     </div>
                     
                     {/* Navigation Links */}
-                    <div className="flex-1 space-y-2">
+                    <div className="flex-1 space-y-1">
                       {navigation.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.href;
@@ -231,18 +229,18 @@ const Layout = ({ children }: LayoutProps) => {
                             key={item.name}
                             to={item.href}
                             onClick={() => setMobileMenuOpen(false)}
-                            className={`group flex items-center space-x-4 px-4 py-4 rounded-xl transition-all duration-300 ${
+                            className={`group flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-300 ${
                               isActive
                                 ? "bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-white glow-purple"
                                 : "text-muted-foreground hover:text-white hover:bg-white/5"
                             }`}
                           >
-                            <Icon className={`w-6 h-6 transition-colors duration-300 ${
+                            <Icon className={`w-5 h-5 transition-colors duration-300 ${
                               isActive ? 'text-white' : item.color
                             }`} />
-                            <span className="text-lg font-medium">{item.name}</span>
+                            <span className="text-base font-medium">{item.name}</span>
                             {isActive && (
-                              <div className="ml-auto w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse"></div>
+                              <div className="ml-auto w-1.5 h-1.5 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse"></div>
                             )}
                           </Link>
                         );
@@ -252,9 +250,9 @@ const Layout = ({ children }: LayoutProps) => {
                     {/* Enhanced Logout Button */}
                     <Button 
                       onClick={handleLogout} 
-                      className="w-full mt-6 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0 rounded-xl py-6 font-semibold"
+                      className="w-full mt-4 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0 rounded-lg py-3 font-semibold"
                     >
-                      <LogOut className="w-5 h-5 mr-3" />
+                      <LogOut className="w-4 h-4 mr-2" />
                       Logout
                     </Button>
                   </div>
@@ -266,7 +264,7 @@ const Layout = ({ children }: LayoutProps) => {
                 variant="ghost" 
                 size="sm" 
                 onClick={handleLogout} 
-                className="hidden lg:flex glass rounded-xl hover:bg-red-500/10 hover:text-red-400 border border-white/10"
+                className="hidden lg:flex glass rounded-lg hover:bg-red-500/10 hover:text-red-400 border border-white/10 p-2"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
