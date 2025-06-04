@@ -355,40 +355,43 @@ const Mines = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Game Board */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Game Board</span>
+            <div className="lg:col-span-2 responsive-spacing">
+              <Card className="responsive-card border-primary/20">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <span className="mobile-text">Game Board</span>
                     {gameStarted && !gameOver && (
-                      <Badge variant="secondary" className="text-lg px-4 py-2">
+                      <Badge variant="secondary" className="text-sm sm:text-lg px-3 sm:px-4 py-1 sm:py-2 self-start sm:self-auto">
                         {currentMultiplier.toFixed(2)}x
                       </Badge>
                     )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-5 gap-2 mb-6">
+                  <div className="grid grid-cols-5 gap-1 sm:gap-2 mb-4 sm:mb-6 max-w-md mx-auto lg:max-w-none">
                     {Array.from({ length: 25 }, (_, i) => renderTile(i))}
                   </div>
                   
                   {gameStarted && !gameOver && (
                     <Button 
                       onClick={cashOut}
-                      className="w-full glow-green bg-green-600 hover:bg-green-700"
-                      size="lg"
+                      className="w-full mobile-button glow-green bg-green-600 hover:bg-green-700"
                     >
                       <DollarSign className="w-4 h-4 mr-2" />
-                      Cash Out {(parseFloat(currentBet) * currentMultiplier).toFixed(2)} coins
+                      <span className="text-sm sm:text-base">
+                        Cash Out {(parseFloat(currentBet) * currentMultiplier).toFixed(2)} coins
+                      </span>
                     </Button>
                   )}
                 </CardContent>
               </Card>
 
               {/* Game History */}
-              <GameHistory gameType="mines" maxHeight="300px" />
+              <div className="hidden sm:block">
+                <GameHistory gameType="mines" maxHeight="300px" />
+              </div>
             </div>
 
             {/* Game Controls */}

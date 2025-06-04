@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Coins, Sparkles, Trophy } from "lucide-react";
 
 const Games = () => {
   const games = [
@@ -54,42 +55,44 @@ const Games = () => {
       href: "/games/dice",
       gradient: "from-yellow-500 to-amber-500",
       difficulty: "Medium",
-      maxWin: "x9900"
+      maxWin: "x99"
     }
   ];
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 responsive-padding">
+        <div className="max-w-7xl mx-auto mobile-container">
+          <div className="text-center responsive-margin">
+            <h1 className="mobile-hero font-bold mb-3 sm:mb-4 md:mb-6">
               <span className="bg-gradient-to-r from-purple-400 to-gold-400 bg-clip-text text-transparent">
                 Casino Games
               </span>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="mobile-text text-muted-foreground max-w-3xl mx-auto px-2">
               Choose from our collection of provably fair games. Each game offers a chance to win exclusive $ITLOG tokens!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          <div className="game-grid responsive-margin">
             {games.map((game) => (
-              <Card key={game.id} className="group bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105">
-                <CardHeader>
-                  <div className={`w-20 h-20 rounded-full bg-gradient-to-r ${game.gradient} flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform duration-300`}>
+              <Card key={game.id} className="group responsive-card bg-card/80 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-r ${game.gradient} flex items-center justify-center text-2xl sm:text-3xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto`}>
                     {game.icon}
                   </div>
-                  <CardTitle className="text-2xl">{game.name}</CardTitle>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="px-2 py-1 bg-primary/20 rounded-full">{game.difficulty}</span>
-                    <span className="text-green-400 font-semibold">Max Win: {game.maxWin}</span>
+                  <CardTitle className="mobile-title text-center">{game.name}</CardTitle>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-xs sm:text-sm">
+                    <span className="px-2 py-1 bg-primary/20 rounded-full text-center">{game.difficulty}</span>
+                    <span className="text-green-400 font-semibold text-center">Max Win: {game.maxWin}</span>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-6">{game.description}</p>
+                <CardContent className="pt-0">
+                  <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed text-center sm:text-left">
+                    {game.description}
+                  </p>
                   <Link to={game.href}>
-                    <Button className="w-full group-hover:glow-purple transition-all duration-300">
+                    <Button className="w-full mobile-button transition-all duration-300">
                       Play {game.name}
                     </Button>
                   </Link>
@@ -98,23 +101,78 @@ const Games = () => {
             ))}
           </div>
 
-          {/* $ITLOG Info */}
-          <Card className="bg-gradient-to-r from-gold-600/10 to-amber-600/10 border-gold-500/30">
-            <CardContent className="p-8 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 itlog-token rounded-full text-2xl mb-4">
-                🪙
+          {/* Enhanced $ITLOG Info Section */}
+          <Card className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-yellow-500/10 border-gold-500/40 hover:border-gold-500/60 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold-500/5 to-transparent animate-shimmer"></div>
+            <CardContent className="relative p-8 text-center">
+              {/* Enhanced Token Icon */}
+              <div className="relative mb-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/30 mb-2">
+                  <span className="text-3xl animate-bounce-gentle">🪙</span>
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-300 to-orange-400 rounded-full flex items-center justify-center text-xs font-bold text-black animate-pulse">
+                  ✨
+                </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4">$ITLOG Token Rewards</h3>
-              <p className="text-lg text-muted-foreground mb-6 max-w-3xl mx-auto">
-                Every game has a 0-10% chance to win exclusive $ITLOG tokens! 
-                Rewards range from 10,000 to 1,000,000 tokens based on your bet multiplier.
+
+              {/* Title with enhanced styling */}
+              <h3 className="text-3xl sm:text-4xl font-black mb-4">
+                <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+                  $ITLOG Token Rewards
+                </span>
+              </h3>
+
+              {/* Enhanced description */}
+              <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
+                Every game offers a <span className="text-yellow-400 font-semibold">0-10% chance</span> to win exclusive $ITLOG tokens! 
+                Rewards range from <span className="text-green-400 font-semibold">10,000 to 1,000,000</span> tokens based on your bet multiplier.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/earn">
-                  <Button size="lg" className="glow-gold bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-semibold">
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-yellow-500/20">
+                  <div className="text-2xl font-bold text-yellow-400">0-10%</div>
+                  <div className="text-sm text-muted-foreground">Win Chance</div>
+                </div>
+                <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-green-500/20">
+                  <div className="text-2xl font-bold text-green-400">1M</div>
+                  <div className="text-sm text-muted-foreground">Max Tokens</div>
+                </div>
+                <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-blue-500/20">
+                  <div className="text-2xl font-bold text-blue-400">All</div>
+                  <div className="text-sm text-muted-foreground">Games Eligible</div>
+                </div>
+              </div>
+
+              {/* Enhanced CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link to="/earn" className="w-full sm:w-auto">
+                  <Button 
+                    size="lg" 
+                    className="w-full sm:w-auto bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold text-lg px-8 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105 border-0"
+                  >
+                    <Coins className="w-5 h-5 mr-2" />
                     Learn More About $ITLOG
+                    <Sparkles className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
+                <Link to="/games" className="w-full sm:w-auto">
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="w-full sm:w-auto bg-card/50 backdrop-blur-sm border-gold-500/50 text-foreground hover:bg-gold-500/10 hover:border-gold-500 font-semibold text-lg px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105"
+                  >
+                    <Trophy className="w-5 h-5 mr-2" />
+                    Start Playing Now
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Bonus Info */}
+              <div className="mt-6 p-4 bg-card/50 backdrop-blur-sm rounded-lg border border-gold-500/20">
+                <p className="text-sm text-muted-foreground">
+                  💡 <span className="font-semibold text-gold-400">Pro Tip:</span> Higher bet multipliers increase your potential $ITLOG rewards!
+                </p>
               </div>
             </CardContent>
           </Card>
