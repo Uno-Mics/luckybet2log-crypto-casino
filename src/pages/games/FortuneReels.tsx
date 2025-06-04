@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import { Sparkles, TrendingUp, Target, DollarSign } from "lucide-react";
 
 const FortuneReels = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -48,6 +49,17 @@ const FortuneReels = () => {
     "7️⃣7️⃣7️⃣": 500,    // Sevens - 500x
     "🪙🪙🪙": 0,      // $ITLOG Jackpot
   };
+
+  const payTableDisplay = [
+    { symbols: "🍒🍒🍒", multiplier: 5, chance: "6%" },
+    { symbols: "🍋🍋🍋", multiplier: 10, chance: "4%" },
+    { symbols: "🍑🍑🍑", multiplier: 15, chance: "3%" },
+    { symbols: "🔔🔔🔔", multiplier: 25, chance: "2.5%" },
+    { symbols: "💎💎💎", multiplier: 50, chance: "2%" },
+    { symbols: "⭐⭐⭐", multiplier: 100, chance: "1.5%" },
+    { symbols: "7️⃣7️⃣7️⃣", multiplier: 500, chance: "1%" },
+    { symbols: "🪙🪙🪙", multiplier: "JACKPOT", chance: "0.1%" },
+  ];
 
   const spin = async () => {
     if (parseFloat(currentBet) > balance) {
@@ -267,179 +279,218 @@ const FortuneReels = () => {
   return (
     <Layout>
       {isBanned && <BannedOverlay />}
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                Fortune Reels
-              </span>
+      <div className="casino-game-container py-8">
+        <div className="responsive-container">
+          <div className="casino-game-header">
+            <h1 className="casino-game-title">
+              Fortune Reels
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="casino-game-subtitle">
               Spin the reels and match symbols for big wins!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Slot Machine */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-center">Slot Machine</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Reels Display */}
-                  <div className="bg-black/20 rounded-lg p-8 mb-6">
-                    <div className="flex justify-center items-center space-x-4">
-                      {reels.map((symbol, index) => (
-                        <div
-                          key={index}
-                          className={`w-24 h-24 bg-white rounded-lg flex items-center justify-center text-5xl border-4 ${
-                            isSpinning ? "animate-pulse border-yellow-400" : "border-gray-300"
-                          }`}
+          <div className="responsive-grid">
+            <div className="responsive-game-grid">
+              <div className="casino-game-area">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                  <h2 className="casino-game-area-title">Slot Machine</h2>
+                  {lastWin > 0 && (
+                    <Badge className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-2 text-lg font-bold rounded-full shadow-lg">
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      Won {lastWin.toFixed(2)} coins
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex flex-col items-center space-y-8">
+                  {/* Slot Machine Frame */}
+                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-8 shadow-2xl border-4 border-gray-600">
+                    {/* Reels Container */}
+                    <div className="bg-black/40 rounded-2xl p-6 mb-6 border-2 border-gray-500">
+                      <div className="flex justify-center items-center space-x-4">
+                        {reels.map((symbol, index) => (
+                          <div
+                            key={index}
+                            className={`w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-white to-gray-100 rounded-xl border-4 flex items-center justify-center text-4xl sm:text-5xl transition-all duration-300 transform hover:scale-105 shadow-lg ${
+                              isSpinning 
+                                ? "animate-pulse border-yellow-400 shadow-yellow-400/50" 
+                                : "border-gray-300 hover:border-blue-400 hover:shadow-blue-400/50"
+                            }`}
+                          >
+                            <span className="drop-shadow-lg">{symbol}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Win Display */}
+                    {lastWin > 0 && (
+                      <div className="text-center mb-6">
+                        <Badge 
+                          variant="secondary" 
+                          className="text-2xl px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/50 rounded-full font-bold"
                         >
-                          {symbol}
-                        </div>
-                      ))}
+                          <DollarSign className="w-6 h-6 mr-2" />
+                          Won: {lastWin.toFixed(2)} coins
+                        </Badge>
+                      </div>
+                    )}
+
+                    {/* Action Button */}
+                    <div className="flex justify-center">
+                      {!gameEnded ? (
+                        <Button 
+                          onClick={spin} 
+                          className="casino-primary-button min-w-[200px]"
+                          disabled={isSpinning}
+                        >
+                          {isSpinning ? (
+                            <>
+                              <Sparkles className="w-5 h-5 mr-2 animate-spin" />
+                              Spinning...
+                            </>
+                          ) : (
+                            <>
+                              <DollarSign className="w-5 h-5 mr-2" />
+                              Spin ({currentBet} coins)
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={resetGame} 
+                          className="casino-secondary-button min-w-[200px]"
+                        >
+                          Spin Again
+                        </Button>
+                      )}
                     </div>
                   </div>
 
-                  {/* Win Display */}
-                  {lastWin > 0 && (
-                    <div className="text-center mb-6">
-                      <Badge variant="secondary" className="text-2xl px-6 py-3 glow-green">
-                        Won: {lastWin.toFixed(2)} coins
-                      </Badge>
+                  {/* Current Combination Display */}
+                  <div className="text-center bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-xl p-4 border border-gray-600">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-300">Current Combination</h3>
+                    <div className="text-3xl font-bold tracking-wider">
+                      {reels.join(" - ")}
                     </div>
-                  )}
+                  </div>
+                </div>
+              </div>
 
-                  {/* Spin Button */}
-                  {!gameEnded ? (
-                    <Button 
-                      onClick={spin} 
-                      className="w-full glow-purple text-xl py-6"
-                      disabled={isSpinning}
-                      size="lg"
-                    >
-                      {isSpinning ? "Spinning..." : `Spin (${currentBet} coins)`}
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={resetGame} 
-                      className="w-full glow-green text-xl py-6"
-                      size="lg"
-                    >
-                      Start New Game
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
+              <div className="block sm:hidden">
+                <GameHistory gameType="fortune-reels" maxHeight="300px" />
+              </div>
 
-              {/* Game History */}
-              <GameHistory gameType="fortune-reels" maxHeight="300px" />
+              <div className="hidden sm:block">
+                <GameHistory gameType="fortune-reels" maxHeight="400px" />
+              </div>
             </div>
 
-            {/* Controls and Info */}
-            <div className="space-y-6">
-              {/* Balance */}
-              <Card className="bg-card/50 backdrop-blur-sm border-blue-500/30">
-                <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Coins Balance</p>
-                  <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
-                </CardContent>
-              </Card>
+            <div className="responsive-control-panel">
+              <div className="casino-balance-card">
+                <p className="casino-balance-label">Coins Balance</p>
+                <p className="casino-balance-amount">{balance.toFixed(2)}</p>
+              </div>
 
-              {/* Luck Boost Indicator */}
               {activePetBoosts.find(boost => boost.trait_type === 'luck_boost') && (
-                <Card className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 border-green-500/30">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <span className="text-white font-bold text-xl">🌟</span>
-                    </div>
-                    <p className="text-sm font-semibold mb-1 text-green-400">Luck Boost Active!</p>
-                    <p className="text-xs text-muted-foreground">
-                      +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="casino-luck-boost-card">
+                  <div className="casino-luck-icon">
+                    <Sparkles className="text-white font-bold text-xl" />
+                  </div>
+                  <p className="text-lg font-bold mb-2 text-emerald-400">Luck Boost Active!</p>
+                  <p className="text-sm text-gray-300">
+                    +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
+                  </p>
+                </div>
               )}
 
-              {/* Bet Amount */}
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle>Bet Amount</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select value={currentBet} onValueChange={setCurrentBet} disabled={isSpinning}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {betAmounts.map(amount => (
-                        <SelectItem key={amount} value={amount}>{amount} coins</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </Card>
+              <div className="casino-settings-card">
+                <h3 className="casino-settings-title">
+                  <Target className="w-6 h-6 inline mr-2" />
+                  Bet Amount
+                </h3>
+                <div className="casino-control-panel">
+                  <div className="casino-input-group">
+                    <label className="casino-input-label">Choose Amount</label>
+                    <Select value={currentBet} onValueChange={setCurrentBet} disabled={isSpinning}>
+                      <SelectTrigger className="casino-select">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {betAmounts.map(amount => (
+                          <SelectItem key={amount} value={amount}>{amount} coins</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
 
-              {/* Pay Table */}
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle>Pay Table</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between items-center">
-                      <span>🍒🍒🍒</span>
-                      <span className="text-green-400">5x (6%)</span>
+              <div className="casino-payout-card">
+                <h3 className="casino-payout-title">Pay Table</h3>
+                <div className="space-y-2 text-sm">
+                  {payTableDisplay.map((item, index) => (
+                    <div key={index} className="casino-payout-row">
+                      <span className="text-lg">{item.symbols}</span>
+                      <div className="flex flex-col items-end">
+                        <span className={`font-bold ${item.multiplier === "JACKPOT" ? "text-gold-400" : "text-green-400"}`}>
+                          {item.multiplier === "JACKPOT" ? "JACKPOT!" : `${item.multiplier}x`}
+                        </span>
+                        <span className="text-xs text-gray-400">({item.chance})</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>🍋🍋🍋</span>
-                      <span className="text-green-400">10x (4%)</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="casino-info-card">
+                <div className="casino-info-icon">
+                  <span className="text-black font-bold text-2xl">₿</span>
+                </div>
+                <p className="text-lg font-bold mb-2 text-amber-400">$ITLOG Jackpot</p>
+                <p className="text-sm text-gray-300">
+                  Get 3 🪙 symbols for 10,000-1M $ITLOG tokens based on your bet!
+                </p>
+              </div>
+
+              {isSpinning && (
+                <div className="casino-stats-card">
+                  <h3 className="casino-stats-title">
+                    <TrendingUp className="w-5 h-5 inline mr-2" />
+                    Current Spin
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="casino-stat-row">
+                      <span className="casino-stat-label">Bet Amount</span>
+                      <span className="casino-stat-value">{currentBet} coins</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>🍑🍑🍑</span>
-                      <span className="text-green-400">15x (3%)</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>🔔🔔🔔</span>
-                      <span className="text-green-400">25x (2.5%)</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>💎💎💎</span>
-                      <span className="text-green-400">50x (2%)</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>⭐⭐⭐</span>
-                      <span className="text-green-400">100x (1.5%)</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>7️⃣7️⃣7️⃣</span>
-                      <span className="text-green-400">500x (1%)</span>
-                    </div>
-                    <div className="flex justify-between items-center border-t pt-2">
-                      <span>🪙🪙🪙</span>
-                      <span className="text-gold-400 font-bold">JACKPOT! (0.1%)</span>
+                    <div className="casino-stat-row">
+                      <span className="casino-stat-label">Status</span>
+                      <span className="casino-stat-value text-yellow-400">Spinning...</span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              )}
 
-              
-
-              {/* $ITLOG Info */}
-              <Card className="bg-gradient-to-r from-gold-600/10 to-amber-600/10 border-gold-500/30">
-                <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 itlog-token rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-black font-bold">₿</span>
+              {lastWin > 0 && (
+                <div className="casino-stats-card">
+                  <h3 className="casino-stats-title">
+                    <TrendingUp className="w-5 h-5 inline mr-2" />
+                    Last Win
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="casino-stat-row">
+                      <span className="casino-stat-label">Combination</span>
+                      <span className="casino-stat-value">{reels.join("")}</span>
+                    </div>
+                    <div className="casino-stat-row">
+                      <span className="casino-stat-label">Payout</span>
+                      <span className="casino-stat-value text-green-400">{lastWin.toFixed(2)} coins</span>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold mb-1">$ITLOG Jackpot</p>
-                  <p className="text-xs text-muted-foreground">
-                    Get 3 🪙 symbols for 10,000-1M $ITLOG tokens based on your bet!
-                  </p>
-                </CardContent>
-              </Card>
+                </div>
+              )}
             </div>
           </div>
         </div>

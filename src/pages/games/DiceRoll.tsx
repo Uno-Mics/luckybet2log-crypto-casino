@@ -15,6 +15,7 @@ import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
 import GameHistory from "@/components/GameHistory";
 import BannedOverlay from "@/components/BannedOverlay";
+import { Sparkles, TrendingUp, Target, DollarSign, Dice1 } from "lucide-react";
 
 const DiceRoll = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -271,45 +272,66 @@ const DiceRoll = () => {
     setShowItlogDice(false);
   };
 
+  const winChance = prediction === "over" ? (100 - targetNumber) : targetNumber;
+  const potentialWin = parseFloat(currentBet) * multiplier;
+
   return (
     <Layout>
       {isBanned && <BannedOverlay />}
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
-                Dice Roll
-              </span>
+      <div className="casino-game-container py-8">
+        <div className="responsive-container">
+          <div className="casino-game-header">
+            <h1 className="casino-game-title">
+              Dice Roll
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="casino-game-subtitle">
               Roll a number from 1-100 and customize your risk!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Dice Display */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-center">Dice Roll</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
+          <div className="responsive-grid">
+            <div className="responsive-game-grid">
+              <div className="casino-game-area">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                  <h2 className="casino-game-area-title">Dice Roll</h2>
+                  {gameEnded && lastRoll && (
+                    <Badge 
+                      className={`px-6 py-2 text-lg font-bold rounded-full shadow-lg ${
+                        showItlogDice
+                          ? "bg-gradient-to-r from-gold-500 to-amber-600 text-white shadow-gold-500/50"
+                          : ((prediction === "over" && lastRoll > targetNumber) || 
+                             (prediction === "under" && lastRoll < targetNumber))
+                          ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-emerald-500/50" 
+                          : "bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-red-500/50"
+                      }`}
+                    >
+                      {showItlogDice 
+                        ? "$ITLOG TOKEN WON!" 
+                        : ((prediction === "over" && lastRoll > targetNumber) || 
+                           (prediction === "under" && lastRoll < targetNumber))
+                        ? "Winner!" 
+                        : "Try Again!"
+                      }
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex flex-col items-center space-y-8">
                   {/* Dice Display */}
-                  <div className="mb-8">
-                    <div className={`w-32 h-32 mx-auto rounded-lg border-4 flex items-center justify-center text-6xl font-bold transition-all duration-200 ${
+                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-8 shadow-2xl border-4 border-gray-600">
+                    <div className={`w-32 h-32 sm:w-40 sm:h-40 mx-auto rounded-2xl border-4 flex items-center justify-center text-6xl sm:text-7xl font-bold transition-all duration-300 transform ${
                       isRolling 
-                        ? "animate-bounce bg-yellow-400/20 border-yellow-400" 
+                        ? "animate-bounce bg-yellow-400/20 border-yellow-400 shadow-lg shadow-yellow-400/50" 
                         : showItlogDice 
-                        ? "bg-gradient-to-r from-gold-500 to-amber-500 border-gold-400 glow-gold"
-                        : "bg-white border-primary"
+                        ? "bg-gradient-to-r from-gold-500 to-amber-500 border-gold-400 shadow-lg shadow-gold-500/50"
+                        : "bg-gradient-to-br from-white to-gray-100 border-gray-300 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-400/50"
                     }`}>
                       {showItlogDice ? (
-                        <div className="w-12 h-12 itlog-token rounded-full flex items-center justify-center">
-                          <span className="text-black font-bold text-2xl">₿</span>
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-500 rounded-full flex items-center justify-center border-4 border-black/20">
+                          <span className="text-black font-bold text-3xl sm:text-4xl">₿</span>
                         </div>
                       ) : (
-                        <span className={showItlogDice ? "text-black" : "text-black"}>
+                        <span className={showItlogDice ? "text-black" : "text-black drop-shadow-lg"}>
                           {lastRoll || "?"}
                         </span>
                       )}
@@ -317,109 +339,88 @@ const DiceRoll = () => {
                   </div>
 
                   {/* Prediction Display */}
-                  <div className="mb-6">
-                    <div className="bg-black/20 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold mb-4">Your Prediction</h3>
-                      <div className="flex items-center justify-center space-x-4 text-lg">
-                        <span className="text-muted-foreground">Roll</span>
-                        <Badge variant="secondary" className="px-4 py-2">
-                          {prediction.toUpperCase()}
-                        </Badge>
-                        <span className="text-muted-foreground">than</span>
-                        <Badge variant="outline" className="px-4 py-2 text-lg">
-                          {targetNumber}
-                        </Badge>
-                      </div>
-                      <div className="mt-4">
-                        <Badge variant="secondary" className="text-xl px-6 py-3 glow-green">
-                          {multiplier.toFixed(2)}x Multiplier
-                        </Badge>
-                      </div>
+                  <div className="w-full max-w-md bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-xl p-6 border border-gray-600">
+                    <h3 className="text-lg font-semibold mb-4 text-center text-gray-300">Your Prediction</h3>
+                    <div className="flex items-center justify-center space-x-4 text-lg">
+                      <span className="text-muted-foreground">Roll</span>
+                      <Badge variant="secondary" className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+                        {prediction.toUpperCase()}
+                      </Badge>
+                      <span className="text-muted-foreground">than</span>
+                      <Badge variant="outline" className="px-4 py-2 text-lg border-blue-400 text-blue-400">
+                        {targetNumber}
+                      </Badge>
+                    </div>
+                    <div className="mt-4 text-center">
+                      <Badge variant="secondary" className="text-xl px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg">
+                        <DollarSign className="w-5 h-5 mr-2" />
+                        {multiplier.toFixed(2)}x Multiplier
+                      </Badge>
                     </div>
                   </div>
 
-                  {/* Game Result */}
-                  {gameEnded && lastRoll && (
-                    <div className="mb-6">
-                      <Badge 
-                        variant="secondary" 
-                        className={`text-lg px-6 py-3 ${
-                          showItlogDice
-                            ? "glow-gold bg-gradient-to-r from-gold-500 to-amber-500 text-black"
-                            : ((prediction === "over" && lastRoll > targetNumber) || 
-                               (prediction === "under" && lastRoll < targetNumber))
-                            ? "glow-green" 
-                            : "glow-red"
-                        }`}
-                      >
-                        {showItlogDice 
-                          ? "$ITLOG TOKEN WON!" 
-                          : ((prediction === "over" && lastRoll > targetNumber) || 
-                             (prediction === "under" && lastRoll < targetNumber))
-                          ? "Winner!" 
-                          : "Try Again!"
-                        }
-                      </Badge>
-                    </div>
-                  )}
+                  {/* Action Button */}
+                  <div className="w-full max-w-md">
+                    <Button 
+                      onClick={gameEnded ? resetGame : rollDice} 
+                      className={`w-full text-xl py-6 ${gameEnded ? "casino-secondary-button" : "casino-primary-button"}`}
+                      disabled={isRolling}
+                    >
+                      {isRolling ? (
+                        <>
+                          <Dice1 className="w-6 h-6 mr-2 animate-spin" />
+                          Rolling...
+                        </>
+                      ) : gameEnded ? (
+                        "Roll Again"
+                      ) : (
+                        <>
+                          <DollarSign className="w-6 h-6 mr-2" />
+                          Roll Dice ({currentBet} coins)
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
 
-                  {/* Roll Button */}
-                  <Button 
-                    onClick={gameEnded ? resetGame : rollDice} 
-                    className={`w-full text-xl py-6 ${gameEnded ? "glow-blue" : "glow-purple"}`}
-                    disabled={isRolling}
-                    size="lg"
-                  >
-                    {isRolling 
-                      ? "Rolling..." 
-                      : gameEnded 
-                      ? "Roll Again" 
-                      : `Roll Dice (${currentBet} coins)`
-                    }
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="block sm:hidden">
+                <GameHistory gameType="dice-roll" maxHeight="300px" />
+              </div>
 
-              {/* Game History */}
-              <GameHistory gameType="dice-roll" maxHeight="300px" />
+              <div className="hidden sm:block">
+                <GameHistory gameType="dice-roll" maxHeight="400px" />
+              </div>
             </div>
 
-            {/* Controls */}
-            <div className="space-y-6">
-              {/* Balance */}
-              <Card className="bg-card/50 backdrop-blur-sm border-blue-500/30">
-                <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Coins Balance</p>
-                  <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} coins</p>
-                </CardContent>
-              </Card>
+            <div className="responsive-control-panel">
+              <div className="casino-balance-card">
+                <p className="casino-balance-label">Coins Balance</p>
+                <p className="casino-balance-amount">{balance.toFixed(2)}</p>
+              </div>
 
-              {/* Luck Boost Indicator */}
               {activePetBoosts.find(boost => boost.trait_type === 'luck_boost') && (
-                <Card className="bg-gradient-to-r from-green-600/10 to-emerald-600/10 border-green-500/30">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <span className="text-white font-bold text-xl">🌟</span>
-                    </div>
-                    <p className="text-sm font-semibold mb-1 text-green-400">Luck Boost Active!</p>
-                    <p className="text-xs text-muted-foreground">
-                      +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="casino-luck-boost-card">
+                  <div className="casino-luck-icon">
+                    <Sparkles className="text-white font-bold text-xl" />
+                  </div>
+                  <p className="text-lg font-bold mb-2 text-emerald-400">Luck Boost Active!</p>
+                  <p className="text-sm text-gray-300">
+                    +{(((activePetBoosts.find(boost => boost.trait_type === 'luck_boost')?.total_boost || 1) - 1) * 100).toFixed(1)}% Better odds!
+                  </p>
+                </div>
               )}
 
-              {/* Game Settings */}
-              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                <CardHeader>
-                  <CardTitle>Game Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Bet Amount */}
-                  <div>
-                    <Label className="text-sm font-medium mb-2 block">Bet Amount</Label>
+              <div className="casino-settings-card">
+                <h3 className="casino-settings-title">
+                  <Target className="w-6 h-6 inline mr-2" />
+                  Game Settings
+                </h3>
+                <div className="casino-control-panel">
+                  <div className="casino-input-group">
+                    <label className="casino-input-label">Bet Amount</label>
                     <Select value={currentBet} onValueChange={setCurrentBet} disabled={isRolling}>
-                      <SelectTrigger>
+                      <SelectTrigger className="casino-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -430,9 +431,8 @@ const DiceRoll = () => {
                     </Select>
                   </div>
 
-                  {/* Prediction Type */}
-                  <div>
-                    <Label className="text-sm font-medium mb-2 block">Prediction</Label>
+                  <div className="casino-input-group">
+                    <label className="casino-input-label">Prediction</label>
                     <Select 
                       value={prediction} 
                       onValueChange={(value) => {
@@ -441,7 +441,7 @@ const DiceRoll = () => {
                       }} 
                       disabled={isRolling}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="casino-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -451,11 +451,10 @@ const DiceRoll = () => {
                     </Select>
                   </div>
 
-                  {/* Target Number */}
-                  <div>
-                    <Label className="text-sm font-medium mb-2 block">
+                  <div className="casino-input-group">
+                    <label className="casino-input-label">
                       Target Number: {targetNumber}
-                    </Label>
+                    </label>
                     <Slider
                       value={[targetNumber]}
                       onValueChange={(value) => {
@@ -466,69 +465,79 @@ const DiceRoll = () => {
                       min={1}
                       step={1}
                       disabled={isRolling}
-                      className="w-full"
+                      className="w-full mt-2"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
                       <span>1</span>
                       <span>99</span>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  {/* Win Chance */}
-                  <div className="bg-blue-500/10 rounded-lg p-4">
-                    <div className="flex justify-between text-sm">
-                      <span>Win Chance:</span>
-                      <span className="text-blue-400">
-                        {prediction === "over" 
-                          ? `${100 - targetNumber}%`
-                          : `${targetNumber}%`
-                        }
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Payout on Win:</span>
-                      <span className="text-green-400">{(parseFloat(currentBet) * multiplier).toFixed(2)} coins</span>
-                    </div>
+              <div className="casino-stats-card">
+                <h3 className="casino-stats-title">
+                  <TrendingUp className="w-5 h-5 inline mr-2" />
+                  Bet Stats
+                </h3>
+                <div className="space-y-3">
+                  <div className="casino-stat-row">
+                    <span className="casino-stat-label">Win Chance</span>
+                    <span className="casino-stat-value text-blue-400">{winChance}%</span>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* $ITLOG Info */}
-              <Card className="bg-gradient-to-r from-gold-600/10 to-amber-600/10 border-gold-500/30">
-                <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 itlog-token rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-black font-bold">₿</span>
+                  <div className="casino-stat-row">
+                    <span className="casino-stat-label">Multiplier</span>
+                    <span className="casino-stat-value text-green-400">{multiplier.toFixed(2)}x</span>
                   </div>
-                  <p className="text-sm font-semibold mb-1">$ITLOG Token</p>
-                  <p className="text-xs text-muted-foreground">
-                    0.1% chance for $ITLOG dice to appear and win 10,000-1M tokens on winning roll!
-                  </p>
-                </CardContent>
-              </Card>
+                  <div className="casino-stat-row">
+                    <span className="casino-stat-label">Potential Win</span>
+                    <span className="casino-stat-value text-green-400">{potentialWin.toFixed(2)} coins</span>
+                  </div>
+                </div>
+              </div>
 
-              
+              <div className="casino-info-card">
+                <div className="casino-info-icon">
+                  <span className="text-black font-bold text-2xl">₿</span>
+                </div>
+                <p className="text-lg font-bold mb-2 text-amber-400">$ITLOG Token</p>
+                <p className="text-sm text-gray-300">
+                  0.1% chance for $ITLOG dice to appear and win 10,000-1M tokens on winning roll!
+                </p>
+              </div>
 
-              {/* Recent Rolls */}
               {lastRoll && (
-                <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-                  <CardHeader>
-                    <CardTitle>Last Roll</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center">
-                      <div className="text-4xl font-bold mb-2">{lastRoll}</div>
-                      <div className="text-sm text-muted-foreground">
+                <div className="casino-stats-card">
+                  <h3 className="casino-stats-title">
+                    <Dice1 className="w-5 h-5 inline mr-2" />
+                    Last Roll
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="casino-stat-row">
+                      <span className="casino-stat-label">Result</span>
+                      <span className="casino-stat-value text-2xl font-bold">{lastRoll}</span>
+                    </div>
+                    <div className="casino-stat-row">
+                      <span className="casino-stat-label">Outcome</span>
+                      <span className={`casino-stat-value ${
+                        showItlogDice 
+                          ? "text-gold-400"
+                          : ((prediction === "over" && lastRoll > targetNumber) || 
+                             (prediction === "under" && lastRoll < targetNumber)) 
+                          ? "text-green-400" 
+                          : "text-red-400"
+                      }`}>
                         {showItlogDice 
-                          ? "$ITLOG Token Won!"
+                          ? "$ITLOG Token!"
                           : ((prediction === "over" && lastRoll > targetNumber) || 
                              (prediction === "under" && lastRoll < targetNumber)) 
                           ? "Winner!" 
                           : "Try again!"
                         }
-                      </div>
+                      </span>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )}
             </div>
           </div>
