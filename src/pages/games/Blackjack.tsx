@@ -15,7 +15,7 @@ import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
 import GameHistory from "@/components/GameHistory";
-import { Spades, Hearts, Diamond, Club, Sparkles, TrendingUp, Target } from "lucide-react";
+import { Spade, Heart, Diamond, Club, Sparkles, TrendingUp, Target } from "lucide-react";
 
 type CardType = {
   suit: string;
