@@ -9,6 +9,115 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appeals: {
+        Row: {
+          admin_response: string | null
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          username: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          username: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      daily_quests: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          is_completed: boolean | null
+          progress: number | null
+          quest_definition_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          is_completed?: boolean | null
+          progress?: number | null
+          quest_definition_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          is_completed?: boolean | null
+          progress?: number | null
+          quest_definition_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_quests_quest_definition_id_fkey"
+            columns: ["quest_definition_id"]
+            isOneToOne: false
+            referencedRelation: "quest_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deposit_notifications: {
+        Row: {
+          created_at: string | null
+          deposit_id: string
+          id: string
+          is_read: boolean | null
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          deposit_id: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          deposit_id?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposit_notifications_deposit_id_fkey"
+            columns: ["deposit_id"]
+            isOneToOne: false
+            referencedRelation: "deposits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deposits: {
         Row: {
           amount: number
@@ -47,7 +156,7 @@ export type Database = {
       }
       earning_history: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
           session_type: string
           stake_amount: number | null
@@ -55,7 +164,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           id?: string
           session_type: string
           stake_amount?: number | null
@@ -63,12 +172,39 @@ export type Database = {
           user_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
           session_type?: string
           stake_amount?: number | null
           tokens_earned?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      egg_types: {
+        Row: {
+          created_at: string | null
+          hatch_time: number
+          id: number
+          name: string
+          price: number
+          rarity: string
+        }
+        Insert: {
+          created_at?: string | null
+          hatch_time?: number
+          id?: number
+          name: string
+          price: number
+          rarity: string
+        }
+        Update: {
+          created_at?: string | null
+          hatch_time?: number
+          id?: number
+          name?: string
+          price?: number
+          rarity?: string
         }
         Relationships: []
       }
@@ -102,6 +238,45 @@ export type Database = {
           started_at?: string | null
           tokens_earned?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      game_history: {
+        Row: {
+          bet_amount: number
+          created_at: string | null
+          game_details: Json | null
+          game_type: string
+          id: string
+          loss_amount: number | null
+          multiplier: number | null
+          result_type: string
+          user_id: string
+          win_amount: number | null
+        }
+        Insert: {
+          bet_amount: number
+          created_at?: string | null
+          game_details?: Json | null
+          game_type: string
+          id?: string
+          loss_amount?: number | null
+          multiplier?: number | null
+          result_type: string
+          user_id: string
+          win_amount?: number | null
+        }
+        Update: {
+          bet_amount?: number
+          created_at?: string | null
+          game_details?: Json | null
+          game_type?: string
+          id?: string
+          loss_amount?: number | null
+          multiplier?: number | null
+          result_type?: string
+          user_id?: string
+          win_amount?: number | null
         }
         Relationships: []
       }
@@ -146,6 +321,80 @@ export type Database = {
           win_amount?: number
         }
         Relationships: []
+      }
+      password_reset_codes: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string | null
+          id: string
+          is_used: boolean | null
+          user_id: string | null
+          verification_code: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          user_id?: string | null
+          verification_code: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          user_id?: string | null
+          verification_code?: string
+        }
+        Relationships: []
+      }
+      pet_types: {
+        Row: {
+          created_at: string | null
+          drop_rate: number
+          egg_type_id: number | null
+          id: number
+          name: string
+          rarity: string
+          sprite_emoji: string
+          trait_type: string
+          trait_value: number
+        }
+        Insert: {
+          created_at?: string | null
+          drop_rate?: number
+          egg_type_id?: number | null
+          id?: number
+          name: string
+          rarity: string
+          sprite_emoji?: string
+          trait_type: string
+          trait_value?: number
+        }
+        Update: {
+          created_at?: string | null
+          drop_rate?: number
+          egg_type_id?: number | null
+          id?: number
+          name?: string
+          rarity?: string
+          sprite_emoji?: string
+          trait_type?: string
+          trait_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_types_egg_type_id_fkey"
+            columns: ["egg_type_id"]
+            isOneToOne: false
+            referencedRelation: "egg_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -195,46 +444,73 @@ export type Database = {
         }
         Relationships: []
       }
-      appeals: {
+      quest_definitions: {
         Row: {
-          admin_response: string | null
-          created_at: string
-          email: string
-          id: string
-          message: string
-          status: string
-          updated_at: string
-          user_id: string
-          username: string
+          created_at: string | null
+          description: string
+          difficulty_tier: string
+          id: number
+          reward_max: number
+          reward_min: number
+          target_value: number | null
+          task_type: string
+          title: string
         }
         Insert: {
-          admin_response?: string | null
-          created_at?: string
-          email: string
-          id?: string
-          message: string
-          status?: string
-          updated_at?: string
-          user_id: string
-          username: string
+          created_at?: string | null
+          description: string
+          difficulty_tier: string
+          id?: number
+          reward_max: number
+          reward_min: number
+          target_value?: number | null
+          task_type: string
+          title: string
         }
         Update: {
-          admin_response?: string | null
-          created_at?: string
-          email?: string
+          created_at?: string | null
+          description?: string
+          difficulty_tier?: string
+          id?: number
+          reward_max?: number
+          reward_min?: number
+          target_value?: number | null
+          task_type?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      quest_rewards_claimed: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          quest_ids: string[]
+          total_reward: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string
           id?: string
-          message?: string
-          status?: string
-          updated_at?: string
+          quest_ids: string[]
+          total_reward: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          quest_ids?: string[]
+          total_reward?: number
           user_id?: string
-          username?: string
         }
         Relationships: []
       }
       receipt_validations: {
         Row: {
           confidence_score: number | null
-          created_at: string
+          created_at: string | null
           deposit_id: string | null
           extracted_amount: number | null
           extracted_method: string | null
@@ -245,7 +521,7 @@ export type Database = {
         }
         Insert: {
           confidence_score?: number | null
-          created_at?: string
+          created_at?: string | null
           deposit_id?: string | null
           extracted_amount?: number | null
           extracted_method?: string | null
@@ -256,7 +532,7 @@ export type Database = {
         }
         Update: {
           confidence_score?: number | null
-          created_at?: string
+          created_at?: string | null
           deposit_id?: string | null
           extracted_amount?: number | null
           extracted_method?: string | null
@@ -272,108 +548,142 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "deposits"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
-      withdrawals: {
+      user_activities: {
         Row: {
-          amount: number
-          created_at: string
+          activity_type: string
+          activity_value: number | null
+          created_at: string | null
+          game_type: string | null
           id: string
-          processed_at: string | null
-          processed_by: string | null
-          status: string
+          metadata: Json | null
+          session_id: string | null
           user_id: string
-          withdrawal_type: string
-          withdrawal_method: string | null
-          admin_response: string | null
-          bank_account_name: string | null
-          bank_account_number: string | null
-          bank_name: string | null
         }
         Insert: {
-          amount: number
-          created_at?: string
+          activity_type: string
+          activity_value?: number | null
+          created_at?: string | null
+          game_type?: string | null
           id?: string
-          processed_at?: string | null
-          processed_by?: string | null
-          status?: string
+          metadata?: Json | null
+          session_id?: string | null
           user_id: string
-          withdrawal_type: string
-          withdrawal_method?: string | null
-          admin_response?: string | null
-          bank_account_name?: string | null
-          bank_account_number?: string | null
-          bank_name?: string | null
         }
         Update: {
-          amount?: number
-          created_at?: string
+          activity_type?: string
+          activity_value?: number | null
+          created_at?: string | null
+          game_type?: string | null
           id?: string
-          processed_at?: string | null
-          processed_by?: string | null
-          status?: string
+          metadata?: Json | null
+          session_id?: string | null
           user_id?: string
-          withdrawal_type?: string
-          withdrawal_method?: string | null
-          admin_response?: string | null
-          bank_account_name?: string | null
-          bank_account_number?: string | null
-          bank_name?: string | null
         }
         Relationships: []
       }
-      deposit_notifications: {
+      user_eggs: {
         Row: {
+          created_at: string | null
+          egg_type_id: number | null
+          hatch_time: string | null
           id: string
+          incubation_start: string | null
+          status: string
           user_id: string
-          deposit_id: string
-          message: string
-          is_read: boolean
-          created_at: string
         }
         Insert: {
+          created_at?: string | null
+          egg_type_id?: number | null
+          hatch_time?: string | null
           id?: string
+          incubation_start?: string | null
+          status?: string
           user_id: string
-          deposit_id: string
-          message: string
-          is_read?: boolean
-          created_at?: string
         }
         Update: {
+          created_at?: string | null
+          egg_type_id?: number | null
+          hatch_time?: string | null
           id?: string
+          incubation_start?: string | null
+          status?: string
           user_id?: string
-          deposit_id?: string
-          message?: string
-          is_read?: boolean
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_eggs_egg_type_id_fkey"
+            columns: ["egg_type_id"]
+            isOneToOne: false
+            referencedRelation: "egg_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_pets: {
+        Row: {
+          created_at: string | null
+          garden_position: number | null
+          id: string
+          is_active: boolean | null
+          name: string | null
+          pet_type_id: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          garden_position?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string | null
+          pet_type_id?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          garden_position?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string | null
+          pet_type_id?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_pets_pet_type_id_fkey"
+            columns: ["pet_type_id"]
+            isOneToOne: false
+            referencedRelation: "pet_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       withdrawal_notifications: {
         Row: {
+          created_at: string | null
           id: string
+          is_read: boolean | null
+          message: string
           user_id: string
           withdrawal_id: string
-          message: string
-          is_read: boolean
-          created_at: string
         }
         Insert: {
+          created_at?: string | null
           id?: string
+          is_read?: boolean | null
+          message: string
           user_id: string
           withdrawal_id: string
-          message: string
-          is_read?: boolean
-          created_at?: string
         }
         Update: {
+          created_at?: string | null
           id?: string
+          is_read?: boolean | null
+          message?: string
           user_id?: string
           withdrawal_id?: string
-          message?: string
-          is_read?: boolean
-          created_at?: string
         }
         Relationships: [
           {
@@ -382,302 +692,54 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "withdrawals"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
-      game_history: {
+      withdrawals: {
         Row: {
+          admin_response: string | null
+          amount: number
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_name: string | null
+          created_at: string
           id: string
-          user_id: string
-          game_type: string
-          bet_amount: number
-          result_type: string
-          win_amount: number
-          loss_amount: number
-          multiplier: number
-          game_details: Json
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          game_type: string
-          bet_amount: number
-          result_type: string
-          win_amount?: number
-          loss_amount?: number
-          multiplier?: number
-          game_details?: Json
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          game_type?: string
-          bet_amount?: number
-          result_type?: string
-          win_amount?: number
-          loss_amount?: number
-          multiplier?: number
-          game_details?: Json
-          created_at?: string
-        }
-        Relationships: []
-      }
-      user_activities: {
-        Row: {
-          id: string
-          user_id: string
-          activity_type: string
-          activity_value: number
-          game_type: string | null
-          metadata: Json
-          session_id: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          activity_type: string
-          activity_value?: number
-          game_type?: string | null
-          metadata?: Json
-          session_id?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          activity_type?: string
-          activity_value?: number
-          game_type?: string | null
-          metadata?: Json
-          session_id?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      quest_definitions: {
-        Row: {
-          id: number
-          title: string
-          description: string
-          difficulty_tier: string
-          task_type: string
-          target_value: number
-          reward_min: number
-          reward_max: number
-          created_at: string
-        }
-        Insert: {
-          id?: number
-          title: string
-          description: string
-          difficulty_tier: string
-          task_type: string
-          target_value?: number
-          reward_min: number
-          reward_max: number
-          created_at?: string
-        }
-        Update: {
-          id?: number
-          title?: string
-          description?: string
-          difficulty_tier?: string
-          task_type?: string
-          target_value?: number
-          reward_min?: number
-          reward_max?: number
-          created_at?: string
-        }
-        Relationships: []
-      }
-      daily_quests: {
-        Row: {
-          id: string
-          user_id: string
-          quest_definition_id: number
-          date: string
-          progress: number
-          is_completed: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          quest_definition_id: number
-          date?: string
-          progress?: number
-          is_completed?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          quest_definition_id?: number
-          date?: string
-          progress?: number
-          is_completed?: boolean
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "daily_quests_quest_definition_id_fkey"
-            columns: ["quest_definition_id"]
-            isOneToOne: false
-            referencedRelation: "quest_definitions"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      quest_rewards_claimed: {
-        Row: {
-          id: string
-          user_id: string
-          date: string
-          total_reward: number
-          quest_ids: string[]
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          date?: string
-          total_reward: number
-          quest_ids: string[]
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          date?: string
-          total_reward?: number
-          quest_ids?: string[]
-          created_at?: string
-        }
-        Relationships: []
-      }
-      egg_types: {
-        Row: {
-          id: number
-          name: string
-          rarity: string
-          price: number
-          hatch_time: number
-          created_at: string
-        }
-        Insert: {
-          id?: number
-          name: string
-          rarity: string
-          price: number
-          hatch_time?: number
-          created_at?: string
-        }
-        Update: {
-          id?: number
-          name?: string
-          rarity?: string
-          price?: number
-          hatch_time?: number
-          created_at?: string
-        }
-        Relationships: []
-      }
-      pet_types: {
-        Row: {
-          id: number
-          name: string
-          egg_type_id: number
-          rarity: string
-          sprite_emoji: string
-          trait_type: string
-          trait_value: number
-          drop_rate: number
-          created_at: string
-        }
-        Insert: {
-          id?: number
-          name: string
-          egg_type_id: number
-          rarity: string
-          sprite_emoji?: string
-          trait_type: string
-          trait_value?: number
-          drop_rate?: number
-          created_at?: string
-        }
-        Update: {
-          id?: number
-          name?: string
-          egg_type_id?: number
-          rarity?: string
-          sprite_emoji?: string
-          trait_type?: string
-          trait_value?: number
-          drop_rate?: number
-          created_at?: string
-        }
-        Relationships: []
-      }
-      user_eggs: {
-        Row: {
-          id: string
-          user_id: string
-          egg_type_id: number
+          processed_at: string | null
+          processed_by: string | null
           status: string
-          incubation_start: string | null
-          hatch_time: string | null
-          created_at: string
+          user_id: string
+          withdrawal_method: string | null
+          withdrawal_type: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          egg_type_id: number
-          status?: string
-          incubation_start?: string | null
-          hatch_time?: string | null
+          admin_response?: string | null
+          amount: number
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
           created_at?: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          user_id: string
+          withdrawal_method?: string | null
+          withdrawal_type: string
         }
         Update: {
+          admin_response?: string | null
+          amount?: number
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          created_at?: string
           id?: string
-          user_id?: string
-          egg_type_id?: number
+          processed_at?: string | null
+          processed_by?: string | null
           status?: string
-          incubation_start?: string | null
-          hatch_time?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      user_pets: {
-        Row: {
-          id: string
-          user_id: string
-          pet_type_id: number
-          name: string | null
-          is_active: boolean
-          garden_position: number | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          pet_type_id: number
-          name?: string | null
-          is_active?: boolean
-          garden_position?: number | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
           user_id?: string
-          pet_type_id?: number
-          name?: string | null
-          is_active?: boolean
-          garden_position?: number | null
-          created_at?: string
+          withdrawal_method?: string | null
+          withdrawal_type?: string
         }
         Relationships: []
       }
@@ -686,32 +748,86 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      update_user_balance: {
-        Args: {
-          p_user_id: string
-          p_php_change?: number
-          p_coins_change?: number
-          p_itlog_change?: number
-        }
-        Returns: boolean
+      admin_delete_user: {
+        Args: { target_user_id: string }
+        Returns: Json
       }
-      update_quest_progress: {
-        Args: {
-          p_user_id: string
-          p_activity_type: string
-          p_activity_value?: number
-          p_game_type?: string
-          p_metadata?: Json
-        }
+      assign_daily_quests: {
+        Args: { p_user_id: string }
         Returns: undefined
       }
+      check_balance_quests: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      check_quest_completion_dependencies: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      claim_quest_rewards: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       clear_user_data: {
-        Args: {
-          p_user_id: string
-        }
+        Args: { p_user_id: string }
         Returns: boolean
       }
-      reset_all_php_balances: {
+      create_password_reset_code: {
+        Args: { p_email: string }
+        Returns: Json
+      }
+      execute_sql: {
+        Args: { query: string }
+        Returns: undefined
+      }
+      fix_quest_progress_for_user: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      generate_verification_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_user_pet_boosts: {
+        Args: { p_user_id: string }
+        Returns: {
+          trait_type: string
+          total_boost: number
+        }[]
+      }
+      handle_deposit_approval: {
+        Args: { p_user_id: string; p_amount: number; p_status?: string }
+        Returns: undefined
+      }
+      handle_game_play: {
+        Args: { p_user_id: string; p_game_type: string }
+        Returns: undefined
+      }
+      handle_game_win: {
+        Args: { p_user_id: string; p_win_amount: number; p_game_type: string }
+        Returns: undefined
+      }
+      harvest_farming_rewards: {
+        Args: { p_user_id: string; p_session_id: string }
+        Returns: Json
+      }
+      hatch_egg: {
+        Args: { p_user_id: string; p_egg_id: string }
+        Returns: Json
+      }
+      place_pet_in_garden: {
+        Args: { p_user_id: string; p_pet_id: string; p_position: number }
+        Returns: Json
+      }
+      purchase_egg: {
+        Args: { p_user_id: string; p_egg_type_id: number }
+        Returns: Json
+      }
+      remove_pet_from_garden: {
+        Args: { p_user_id: string; p_pet_id: string }
+        Returns: Json
+      }
+      reset_all_balances: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
@@ -723,153 +839,50 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      reset_all_balances: {
+      reset_all_php_balances: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      check_balance_quests: {
-        Args: {
-          p_user_id: string
-        }
+      reset_daily_quests: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      handle_deposit_approval: {
-        Args: {
-          p_user_id: string
-          p_amount: number
-          p_status?: string
-        }
-        Returns: undefined
-      }
-      handle_game_win: {
-        Args: {
-          p_user_id: string
-          p_win_amount: number
-          p_game_type: string
-        }
-        Returns: undefined
-      }
-      handle_game_play: {
-        Args: {
-          p_user_id: string
-          p_game_type: string
-        }
-        Returns: undefined
-      }
-      fix_quest_progress_for_user: {
-        Args: {
-          p_user_id: string
-        }
-        Returns: undefined
-      }
-      claim_quest_rewards: {
-        Args: {
-          p_user_id: string
-        }
-        Returns: Json
-      }
-      assign_daily_quests: {
-        Args: {
-          p_user_id: string
-        }
-        Returns: undefined
-      }
-      purchase_egg: {
-        Args: {
-          p_user_id: string
-          p_egg_type_id: number
-        }
-        Returns: Json
-      }
-      start_incubation: {
-        Args: {
-          p_user_id: string
-          p_egg_id: string
-        }
-        Returns: Json
-      }
-      hatch_egg: {
-        Args: {
-          p_user_id: string
-          p_egg_id: string
-        }
-        Returns: Json
-      }
-      place_pet_in_garden: {
-        Args: {
-          p_user_id: string
-          p_pet_id: string
-          p_position: number
-        }
-        Returns: Json
-      }
-      remove_pet_from_garden: {
-        Args: {
-          p_user_id: string
-          p_pet_id: string
-        }
-        Returns: Json
-      }
-      get_user_pet_boosts: {
-        Args: {
-          p_user_id: string
-        }
-        Returns: {
-          trait_type: string
-          total_boost: number
-        }[]
-      }
-      harvest_farming_rewards: {
-        Args: {
-          p_user_id: string
-          p_session_id: string
-        }
-        Returns: Json
       }
       sell_pet: {
-        Args: {
-          p_user_id: string
-          p_pet_id: string
-        }
+        Args: { p_user_id: string; p_pet_id: string }
         Returns: Json
       }
       skip_egg_hatching: {
+        Args: { p_user_id: string; p_egg_id: string }
+        Returns: Json
+      }
+      start_incubation: {
+        Args: { p_user_id: string; p_egg_id: string }
+        Returns: Json
+      }
+      update_quest_progress: {
         Args: {
           p_user_id: string
-          p_egg_id: string
+          p_activity_type: string
+          p_activity_value?: number
+          p_game_type?: string
+          p_metadata?: Json
         }
-        Returns: Json
+        Returns: undefined
       }
-      admin_delete_user: {
-        Args: {
-          target_user_id: string
-        }
-        Returns: Json
-      }
-      execute_sql: {
-        Args: {
-          sql_query: string
-        }
-        Returns: Json
-      }
-      admin_give_custom_amounts: {
-        Args: {
-          p_user_ids: string[]
-          p_php_amount?: number
-          p_coins_amount?: number
-          p_itlog_amount?: number
-        }
-        Returns: Json
-      }
-      admin_reset_all_balances: {
-        Args: {
-          p_balance_type: string
-        }
-        Returns: Json
-      }
-      admin_clear_user_data: {
+      update_user_balance: {
         Args: {
           p_user_id: string
+          p_php_change?: number
+          p_coins_change?: number
+          p_itlog_change?: number
+        }
+        Returns: boolean
+      }
+      verify_and_reset_password: {
+        Args: {
+          p_email: string
+          p_verification_code: string
+          p_new_password: string
         }
         Returns: Json
       }

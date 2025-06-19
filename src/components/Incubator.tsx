@@ -174,19 +174,19 @@ export const Incubator = () => {
                       {isReady ? (
                         <Button
                           onClick={() => hatchEgg(egg.id)}
-                          className="w-full glow-gold bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-semibold"
+                          className="w-full h-14 modern-button bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-bold text-lg"
                         >
                           Hatch Now! 🐣
                         </Button>
                       ) : (
                         <div className="space-y-2">
-                          <Button disabled className="w-full">
+                          <Button disabled className="w-full h-14 modern-button">
                             Incubating...
                           </Button>
                           <Button
                             onClick={() => skipEggHatching(egg.id)}
                             variant="outline"
-                            className="w-full border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-colors"
+                            className="w-full h-14 modern-button border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-colors"
                           >
                             ⏰ Skip for 50 $ITLOG
                           </Button>
@@ -223,7 +223,7 @@ export const Incubator = () => {
                     </Badge>
                     <Button
                       onClick={() => startIncubation(egg.id)}
-                      className="w-full glow-orange"
+                      className="w-full h-14 modern-button button-primary"
                     >
                       Start Incubation
                     </Button>
