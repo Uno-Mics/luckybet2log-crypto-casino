@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import NotificationBell from "@/components/NotificationBell";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 interface LayoutProps {
