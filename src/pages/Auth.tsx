@@ -26,15 +26,15 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState("login");
 
   const { toast } = useToast();
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, loading } = useAuth();
   const navigate = useNavigate();
 
   // Redirect to home if already logged in
   useEffect(() => {
-    if (user) {
-      navigate("/");
+    if (!loading && user) {
+      navigate("/", { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,14 +49,14 @@ const Auth = () => {
           description: error.message,
           variant: "destructive",
         });
-      } else {
+      } else if (data.user) {
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
 
         // Check if user is admin and redirect accordingly
-        if (data.user) {
+        try {
           const { data: profile } = await supabase
             .from('profiles')
             .select('is_admin')
@@ -64,15 +64,17 @@ const Auth = () => {
             .single();
 
           if (profile?.is_admin) {
-            navigate("/admin");
+            navigate("/admin", { replace: true });
           } else {
-            navigate("/");
+            navigate("/", { replace: true });
           }
-        } else {
-          navigate("/");
+        } catch (profileError) {
+          console.error('Error fetching profile:', profileError);
+          navigate("/", { replace: true });
         }
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Login failed",
         description: "An unexpected error occurred.",
@@ -116,8 +118,10 @@ const Auth = () => {
         setRegisterPassword("");
         setRegisterUsername("");
         setConfirmPassword("");
+        setActiveTab("login");
       }
     } catch (error) {
+      console.error('Registration error:', error);
       toast({
         title: "Registration failed",
         description: "An unexpected error occurred.",
@@ -127,6 +131,18 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -233,7 +249,6 @@ const Auth = () => {
                       </div>
                     </div>
 
-                    {/* Password Field */}
                     <div className="space-y-2">
                       <Label htmlFor="login-password" className="text-white/90 font-medium">
                         Password
@@ -297,7 +312,6 @@ const Auth = () => {
                       </div>
                     </div>
 
-                    {/* Email Field */}
                     <div className="space-y-2">
                       <Label htmlFor="register-email" className="text-white/90 font-medium">
                         Email Address
@@ -316,7 +330,6 @@ const Auth = () => {
                       </div>
                     </div>
 
-                    {/* Password Field */}
                     <div className="space-y-2">
                       <Label htmlFor="register-password" className="text-white/90 font-medium">
                         Password
@@ -342,7 +355,6 @@ const Auth = () => {
                       </div>
                     </div>
 
-                    {/* Confirm Password Field */}
                     <div className="space-y-2">
                       <Label htmlFor="confirm-password" className="text-white/90 font-medium">
                         Confirm Password

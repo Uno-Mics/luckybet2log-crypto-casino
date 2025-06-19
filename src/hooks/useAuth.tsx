@@ -20,10 +20,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
+        
+        if (!mounted) return;
         
         if (event === 'SIGNED_OUT' || !session) {
           setSession(null);
@@ -46,43 +50,77 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+          // If there's an error getting session, clear any stored auth data
+          await supabase.auth.signOut();
+        }
+        
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Session retrieval error:', error);
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    };
 
-    return () => subscription.unsubscribe();
+    getInitialSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { data: data ? { user: data.user, session: data.session } : null, error };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { data: data ? { user: data.user, session: data.session } : null, error };
+    } catch (err) {
+      console.error('Sign in error:', err);
+      return { data: null, error: err as AuthError };
+    }
   };
 
   const signUp = async (email: string, password: string, username: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username,
+          },
+          emailRedirectTo: `${window.location.origin}/`
         },
-      },
-    });
-    return { data: data ? { user: data.user, session: data.session } : null, error };
+      });
+      return { data: data ? { user: data.user, session: data.session } : null, error };
+    } catch (err) {
+      console.error('Sign up error:', err);
+      return { data: null, error: err as AuthError };
+    }
   };
 
   const signOut = async (): Promise<{ error: AuthError | null }> => {
     try {
-      const { error } = await supabase.auth.signOut();
-      
-      // Always clear the session state, even if there's an error
+      // Clear state immediately
       setSession(null);
       setUser(null);
+      
+      const { error } = await supabase.auth.signOut();
       
       // Clear localStorage and sessionStorage
       try {
@@ -94,12 +132,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             localStorage.removeItem(key);
           }
         });
-        // Clear React Query cache
-        if (window.location.pathname !== '/auth') {
-          setTimeout(() => {
-            window.location.href = '/auth';
-          }, 100);
-        }
       } catch (storageError) {
         console.warn('Could not clear storage:', storageError);
       }
@@ -111,12 +143,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Force clear state even on error
       setSession(null);
       setUser(null);
-      
-      if (window.location.pathname !== '/auth') {
-        setTimeout(() => {
-          window.location.href = '/auth';
-        }, 100);
-      }
       
       return { error: err as AuthError };
     }
