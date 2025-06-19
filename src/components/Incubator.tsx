@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -174,7 +173,7 @@ export const Incubator = () => {
                       {isReady ? (
                         <Button
                           onClick={() => hatchEgg(egg.id)}
-                          className="w-full h-14 modern-button bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-bold text-lg"
+                          className="w-full h-14 modern-button bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold text-lg"
                         >
                           Hatch Now! 🐣
                         </Button>
@@ -223,7 +222,7 @@ export const Incubator = () => {
                     </Badge>
                     <Button
                       onClick={() => startIncubation(egg.id)}
-                      className="w-full h-14 modern-button button-primary"
+                      className="w-full h-14 modern-button bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold"
                     >
                       Start Incubation
                     </Button>
