@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
@@ -13,10 +14,9 @@ import { useActivityTracker } from "@/hooks/useActivityTracker";
 import QuestSystem from "@/components/QuestSystem";
 import EggShop from "@/components/EggShop";
 import Incubator from "@/components/Incubator";
-import PixelPetGarden from "@/components/PixelPetGarden";
+import PetGarden from "@/components/PetGarden";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import "../styles/pixel-theme.css";
 
 const Earn = () => {
   const [stakingAmount, setStakingAmount] = useState("");
@@ -174,7 +174,7 @@ const Earn = () => {
                 className="flex items-center justify-center px-4 py-4 rounded-xl text-sm font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white transition-all duration-300"
               >
                 <Trophy className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Pixel Garden</span>
+                <span className="hidden sm:inline">Pet Garden</span>
                 <span className="sm:hidden">Garden</span>
               </TabsTrigger>
             </TabsList>
@@ -448,7 +448,7 @@ const Earn = () => {
             </TabsContent>
 
             <TabsContent value="garden">
-              <PixelPetGarden />
+              <PetGarden />
             </TabsContent>
           </Tabs>
         </div>

@@ -15,7 +15,7 @@ interface GameHistoryProps {
 }
 
 const GameHistory = ({ gameType, showStats = true, maxHeight = "400px" }: GameHistoryProps) => {
-  const { gameHistory, loading, clearHistory, getStats, refreshHistory } = useGameHistory(gameType);
+  const { history, loading, clearHistory, getStats, refreshHistory } = useGameHistory(gameType);
   const [activeTab, setActiveTab] = useState("history");
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [isClearing, setIsClearing] = useState(false);
@@ -24,14 +24,14 @@ const GameHistory = ({ gameType, showStats = true, maxHeight = "400px" }: GameHi
 
   // Update timestamp when history changes (indicates real-time update)
   React.useEffect(() => {
-    console.log('GameHistory: History changed, length:', gameHistory.length);
+    console.log('GameHistory: History changed, length:', history.length);
     setLastUpdate(new Date());
-  }, [gameHistory.length]);
+  }, [history.length]);
 
   // Debug history changes
   React.useEffect(() => {
-    console.log('GameHistory: Full history updated:', gameHistory);
-  }, [gameHistory]);
+    console.log('GameHistory: Full history updated:', history);
+  }, [history]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
@@ -123,7 +123,7 @@ const GameHistory = ({ gameType, showStats = true, maxHeight = "400px" }: GameHi
     <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Game History ({gameHistory.length})</span>
+          <span>Game History ({history.length})</span>
           <div className="flex gap-2">
             <Button
               size="sm"
@@ -134,7 +134,7 @@ const GameHistory = ({ gameType, showStats = true, maxHeight = "400px" }: GameHi
               <RotateCcw className="w-3 h-3 mr-1" />
               Refresh
             </Button>
-            {gameHistory.length > 0 && (
+            {history.length > 0 && (
               <Button
                 size="sm"
                 variant="outline"
@@ -200,13 +200,13 @@ const GameHistory = ({ gameType, showStats = true, maxHeight = "400px" }: GameHi
               <ScrollArea className="w-full" style={{ height: maxHeight }}>
                 {loading ? (
                   <p className="text-center text-muted-foreground py-8">Loading history...</p>
-                ) : gameHistory.length === 0 ? (
+                ) : history.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
                     No game history yet. Start playing to see your results here!
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {gameHistory.map(renderHistoryItem)}
+                    {history.map(renderHistoryItem)}
                   </div>
                 )}
               </ScrollArea>
@@ -218,13 +218,13 @@ const GameHistory = ({ gameType, showStats = true, maxHeight = "400px" }: GameHi
           <ScrollArea className="w-full" style={{ height: maxHeight }}>
             {loading ? (
               <p className="text-center text-muted-foreground py-8">Loading history...</p>
-            ) : gameHistory.length === 0 ? (
+            ) : history.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 No game history yet. Start playing to see your results here!
               </p>
             ) : (
               <div className="space-y-3">
-                {gameHistory.map(renderHistoryItem)}
+                {history.map(renderHistoryItem)}
               </div>
             )}
           </ScrollArea>

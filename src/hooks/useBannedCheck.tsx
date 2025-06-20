@@ -1,27 +1,38 @@
-
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { useAuth } from "./useAuth";
-import { useProfile } from "./useProfile";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useBannedCheck = () => {
+  const [isBanned, setIsBanned] = useState(false);
+  const [reason, setReason] = useState<string>("");
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { profile } = useProfile();
 
-  const { data: bannedData } = useQuery({
-    queryKey: ['banned-status', user?.id],
-    queryFn: () => {
-      return {
-        isBanned: profile?.is_banned || false,
-        reason: profile?.ban_reason || null
-      };
-    },
-    enabled: !!user && !!profile,
-    refetchInterval: false, // Don't auto-refetch to prevent subscription issues
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-  });
+  useEffect(() => {
+    const checkBanStatus = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-  return {
-    isBanned: bannedData?.isBanned || false,
-    reason: bannedData?.reason || null,
-  };
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_banned, ban_reason')
+          .eq('user_id', user.id)
+          .single();
+
+        setIsBanned(profile?.is_banned || false);
+        setReason(profile?.ban_reason || "Your account has been banned. You can appeal to the admin.");
+      } catch (error) {
+        console.error('Error checking ban status:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkBanStatus();
+  }, [user]);
+
+  return { isBanned, reason, loading };
 };

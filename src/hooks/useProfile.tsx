@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
@@ -15,7 +14,6 @@ interface Profile {
   is_admin: boolean;
   is_banned: boolean;
   is_suspended: boolean;
-  ban_reason: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,29 +21,13 @@ interface Profile {
 export const useProfile = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const channelRef = useRef<any>(null);
 
-  // Set up real-time subscription for profile changes with proper cleanup
+  // Set up real-time subscription for profile changes
   useEffect(() => {
-    if (!user?.id) {
-      // Clean up existing channel if user is not available
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-      return;
-    }
+    if (!user?.id) return;
 
-    // Clean up existing channel before creating new one
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-
-    // Create new channel with unique name
-    const channelName = `profile-changes-${user.id}-${Date.now()}`;
     const channel = supabase
-      .channel(channelName)
+      .channel('profile-changes')
       .on(
         'postgres_changes',
         {
@@ -61,13 +43,8 @@ export const useProfile = () => {
       )
       .subscribe();
 
-    channelRef.current = channel;
-
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      supabase.removeChannel(channel);
     };
   }, [user?.id, queryClient]);
 

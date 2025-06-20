@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
@@ -16,7 +16,6 @@ type WithdrawalNotification = {
 export const useWithdrawalNotifications = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const channelRef = useRef<any>(null);
 
   const { data: notifications } = useQuery<WithdrawalNotification[]>({
     queryKey: ['withdrawal-notifications', user?.id],
@@ -49,27 +48,12 @@ export const useWithdrawalNotifications = () => {
     },
   });
 
-  // Real-time subscription for new notifications with proper cleanup
+  // Real-time subscription for new notifications
   useEffect(() => {
-    if (!user) {
-      // Clean up existing channel if user is not available
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-      return;
-    }
+    if (!user) return;
 
-    // Clean up existing channel before creating new one
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-
-    // Create new channel with unique name
-    const channelName = `withdrawal_notifications-${user.id}-${Date.now()}`;
     const channel = supabase
-      .channel(channelName)
+      .channel('withdrawal_notifications')
       .on(
         'postgres_changes',
         {
@@ -84,13 +68,8 @@ export const useWithdrawalNotifications = () => {
       )
       .subscribe();
 
-    channelRef.current = channel;
-
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      supabase.removeChannel(channel);
     };
   }, [user, queryClient]);
 

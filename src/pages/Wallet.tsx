@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import BannedOverlay from "@/components/BannedOverlay";
@@ -43,26 +44,11 @@ const Wallet = () => {
   const { profile, updateBalance } = useProfile();
   const { user } = useAuth();
   const { trackCurrencyConversion, trackItlogExchange } = useActivityTracker();
-  const channelRef = useRef<any>(null);
 
-  // Set up real-time subscription for balance updates with proper cleanup
+  // Set up real-time subscription for balance updates
   useEffect(() => {
-    if (!user?.id || !profile) {
-      // Clean up existing channel if user is not available
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-      return;
-    }
+    if (!user?.id) return;
 
-    // Clean up existing channel before creating new one
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-
-    // Create new channel with unique name
     const channelName = `wallet_balance_updates_${user.id}_${Date.now()}`;
     const channel = supabase
       .channel(channelName)
@@ -92,13 +78,8 @@ const Wallet = () => {
       )
       .subscribe();
 
-    channelRef.current = channel;
-
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      supabase.removeChannel(channel);
     };
   }, [user?.id, profile, toast]);
 

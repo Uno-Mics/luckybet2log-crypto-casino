@@ -1,111 +1,77 @@
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
-
-type GameType = 'mines' | 'wheel-of-fortune' | 'fortune-reels' | 'blackjack' | 'dice-roll';
-type ResultType = 'win' | 'loss' | 'push';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useAuth } from './useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface GameHistoryEntry {
   id: string;
   user_id: string;
-  game_type: GameType;
+  game_type: string;
   bet_amount: number;
-  result_type: ResultType;
+  result_type: string;
   win_amount: number;
   loss_amount: number;
   multiplier: number;
-  game_details: any;
+  game_details: Json;
   created_at: string;
 }
 
-interface AddHistoryEntryParams {
-  game_type: GameType;
-  bet_amount: number;
-  result_type: ResultType;
-  win_amount: number;
-  loss_amount: number;
-  multiplier: number;
-  game_details?: any;
-}
-
 export const useGameHistory = (gameType?: string) => {
+  const [history, setHistory] = useState<GameHistoryEntry[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const channelRef = useRef<any>(null);
+  const { toast } = useToast();
+  const gameCounterRef = useRef(0);
+  const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  const { data: gameHistory, isLoading } = useQuery<GameHistoryEntry[]>({
-    queryKey: ['game-history', user?.id, gameType],
-    queryFn: async () => {
-      if (!user) return [];
-      
+  const fetchHistory = useCallback(async (limit = 50) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
       let query = supabase
         .from('game_history')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(50);
-      
+        .limit(limit);
+
       if (gameType) {
         query = query.eq('game_type', gameType);
       }
-      
+
       const { data, error } = await query;
-      
+
       if (error) throw error;
-      return data as GameHistoryEntry[];
-    },
-    enabled: !!user,
-  });
-
-  // Set up real-time subscription with proper cleanup
-  useEffect(() => {
-    if (!user?.id) {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-      return;
+      setHistory((data as GameHistoryEntry[]) || []);
+    } catch (error) {
+      console.error('Error fetching game history:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load game history",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
+  }, [user, gameType, toast]);
 
-    // Clean up existing channel
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+  const addHistoryEntry = async (entry: {
+    game_type: string;
+    bet_amount: number;
+    result_type: string;
+    win_amount: number;
+    loss_amount: number;
+    multiplier: number;
+    game_details: Json;
+  }) => {
+    if (!user) return;
 
-    // Create new channel with unique name
-    const channelName = `game-history-${user.id}-${Date.now()}`;
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'game_history',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['game-history', user.id] });
-        }
-      )
-      .subscribe();
-
-    channelRef.current = channel;
-
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-    };
-  }, [user?.id, queryClient]);
-
-  const addHistoryEntry = useMutation({
-    mutationFn: async (entry: AddHistoryEntryParams) => {
-      if (!user) throw new Error("User not authenticated");
+    try {
+      console.log('Adding game history entry:', entry);
 
       const { data, error } = await supabase
         .from('game_history')
@@ -116,83 +82,240 @@ export const useGameHistory = (gameType?: string) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
+
+      console.log('Successfully inserted game history:', data);
+
+      // Manually add to state immediately for instant UI update
+      if (data && (!gameType || data.game_type === gameType)) {
+        console.log('Immediately adding to state:', data);
+        setHistory(prevHistory => {
+          const exists = prevHistory.some(entry => entry.id === data.id);
+          if (!exists) {
+            return [data, ...prevHistory];
+          }
+          return prevHistory;
+        });
+      }
+
+      // Increment game counter
+      gameCounterRef.current += 1;
+
+      // Force a component re-render
+      setRefreshTrigger(prev => prev + 1);
+
+      // Refresh history every 5 games for consistency (fallback)
+      if (gameCounterRef.current % 5 === 0) {
+        console.log('Auto-refreshing game history after 5 games...');
+        setTimeout(() => fetchHistory(), 1000);
+      }
+
       return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['game-history', user?.id] });
-    },
-  });
+    } catch (error) {
+      console.error('Error adding game history entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save game result",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
 
-  const clearHistory = useMutation({
-    mutationFn: async (gameType?: string) => {
-      if (!user) throw new Error("User not authenticated");
+  const clearHistory = async (gameTypeToClean?: string) => {
+    if (!user) return;
 
-      let query = supabase
+    try {
+      console.log('Clearing game history...', { gameTypeToClean, userId: user.id });
+
+      // First get the IDs of records that will be deleted for logging
+      let selectQuery = supabase
+        .from('game_history')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (gameTypeToClean) {
+        selectQuery = selectQuery.eq('game_type', gameTypeToClean);
+      }
+
+      const { data: recordsToDelete } = await selectQuery;
+      console.log('Records to delete:', recordsToDelete);
+
+      // Now delete the records
+      let deleteQuery = supabase
         .from('game_history')
         .delete()
         .eq('user_id', user.id);
 
-      if (gameType) {
-        query = query.eq('game_type', gameType);
+      if (gameTypeToClean) {
+        deleteQuery = deleteQuery.eq('game_type', gameTypeToClean);
       }
 
-      const { error } = await query;
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['game-history', user?.id] });
-    },
-  });
+      const { error, count } = await deleteQuery;
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
 
-  const getGameHistory = (filterGameType?: GameType) => {
-    if (!gameHistory) return [];
-    
-    if (filterGameType) {
-      return gameHistory.filter(entry => entry.game_type === filterGameType);
+      console.log('Successfully deleted from database. Count:', count);
+
+      // Clear local state immediately
+      setHistory([]);
+      
+      // Reset game counter
+      gameCounterRef.current = 0;
+
+      toast({
+        title: "Success",
+        description: `Game history cleared (${count || 0} records removed)`,
+      });
+    } catch (error) {
+      console.error('Error clearing game history:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear game history",
+        variant: "destructive"
+      });
     }
-    
-    return gameHistory;
   };
 
   const getStats = () => {
-    const history = gameHistory || [];
     const totalGames = history.length;
-    const wins = history.filter(entry => entry.result_type === 'win').length;
-    const losses = history.filter(entry => entry.result_type === 'loss').length;
+    const wins = history.filter(h => h.result_type === 'win').length;
+    const losses = history.filter(h => h.result_type === 'loss').length;
+    const pushes = history.filter(h => h.result_type === 'push').length;
+    const totalWinAmount = history.reduce((sum, h) => sum + (h.win_amount || 0), 0);
+    const totalLossAmount = history.reduce((sum, h) => sum + (h.loss_amount || 0), 0);
+    const netProfit = totalWinAmount - totalLossAmount;
     const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
-    
-    const totalWinnings = history
-      .filter(entry => entry.result_type === 'win')
-      .reduce((sum, entry) => sum + entry.win_amount, 0);
-    
-    const totalLosses = history
-      .filter(entry => entry.result_type === 'loss')
-      .reduce((sum, entry) => sum + entry.loss_amount, 0);
-    
-    const netProfit = totalWinnings - totalLosses;
 
     return {
       totalGames,
       wins,
       losses,
-      winRate,
-      netProfit
+      pushes,
+      totalWinAmount,
+      totalLossAmount,
+      netProfit,
+      winRate
     };
   };
 
-  const refreshHistory = () => {
-    queryClient.invalidateQueries({ queryKey: ['game-history', user?.id] });
+  useEffect(() => {
+    if (user) {
+      fetchHistory();
+
+      // Set up real-time subscription for game history updates
+      const setupSubscription = () => {
+        // Clean up existing subscription
+        if (subscriptionRef.current) {
+          supabase.removeChannel(subscriptionRef.current);
+          subscriptionRef.current = null;
+        }
+
+        // Create a unique channel name to avoid conflicts
+        const channelName = `game_history_${user.id}_${gameType || 'all'}_${Date.now()}`;
+
+        const channel = supabase
+          .channel(channelName)
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'game_history',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              console.log('Real-time INSERT:', payload);
+
+              const newEntry = payload.new as GameHistoryEntry;
+              // Only add if it matches the current game type filter (or no filter)
+              if (!gameType || newEntry.game_type === gameType) {
+                console.log('Processing real-time entry for UI update:', newEntry);
+                setHistory(prevHistory => {
+                  // Check if entry already exists to prevent duplicates
+                  const exists = prevHistory.some(entry => entry.id === newEntry.id);
+                  if (!exists) {
+                    console.log('Real-time: Adding new entry to history state:', newEntry);
+                    const newHistory = [newEntry, ...prevHistory];
+                    console.log('New history length:', newHistory.length);
+                    return newHistory;
+                  }
+                  console.log('Real-time: Entry already exists, skipping:', newEntry.id);
+                  return prevHistory;
+                });
+              } else {
+                console.log('Real-time: Entry filtered out due to game type mismatch:', newEntry.game_type, 'vs', gameType);
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'game_history',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              console.log('Real-time DELETE:', payload);
+              const deletedEntry = payload.old as GameHistoryEntry;
+              
+              // Only process if it matches our game type filter (or no filter)
+              if (!gameType || deletedEntry.game_type === gameType) {
+                console.log('Processing DELETE for entry:', deletedEntry.id);
+                setHistory(prevHistory => {
+                  const newHistory = prevHistory.filter(entry => entry.id !== deletedEntry.id);
+                  console.log('History after DELETE:', newHistory.length);
+                  return newHistory;
+                });
+              }
+            }
+          )
+          .subscribe((status, err) => {
+            if (err) {
+              console.error('Subscription error:', err);
+            } else {
+              console.log('Game history subscription status:', status);
+            }
+          });
+
+        subscriptionRef.current = channel;
+      };
+
+      // Small delay to ensure user is properly set
+      const timer = setTimeout(setupSubscription, 100);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+
+    // Cleanup subscription on unmount or user change
+    return () => {
+      if (subscriptionRef.current) {
+        supabase.removeChannel(subscriptionRef.current);
+        subscriptionRef.current = null;
+      }
+    };
+  }, [user, gameType, fetchHistory, refreshTrigger]);
+
+  const refreshHistory = async () => {
+    console.log('Manual refresh triggered');
+    await fetchHistory();
   };
 
   return {
-    gameHistory: gameHistory || [],
-    history: gameHistory || [],
-    loading: isLoading,
-    addHistoryEntry: addHistoryEntry.mutateAsync,
-    clearHistory: clearHistory.mutateAsync,
-    getGameHistory,
+    history,
+    loading,
+    fetchHistory,
+    addHistoryEntry,
+    clearHistory,
     getStats,
-    refreshHistory,
+    refreshHistory
   };
 };

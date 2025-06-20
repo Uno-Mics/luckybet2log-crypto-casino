@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
@@ -30,7 +29,6 @@ export const useQuests = () => {
   const [canClaimRewards, setCanClaimRewards] = useState(false);
   const [hasClaimedToday, setHasClaimedToday] = useState(false);
   const [loading, setLoading] = useState(true);
-  const channelRef = useRef<any>(null);
 
   const fetchDailyQuests = useCallback(async () => {
     if (!user) {
@@ -158,27 +156,12 @@ export const useQuests = () => {
     fetchDailyQuests();
   }, [fetchDailyQuests]);
 
-  // Set up real-time subscription for quest progress updates with proper cleanup
+  // Set up real-time subscription for quest progress updates
   useEffect(() => {
-    if (!user) {
-      // Clean up existing channel if user is not available
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-      return;
-    }
+    if (!user) return;
 
-    // Clean up existing channel before creating new one
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-
-    // Create new channel with unique name
-    const channelName = `quest_progress-${user.id}-${Date.now()}`;
     const channel = supabase
-      .channel(channelName)
+      .channel('quest_progress')
       .on(
         'postgres_changes',
         {
@@ -193,13 +176,8 @@ export const useQuests = () => {
       )
       .subscribe();
 
-    channelRef.current = channel;
-
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      supabase.removeChannel(channel);
     };
   }, [user, fetchDailyQuests]);
 
