@@ -15,6 +15,7 @@ interface Profile {
   is_admin: boolean;
   is_banned: boolean;
   is_suspended: boolean;
+  ban_reason: string | null;
   created_at: string;
   updated_at: string;
 }
