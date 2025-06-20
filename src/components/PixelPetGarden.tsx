@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import Phaser from "phaser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,7 +45,6 @@ class PetGardenScene extends Phaser.Scene {
   }
 
   preload() {
-    // Create garden background
     this.createGardenBackground();
   }
 
@@ -52,8 +52,7 @@ class PetGardenScene extends Phaser.Scene {
     const config = generatePetSpriteConfig(petName, rarity);
     const graphics = this.add.graphics();
     
-    // Draw the pet sprite based on its configuration
-    drawPetSprite(graphics, config, 32); // 32x32 pixel sprite
+    drawPetSprite(graphics, config, 32);
     
     graphics.generateTexture(textureKey, 32, 32);
     graphics.destroy();
@@ -62,99 +61,87 @@ class PetGardenScene extends Phaser.Scene {
   createGardenBackground() {
     const graphics = this.add.graphics();
     
-    // Create detailed grass texture
-    graphics.fillStyle(0x2d5a27); // Dark green base
-    graphics.fillRect(0, 0, 32, 32);
+    // Create seamless grass texture without visible grid
+    graphics.fillStyle(0x2d5a27);
+    graphics.fillRect(0, 0, 64, 64);
     
-    // Add grass blades
-    graphics.fillStyle(0x4a7c59); // Medium green
-    for (let i = 0; i < 15; i++) {
-      const x = Math.random() * 32;
-      const y = Math.random() * 32;
-      graphics.fillRect(x, y, 1, 3);
+    // Add organic grass blades
+    graphics.fillStyle(0x4a7c59);
+    for (let i = 0; i < 25; i++) {
+      const x = Math.random() * 64;
+      const y = Math.random() * 64;
+      const height = Math.random() * 4 + 2;
+      graphics.fillRect(x, y, 1, height);
     }
     
-    // Add lighter grass highlights
-    graphics.fillStyle(0x6ab04c); // Light green
-    for (let i = 0; i < 20; i++) {
-      const x = Math.random() * 32;
-      const y = Math.random() * 32;
-      graphics.fillRect(x, y, 1, 2);
+    graphics.fillStyle(0x6ab04c);
+    for (let i = 0; i < 30; i++) {
+      const x = Math.random() * 64;
+      const y = Math.random() * 64;
+      const height = Math.random() * 3 + 1;
+      graphics.fillRect(x, y, 1, height);
     }
     
-    // Add small flowers
-    graphics.fillStyle(0xffff00); // Yellow flowers
+    // Add random flowers scattered naturally
+    graphics.fillStyle(0xffff00);
+    for (let i = 0; i < 12; i++) {
+      const x = Math.random() * 62 + 1;
+      const y = Math.random() * 62 + 1;
+      graphics.fillRect(x, y, 2, 2);
+    }
+    
+    graphics.fillStyle(0xff69b4);
     for (let i = 0; i < 8; i++) {
-      const x = Math.random() * 30 + 1;
-      const y = Math.random() * 30 + 1;
-      graphics.fillRect(x, y, 1, 1);
+      const x = Math.random() * 62 + 1;
+      const y = Math.random() * 62 + 1;
+      graphics.fillRect(x, y, 2, 2);
     }
     
-    graphics.fillStyle(0xff69b4); // Pink flowers
-    for (let i = 0; i < 5; i++) {
-      const x = Math.random() * 30 + 1;
-      const y = Math.random() * 30 + 1;
-      graphics.fillRect(x, y, 1, 1);
-    }
+    graphics.generateTexture('grass', 64, 64);
     
-    graphics.generateTexture('grass', 32, 32);
-    
-    // Create garden slot textures
-    this.createSlotTextures(graphics);
-  }
-
-  createSlotTextures(graphics: Phaser.GameObjects.Graphics) {
-    // Create slot texture with garden bed look
+    // Create subtle garden plot texture
     graphics.clear();
-    graphics.fillStyle(0x8B4513); // Brown soil
+    graphics.fillStyle(0x8B4513, 0.8);
     graphics.fillRect(0, 0, 64, 64);
     
     // Add soil texture
     graphics.fillStyle(0x654321);
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 20; i++) {
       const x = Math.random() * 64;
       const y = Math.random() * 64;
       graphics.fillRect(x, y, 1, 1);
     }
     
-    // Add border
-    graphics.lineStyle(2, 0x8FBC8F, 0.8);
-    graphics.strokeRect(0, 0, 64, 64);
+    // Very subtle border
+    graphics.lineStyle(1, 0x8FBC8F, 0.3);
+    graphics.strokeRect(2, 2, 60, 60);
     graphics.generateTexture('garden_slot', 64, 64);
 
-    // Create empty slot texture
+    // Empty slot with minimal visual
     graphics.clear();
-    graphics.fillStyle(0x8B4513, 0.3); // Light brown
+    graphics.fillStyle(0x8B4513, 0.1);
     graphics.fillRect(0, 0, 64, 64);
     
-    // Add dashed border effect with corner markers
-    graphics.lineStyle(2, 0x666666, 0.5);
-    graphics.strokeRect(0, 0, 64, 64);
-    
-    // Add corner markers to indicate empty slot
-    graphics.fillStyle(0x666666, 0.3);
-    graphics.fillRect(0, 0, 8, 8);
-    graphics.fillRect(56, 0, 8, 8);
-    graphics.fillRect(0, 56, 8, 8);
-    graphics.fillRect(56, 56, 8, 8);
-    
-    // Add center indicator
+    // Subtle corner markers
     graphics.fillStyle(0x666666, 0.2);
-    graphics.fillRect(28, 28, 8, 8);
+    graphics.fillRect(0, 0, 4, 4);
+    graphics.fillRect(60, 0, 4, 4);
+    graphics.fillRect(0, 60, 4, 4);
+    graphics.fillRect(60, 60, 4, 4);
     
     graphics.generateTexture('empty_slot', 64, 64);
   }
 
   create() {
-    // Set up garden background with tile pattern
+    // Create seamless background
     const bg = this.add.tileSprite(0, 0, 320, 320, 'grass');
     bg.setOrigin(0, 0);
 
-    // Create 3x3 grid of garden slots with improved visuals
+    // Create 3x3 grid with natural spacing
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
-        const x = 40 + col * 80;
-        const y = 40 + row * 80;
+        const x = 53 + col * 71;
+        const y = 53 + row * 71;
         const position = row * 3 + col;
 
         const slot = this.add.rectangle(x, y, 64, 64, 0x000000, 0);
@@ -167,7 +154,6 @@ class PetGardenScene extends Phaser.Scene {
           }
         });
 
-        // Add subtle hover effect
         slot.on('pointerover', () => {
           slotBg.setTint(0xffff88);
         });
@@ -192,24 +178,21 @@ class PetGardenScene extends Phaser.Scene {
   placePet(petId: string, position: number, petName: string, rarity: string) {
     const row = Math.floor(position / 3);
     const col = position % 3;
-    const x = 40 + col * 80;
-    const y = 40 + row * 80;
+    const x = 53 + col * 71;
+    const y = 53 + row * 71;
 
-    // Remove existing pet if any
     this.removePet(petId);
 
-    // Create unique texture for this pet
     const textureKey = `pet_${petId}`;
     this.createPetTexture(petName || 'Unknown Pet', rarity || 'common', textureKey);
 
-    // Create pet sprite with unique texture
     const pet = this.add.sprite(x, y, textureKey);
-    pet.setScale(2); // Scale up the 32x32 sprite
+    pet.setScale(2);
     pet.setInteractive();
 
-    // Add floating animation with pet-specific variation
-    const floatOffset = Math.random() * 2 + 3; // 3-5 pixel float
-    const floatSpeed = Math.random() * 1000 + 2000; // 2-3 second cycle
+    // Floating animation
+    const floatOffset = Math.random() * 2 + 3;
+    const floatSpeed = Math.random() * 1000 + 2000;
     
     this.tweens.add({
       targets: pet,
@@ -220,7 +203,7 @@ class PetGardenScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // Add gentle rotation for some pets
+    // Special animations for certain pets
     if (petName && (petName.includes('phoenix') || petName.includes('angel') || petName.includes('cosmic'))) {
       this.tweens.add({
         targets: pet,
@@ -232,9 +215,9 @@ class PetGardenScene extends Phaser.Scene {
       });
     }
 
-    // Add random idle movement
+    // Random idle movement
     this.time.addEvent({
-      delay: 4000 + Math.random() * 3000, // 4-7 seconds
+      delay: 4000 + Math.random() * 3000,
       callback: () => {
         if (pet.active) {
           const moveDistance = 15;
@@ -259,7 +242,7 @@ class PetGardenScene extends Phaser.Scene {
       loop: true
     });
 
-    // Add sparkle effect for rare pets
+    // Sparkle effect for rare pets
     if (rarity && ['legendary', 'mythical'].includes(rarity)) {
       this.time.addEvent({
         delay: 2000,
@@ -278,7 +261,6 @@ class PetGardenScene extends Phaser.Scene {
       }
     });
 
-    // Add hover effect
     pet.on('pointerover', () => {
       pet.setTint(0xdddddd);
       pet.setScale(2.2);
@@ -296,7 +278,6 @@ class PetGardenScene extends Phaser.Scene {
     const sparkle = this.add.graphics();
     sparkle.fillStyle(0xffd700, 0.8);
     
-    // Create small sparkle
     const sparkleX = x + (Math.random() - 0.5) * 40;
     const sparkleY = y + (Math.random() - 0.5) * 40;
     
@@ -306,7 +287,6 @@ class PetGardenScene extends Phaser.Scene {
     sparkle.fillRect(sparkleX, sparkleY - 1, 1, 1);
     sparkle.fillRect(sparkleX, sparkleY + 1, 1, 1);
     
-    // Animate sparkle
     this.tweens.add({
       targets: sparkle,
       alpha: 0,
@@ -325,7 +305,6 @@ class PetGardenScene extends Phaser.Scene {
       pet.destroy();
       this.pets.delete(petId);
       
-      // Clean up texture
       const textureKey = `pet_${petId}`;
       if (this.textures.exists(textureKey)) {
         this.textures.remove(textureKey);
@@ -336,7 +315,7 @@ class PetGardenScene extends Phaser.Scene {
   highlightSlot(position: number) {
     this.gardenSlots.forEach((slot, index) => {
       if (index === position) {
-        slot.setFillStyle(0x90EE90, 0.4); // Light green highlight
+        slot.setFillStyle(0x90EE90, 0.4);
       } else {
         slot.setFillStyle(0x000000, 0);
       }
@@ -351,6 +330,111 @@ class PetGardenScene extends Phaser.Scene {
     this.selectedSlot = null;
   }
 }
+
+// Pet Sprite Component for inventory
+const PetSpriteCanvas = ({ petName, rarity, size = 64 }: { petName: string, rarity: string, size?: number }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, size, size);
+
+    // Create temporary graphics object for drawing
+    const config = generatePetSpriteConfig(petName, rarity);
+    
+    // Simple pixel art drawing on canvas
+    const scale = size / 16;
+    const s = (value: number) => Math.floor(value * scale);
+    
+    // Draw body
+    ctx.fillStyle = `#${config.colors.primary.toString(16).padStart(6, '0')}`;
+    ctx.fillRect(s(4), s(6), s(8), s(6));
+    ctx.fillRect(s(6), s(4), s(4), s(2));
+    
+    // Draw legs
+    ctx.fillRect(s(5), s(12), s(2), s(3));
+    ctx.fillRect(s(9), s(12), s(2), s(3));
+    
+    // Draw pattern
+    if (config.features.pattern) {
+      ctx.fillStyle = `#${config.colors.secondary.toString(16).padStart(6, '0')}`;
+      switch (config.features.pattern) {
+        case 'stripes':
+          for (let i = 0; i < 3; i++) {
+            ctx.fillRect(s(4), s(7 + i * 2), s(8), s(1));
+          }
+          break;
+        case 'spots':
+          ctx.fillRect(s(5), s(7), s(1), s(1));
+          ctx.fillRect(s(8), s(9), s(1), s(1));
+          ctx.fillRect(s(10), s(7), s(1), s(1));
+          break;
+        case 'flames':
+          ctx.fillRect(s(5), s(6), s(1), s(2));
+          ctx.fillRect(s(7), s(7), s(1), s(2));
+          ctx.fillRect(s(9), s(6), s(1), s(2));
+          break;
+      }
+    }
+    
+    // Draw wings
+    if (config.features.hasWings) {
+      ctx.fillStyle = `#${config.colors.secondary.toString(16).padStart(6, '0')}`;
+      ctx.fillRect(s(2), s(7), s(2), s(3));
+      ctx.fillRect(s(1), s(8), s(1), s(1));
+      ctx.fillRect(s(12), s(7), s(2), s(3));
+      ctx.fillRect(s(14), s(8), s(1), s(1));
+    }
+    
+    // Draw horns
+    if (config.features.hasHorns) {
+      ctx.fillStyle = `#${config.colors.accent.toString(16).padStart(6, '0')}`;
+      ctx.fillRect(s(6), s(2), s(1), s(2));
+      ctx.fillRect(s(9), s(2), s(1), s(2));
+    }
+    
+    // Draw tail
+    if (config.features.hasTail) {
+      ctx.fillStyle = `#${config.colors.primary.toString(16).padStart(6, '0')}`;
+      ctx.fillRect(s(12), s(9), s(2), s(1));
+      ctx.fillRect(s(13), s(10), s(2), s(1));
+    }
+    
+    // Draw spikes
+    if (config.features.hasSpikes) {
+      ctx.fillStyle = `#${config.colors.accent.toString(16).padStart(6, '0')}`;
+      ctx.fillRect(s(5), s(5), s(1), s(1));
+      ctx.fillRect(s(7), s(4), s(1), s(2));
+      ctx.fillRect(s(9), s(5), s(1), s(1));
+    }
+    
+    // Draw eyes
+    ctx.fillStyle = `#${config.colors.eye.toString(16).padStart(6, '0')}`;
+    ctx.fillRect(s(6), s(5), s(1), s(1));
+    ctx.fillRect(s(9), s(5), s(1), s(1));
+    
+    // Draw accent details
+    ctx.fillStyle = `#${config.colors.accent.toString(16).padStart(6, '0')}`;
+    ctx.fillRect(s(7), s(6), s(2), s(1));
+    
+  }, [petName, rarity, size]);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      width={size} 
+      height={size} 
+      className="pixel-sprite"
+      style={{ imageRendering: 'pixelated' }}
+    />
+  );
+};
 
 export const PixelPetGarden = () => {
   const gameRef = useRef<HTMLDivElement>(null);
@@ -378,7 +462,7 @@ export const PixelPetGarden = () => {
       scene: PetGardenScene,
       pixelArt: true,
       scale: {
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.NONE,
         autoCenter: Phaser.Scale.CENTER_BOTH
       }
     };
@@ -409,7 +493,6 @@ export const PixelPetGarden = () => {
         }
       });
 
-      // Place existing pets with their unique sprites
       activePets.forEach(pet => {
         if (pet.garden_position !== null) {
           scene.placePet(
@@ -537,7 +620,11 @@ export const PixelPetGarden = () => {
             <div 
               ref={gameRef} 
               className="border-4 border-green-500/50 rounded-lg bg-gradient-to-br from-green-900/20 to-green-700/20"
-              style={{ imageRendering: 'pixelated' }}
+              style={{ 
+                imageRendering: 'pixelated',
+                width: '320px',
+                height: '320px'
+              }}
             />
           </div>
           <p className="text-center text-sm text-muted-foreground mt-4 pixel-font">
@@ -561,20 +648,13 @@ export const PixelPetGarden = () => {
               {inventoryPets.map((pet) => (
                 <Card key={pet.id} className="border-2 border-gray-500/50 pixel-card">
                   <CardContent className="p-4 text-center">
-                    <div 
-                      className="w-16 h-16 mx-auto mb-2 bg-gradient-to-br from-green-400 to-blue-500 rounded pixel-sprite"
-                      style={{ 
-                        imageRendering: 'pixelated',
-                        background: `linear-gradient(45deg, ${pet.pet_types?.rarity === 'common' ? '#666' : 
-                          pet.pet_types?.rarity === 'uncommon' ? '#22c55e' :
-                          pet.pet_types?.rarity === 'rare' ? '#3b82f6' :
-                          pet.pet_types?.rarity === 'legendary' ? '#a855f7' : '#ffd700'}, 
-                          ${pet.pet_types?.rarity === 'common' ? '#999' : 
-                          pet.pet_types?.rarity === 'uncommon' ? '#4ade80' :
-                          pet.pet_types?.rarity === 'rare' ? '#60a5fa' :
-                          pet.pet_types?.rarity === 'legendary' ? '#c084fc' : '#ffed4e'})`
-                      }}
-                    />
+                    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+                      <PetSpriteCanvas 
+                        petName={pet.pet_types?.name || 'Unknown Pet'}
+                        rarity={pet.pet_types?.rarity || 'common'}
+                        size={64}
+                      />
+                    </div>
                     <h3 className="font-bold mb-2 pixel-font">{pet.pet_types?.name || 'Unknown Pet'}</h3>
                     <Badge className={`mb-2 ${rarityColors[pet.pet_types?.rarity as keyof typeof rarityColors] || 'bg-gray-500'} text-white pixel-font`}>
                       {pet.pet_types?.rarity?.toUpperCase() || 'UNKNOWN'}
@@ -617,20 +697,13 @@ export const PixelPetGarden = () => {
           {selectedPetForSale && (
             <div className="space-y-4">
               <div className="text-center">
-                <div 
-                  className="w-24 h-24 mx-auto mb-2 rounded pixel-sprite"
-                  style={{ 
-                    imageRendering: 'pixelated',
-                    background: `linear-gradient(45deg, ${selectedPetForSale.pet_types?.rarity === 'common' ? '#666' : 
-                      selectedPetForSale.pet_types?.rarity === 'uncommon' ? '#22c55e' :
-                      selectedPetForSale.pet_types?.rarity === 'rare' ? '#3b82f6' :
-                      selectedPetForSale.pet_types?.rarity === 'legendary' ? '#a855f7' : '#ffd700'}, 
-                      ${selectedPetForSale.pet_types?.rarity === 'common' ? '#999' : 
-                      selectedPetForSale.pet_types?.rarity === 'uncommon' ? '#4ade80' :
-                      selectedPetForSale.pet_types?.rarity === 'rare' ? '#60a5fa' :
-                      selectedPetForSale.pet_types?.rarity === 'legendary' ? '#c084fc' : '#ffed4e'})`
-                  }}
-                />
+                <div className="w-24 h-24 mx-auto mb-2 flex items-center justify-center">
+                  <PetSpriteCanvas 
+                    petName={selectedPetForSale.pet_types?.name || 'Unknown Pet'}
+                    rarity={selectedPetForSale.pet_types?.rarity || 'common'}
+                    size={96}
+                  />
+                </div>
                 <h3 className="text-xl font-bold pixel-font">{selectedPetForSale.pet_types?.name || 'Unknown Pet'}</h3>
                 <Badge className={`mt-2 ${rarityColors[selectedPetForSale.pet_types?.rarity as keyof typeof rarityColors] || 'bg-gray-500'} text-white pixel-font`}>
                   {selectedPetForSale.pet_types?.rarity?.toUpperCase() || 'UNKNOWN'}
