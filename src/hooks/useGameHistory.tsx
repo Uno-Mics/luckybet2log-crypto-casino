@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
 type GameType = 'mines' | 'wheel-of-fortune' | 'fortune-reels' | 'blackjack' | 'dice-roll';
-type ResultType = 'win' | 'loss';
+type ResultType = 'win' | 'loss' | 'push';
 
 export interface GameHistoryEntry {
   id: string;

@@ -3,12 +3,26 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
+interface TrackBetParams {
+  amount: number;
+  gameType: string;
+}
+
+interface TrackGameParams {
+  gameType: string;
+}
+
+interface TrackGameWinParams {
+  amount: number;
+  gameType: string;
+}
+
 export const useQuestTracker = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const trackBet = useMutation({
-    mutationFn: async (amount: number, gameType: string) => {
+    mutationFn: async ({ amount, gameType }: TrackBetParams) => {
       if (!user) return;
       
       const { error } = await supabase
@@ -38,7 +52,7 @@ export const useQuestTracker = () => {
   });
 
   const trackGamePlay = useMutation({
-    mutationFn: async (gameType: string) => {
+    mutationFn: async ({ gameType }: TrackGameParams) => {
       if (!user) return;
       
       const { error } = await supabase
@@ -68,7 +82,7 @@ export const useQuestTracker = () => {
   });
 
   const trackGameWin = useMutation({
-    mutationFn: async (amount: number, gameType: string) => {
+    mutationFn: async ({ amount, gameType }: TrackGameWinParams) => {
       if (!user) return;
       
       const { error } = await supabase
@@ -107,7 +121,7 @@ export const useQuestTracker = () => {
   });
 
   const trackGameLoss = useMutation({
-    mutationFn: async (gameType: string) => {
+    mutationFn: async ({ gameType }: TrackGameParams) => {
       if (!user) return;
       
       const { error } = await supabase
@@ -137,9 +151,9 @@ export const useQuestTracker = () => {
   });
 
   return {
-    trackBet: trackBet.mutateAsync,
-    trackGamePlay: trackGamePlay.mutateAsync,
-    trackGameWin: trackGameWin.mutateAsync,
-    trackGameLoss: trackGameLoss.mutateAsync,
+    trackBet: (amount: number, gameType: string) => trackBet.mutateAsync({ amount, gameType }),
+    trackGamePlay: (gameType: string) => trackGamePlay.mutateAsync({ gameType }),
+    trackGameWin: (amount: number, gameType: string) => trackGameWin.mutateAsync({ amount, gameType }),
+    trackGameLoss: (gameType: string) => trackGameLoss.mutateAsync({ gameType }),
   };
 };

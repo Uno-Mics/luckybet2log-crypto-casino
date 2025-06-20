@@ -7,10 +7,13 @@ export const useBannedCheck = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
 
-  const { data: isBanned } = useQuery({
+  const { data: bannedData } = useQuery({
     queryKey: ['banned-status', user?.id],
     queryFn: () => {
-      return profile?.is_banned || false;
+      return {
+        isBanned: profile?.is_banned || false,
+        reason: profile?.ban_reason || null
+      };
     },
     enabled: !!user && !!profile,
     refetchInterval: false, // Don't auto-refetch to prevent subscription issues
@@ -18,6 +21,7 @@ export const useBannedCheck = () => {
   });
 
   return {
-    isBanned: isBanned || false,
+    isBanned: bannedData?.isBanned || false,
+    reason: bannedData?.reason || null,
   };
 };
