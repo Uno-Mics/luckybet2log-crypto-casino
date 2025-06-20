@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import Phaser from "phaser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,11 +93,16 @@ class PetGardenScene extends Phaser.Scene {
     graphics.strokeRect(0, 0, 64, 64);
     graphics.generateTexture('garden_slot', 64, 64);
 
-    // Create empty slot texture
+    // Create empty slot texture - simplified approach without dashed lines
     graphics.clear();
     graphics.lineStyle(2, 0x666666, 0.5);
-    graphics.setLineDash([5, 5]);
     graphics.strokeRect(0, 0, 64, 64);
+    // Add corner markers to indicate empty slot
+    graphics.fillStyle(0x666666, 0.3);
+    graphics.fillRect(0, 0, 8, 8);
+    graphics.fillRect(56, 0, 8, 8);
+    graphics.fillRect(0, 56, 8, 8);
+    graphics.fillRect(56, 56, 8, 8);
     graphics.generateTexture('empty_slot', 64, 64);
   }
 
