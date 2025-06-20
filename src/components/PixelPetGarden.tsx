@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useProfile } from "@/hooks/useProfile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { generatePetSpriteConfig, drawPetSprite } from "@/utils/petSpriteGenerator";
 
 const rarityColors = {
   common: "bg-gray-500",
@@ -43,93 +44,113 @@ class PetGardenScene extends Phaser.Scene {
   }
 
   preload() {
-    // Create pixel art textures programmatically
-    this.createPixelTextures();
-    
-    // Load garden background
+    // Create garden background
     this.createGardenBackground();
   }
 
-  createPixelTextures() {
+  createPetTexture(petName: string, rarity: string, textureKey: string) {
+    const config = generatePetSpriteConfig(petName, rarity);
     const graphics = this.add.graphics();
     
-    // Create different colored pixel pet sprites
-    const petColors = [
-      0xff6b6b, // Red
-      0x4ecdc4, // Teal
-      0x45b7d1, // Blue
-      0x96ceb4, // Green
-      0xfeca57, // Yellow
-      0xff9ff3, // Pink
-      0xf368e0, // Purple
-      0xff7675, // Light Red
-      0x00b894, // Dark Green
-      0x6c5ce7, // Violet
-    ];
-
-    petColors.forEach((color, index) => {
-      graphics.clear();
-      graphics.fillStyle(color);
-      
-      // Create a simple pixel pet sprite (8x8)
-      graphics.fillRect(2, 1, 4, 2); // Head
-      graphics.fillRect(1, 3, 6, 3); // Body
-      graphics.fillRect(0, 6, 2, 2); // Left leg
-      graphics.fillRect(6, 6, 2, 2); // Right leg
-      graphics.fillRect(1, 0, 2, 1); // Left ear
-      graphics.fillRect(5, 0, 2, 1); // Right ear
-      
-      // Add eyes
-      graphics.fillStyle(0x000000);
-      graphics.fillRect(2, 2, 1, 1); // Left eye
-      graphics.fillRect(5, 2, 1, 1); // Right eye
-
-      graphics.generateTexture(`pet_${index}`, 8, 8);
-    });
-
-    // Create slot texture
-    graphics.clear();
-    graphics.lineStyle(2, 0x00ff00, 0.8);
-    graphics.strokeRect(0, 0, 64, 64);
-    graphics.generateTexture('garden_slot', 64, 64);
-
-    // Create empty slot texture - simplified approach without dashed lines
-    graphics.clear();
-    graphics.lineStyle(2, 0x666666, 0.5);
-    graphics.strokeRect(0, 0, 64, 64);
-    // Add corner markers to indicate empty slot
-    graphics.fillStyle(0x666666, 0.3);
-    graphics.fillRect(0, 0, 8, 8);
-    graphics.fillRect(56, 0, 8, 8);
-    graphics.fillRect(0, 56, 8, 8);
-    graphics.fillRect(56, 56, 8, 8);
-    graphics.generateTexture('empty_slot', 64, 64);
+    // Draw the pet sprite based on its configuration
+    drawPetSprite(graphics, config, 32); // 32x32 pixel sprite
+    
+    graphics.generateTexture(textureKey, 32, 32);
+    graphics.destroy();
   }
 
   createGardenBackground() {
     const graphics = this.add.graphics();
     
-    // Create grass texture
-    graphics.fillStyle(0x4a7c59);
+    // Create detailed grass texture
+    graphics.fillStyle(0x2d5a27); // Dark green base
     graphics.fillRect(0, 0, 32, 32);
     
-    // Add some grass details
-    graphics.fillStyle(0x6ab04c);
+    // Add grass blades
+    graphics.fillStyle(0x4a7c59); // Medium green
+    for (let i = 0; i < 15; i++) {
+      const x = Math.random() * 32;
+      const y = Math.random() * 32;
+      graphics.fillRect(x, y, 1, 3);
+    }
+    
+    // Add lighter grass highlights
+    graphics.fillStyle(0x6ab04c); // Light green
     for (let i = 0; i < 20; i++) {
       const x = Math.random() * 32;
       const y = Math.random() * 32;
       graphics.fillRect(x, y, 1, 2);
     }
     
+    // Add small flowers
+    graphics.fillStyle(0xffff00); // Yellow flowers
+    for (let i = 0; i < 8; i++) {
+      const x = Math.random() * 30 + 1;
+      const y = Math.random() * 30 + 1;
+      graphics.fillRect(x, y, 1, 1);
+    }
+    
+    graphics.fillStyle(0xff69b4); // Pink flowers
+    for (let i = 0; i < 5; i++) {
+      const x = Math.random() * 30 + 1;
+      const y = Math.random() * 30 + 1;
+      graphics.fillRect(x, y, 1, 1);
+    }
+    
     graphics.generateTexture('grass', 32, 32);
+    
+    // Create garden slot textures
+    this.createSlotTextures(graphics);
+  }
+
+  createSlotTextures(graphics: Phaser.GameObjects.Graphics) {
+    // Create slot texture with garden bed look
+    graphics.clear();
+    graphics.fillStyle(0x8B4513); // Brown soil
+    graphics.fillRect(0, 0, 64, 64);
+    
+    // Add soil texture
+    graphics.fillStyle(0x654321);
+    for (let i = 0; i < 30; i++) {
+      const x = Math.random() * 64;
+      const y = Math.random() * 64;
+      graphics.fillRect(x, y, 1, 1);
+    }
+    
+    // Add border
+    graphics.lineStyle(2, 0x8FBC8F, 0.8);
+    graphics.strokeRect(0, 0, 64, 64);
+    graphics.generateTexture('garden_slot', 64, 64);
+
+    // Create empty slot texture
+    graphics.clear();
+    graphics.fillStyle(0x8B4513, 0.3); // Light brown
+    graphics.fillRect(0, 0, 64, 64);
+    
+    // Add dashed border effect with corner markers
+    graphics.lineStyle(2, 0x666666, 0.5);
+    graphics.strokeRect(0, 0, 64, 64);
+    
+    // Add corner markers to indicate empty slot
+    graphics.fillStyle(0x666666, 0.3);
+    graphics.fillRect(0, 0, 8, 8);
+    graphics.fillRect(56, 0, 8, 8);
+    graphics.fillRect(0, 56, 8, 8);
+    graphics.fillRect(56, 56, 8, 8);
+    
+    // Add center indicator
+    graphics.fillStyle(0x666666, 0.2);
+    graphics.fillRect(28, 28, 8, 8);
+    
+    graphics.generateTexture('empty_slot', 64, 64);
   }
 
   create() {
-    // Set up garden background
+    // Set up garden background with tile pattern
     const bg = this.add.tileSprite(0, 0, 320, 320, 'grass');
     bg.setOrigin(0, 0);
 
-    // Create 3x3 grid of garden slots
+    // Create 3x3 grid of garden slots with improved visuals
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
         const x = 40 + col * 80;
@@ -146,6 +167,15 @@ class PetGardenScene extends Phaser.Scene {
           }
         });
 
+        // Add subtle hover effect
+        slot.on('pointerover', () => {
+          slotBg.setTint(0xffff88);
+        });
+        
+        slot.on('pointerout', () => {
+          slotBg.clearTint();
+        });
+
         this.gardenSlots[position] = slot;
       }
     }
@@ -159,7 +189,7 @@ class PetGardenScene extends Phaser.Scene {
     this.onPetClick = callback;
   }
 
-  placePet(petId: string, position: number, petTypeId: number) {
+  placePet(petId: string, position: number, petName: string, rarity: string) {
     const row = Math.floor(position / 3);
     const col = position % 3;
     const x = 40 + col * 80;
@@ -168,39 +198,60 @@ class PetGardenScene extends Phaser.Scene {
     // Remove existing pet if any
     this.removePet(petId);
 
-    // Create pet sprite
-    const textureKey = `pet_${petTypeId % 10}`;
+    // Create unique texture for this pet
+    const textureKey = `pet_${petId}`;
+    this.createPetTexture(petName || 'Unknown Pet', rarity || 'common', textureKey);
+
+    // Create pet sprite with unique texture
     const pet = this.add.sprite(x, y, textureKey);
-    pet.setScale(4); // Scale up the 8x8 sprite
+    pet.setScale(2); // Scale up the 32x32 sprite
     pet.setInteractive();
 
-    // Add floating animation
+    // Add floating animation with pet-specific variation
+    const floatOffset = Math.random() * 2 + 3; // 3-5 pixel float
+    const floatSpeed = Math.random() * 1000 + 2000; // 2-3 second cycle
+    
     this.tweens.add({
       targets: pet,
-      y: y - 5,
-      duration: 2000,
+      y: y - floatOffset,
+      duration: floatSpeed,
       ease: 'Sine.easeInOut',
       yoyo: true,
       repeat: -1
     });
 
-    // Add random movement
+    // Add gentle rotation for some pets
+    if (petName && (petName.includes('phoenix') || petName.includes('angel') || petName.includes('cosmic'))) {
+      this.tweens.add({
+        targets: pet,
+        rotation: 0.1,
+        duration: 4000,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1
+      });
+    }
+
+    // Add random idle movement
     this.time.addEvent({
-      delay: 3000 + Math.random() * 2000,
+      delay: 4000 + Math.random() * 3000, // 4-7 seconds
       callback: () => {
         if (pet.active) {
-          const randomX = x + (Math.random() - 0.5) * 20;
-          const randomY = y + (Math.random() - 0.5) * 20;
+          const moveDistance = 15;
+          const randomX = x + (Math.random() - 0.5) * moveDistance;
+          const randomY = y + (Math.random() - 0.5) * moveDistance;
           
           this.tweens.add({
             targets: pet,
             x: randomX,
             y: randomY,
-            duration: 1000,
+            duration: 1500,
             ease: 'Power2',
             yoyo: true,
             onComplete: () => {
-              pet.setPosition(x, y);
+              if (pet.active) {
+                pet.setPosition(x, y);
+              }
             }
           });
         }
@@ -208,13 +259,64 @@ class PetGardenScene extends Phaser.Scene {
       loop: true
     });
 
+    // Add sparkle effect for rare pets
+    if (rarity && ['legendary', 'mythical'].includes(rarity)) {
+      this.time.addEvent({
+        delay: 2000,
+        callback: () => {
+          if (pet.active) {
+            this.createSparkleEffect(x, y);
+          }
+        },
+        loop: true
+      });
+    }
+
     pet.on('pointerdown', () => {
       if (this.onPetClick) {
         this.onPetClick(petId);
       }
     });
 
+    // Add hover effect
+    pet.on('pointerover', () => {
+      pet.setTint(0xdddddd);
+      pet.setScale(2.2);
+    });
+    
+    pet.on('pointerout', () => {
+      pet.clearTint();
+      pet.setScale(2);
+    });
+
     this.pets.set(petId, pet);
+  }
+
+  createSparkleEffect(x: number, y: number) {
+    const sparkle = this.add.graphics();
+    sparkle.fillStyle(0xffd700, 0.8);
+    
+    // Create small sparkle
+    const sparkleX = x + (Math.random() - 0.5) * 40;
+    const sparkleY = y + (Math.random() - 0.5) * 40;
+    
+    sparkle.fillRect(sparkleX, sparkleY, 2, 2);
+    sparkle.fillRect(sparkleX - 1, sparkleY, 1, 1);
+    sparkle.fillRect(sparkleX + 1, sparkleY, 1, 1);
+    sparkle.fillRect(sparkleX, sparkleY - 1, 1, 1);
+    sparkle.fillRect(sparkleX, sparkleY + 1, 1, 1);
+    
+    // Animate sparkle
+    this.tweens.add({
+      targets: sparkle,
+      alpha: 0,
+      y: sparkleY - 20,
+      duration: 1000,
+      ease: 'Power2',
+      onComplete: () => {
+        sparkle.destroy();
+      }
+    });
   }
 
   removePet(petId: string) {
@@ -222,13 +324,19 @@ class PetGardenScene extends Phaser.Scene {
     if (pet) {
       pet.destroy();
       this.pets.delete(petId);
+      
+      // Clean up texture
+      const textureKey = `pet_${petId}`;
+      if (this.textures.exists(textureKey)) {
+        this.textures.remove(textureKey);
+      }
     }
   }
 
   highlightSlot(position: number) {
     this.gardenSlots.forEach((slot, index) => {
       if (index === position) {
-        slot.setFillStyle(0xffff00, 0.3);
+        slot.setFillStyle(0x90EE90, 0.4); // Light green highlight
       } else {
         slot.setFillStyle(0x000000, 0);
       }
@@ -266,7 +374,7 @@ export const PixelPetGarden = () => {
       width: 320,
       height: 320,
       parent: gameRef.current,
-      backgroundColor: '#2d5a27',
+      backgroundColor: '#1a4a1a',
       scene: PetGardenScene,
       pixelArt: true,
       scale: {
@@ -284,13 +392,11 @@ export const PixelPetGarden = () => {
 
       scene.setSlotClickCallback((position: number) => {
         if (activePets.find(p => p.garden_position === position)) {
-          // Remove pet from this position
           const pet = activePets.find(p => p.garden_position === position);
           if (pet) {
             handleRemovePet(pet.id);
           }
         } else {
-          // Select position for placing pet
           setSelectedPosition(position);
           scene.highlightSlot(position);
         }
@@ -303,10 +409,15 @@ export const PixelPetGarden = () => {
         }
       });
 
-      // Place existing pets
+      // Place existing pets with their unique sprites
       activePets.forEach(pet => {
         if (pet.garden_position !== null) {
-          scene.placePet(pet.id, pet.garden_position, pet.pet_type_id || 0);
+          scene.placePet(
+            pet.id, 
+            pet.garden_position, 
+            pet.pet_types?.name || 'Unknown Pet',
+            pet.pet_types?.rarity || 'common'
+          );
         }
       });
     });
@@ -321,10 +432,14 @@ export const PixelPetGarden = () => {
 
   useEffect(() => {
     if (sceneRef.current) {
-      // Update pets in the scene when userPets changes
       activePets.forEach(pet => {
         if (pet.garden_position !== null) {
-          sceneRef.current?.placePet(pet.id, pet.garden_position, pet.pet_type_id || 0);
+          sceneRef.current?.placePet(
+            pet.id, 
+            pet.garden_position, 
+            pet.pet_types?.name || 'Unknown Pet',
+            pet.pet_types?.rarity || 'common'
+          );
         }
       });
     }
@@ -337,7 +452,12 @@ export const PixelPetGarden = () => {
         
         const pet = userPets.find(p => p.id === petId);
         if (pet) {
-          sceneRef.current.placePet(petId, selectedPosition, pet.pet_type_id || 0);
+          sceneRef.current.placePet(
+            petId, 
+            selectedPosition, 
+            pet.pet_types?.name || 'Unknown Pet',
+            pet.pet_types?.rarity || 'common'
+          );
         }
         
         setSelectedPosition(null);
