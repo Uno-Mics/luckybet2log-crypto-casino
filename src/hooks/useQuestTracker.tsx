@@ -1,101 +1,145 @@
 
-import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import type { Json } from '@/integrations/supabase/types';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./useAuth";
 
 export const useQuestTracker = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const trackQuestProgress = useCallback(async (
-    activityType: string,
-    activityValue: number = 1,
-    gameType?: string,
-    metadata?: Json
-  ) => {
-    if (!user) return;
-
-    try {
-      // Insert the activity into user_activities table
-      const { error: activityError } = await supabase
+  const trackBet = useMutation({
+    mutationFn: async (amount: number, gameType: string) => {
+      if (!user) return;
+      
+      const { error } = await supabase
         .from('user_activities')
         .insert({
           user_id: user.id,
-          activity_type: activityType,
-          activity_value: activityValue,
+          activity_type: 'place_bet',
+          activity_value: amount,
           game_type: gameType,
-          metadata: metadata || {}
+          metadata: { timestamp: new Date().toISOString() }
         });
-
-      if (activityError) {
-        console.error('Error inserting activity:', activityError);
-        return;
-      }
-
-      // Update quest progress using the existing function
-      const { error: questError } = await supabase.rpc('update_quest_progress', {
+      
+      if (error) throw error;
+      
+      // Update quest progress
+      await supabase.rpc('update_quest_progress', {
         p_user_id: user.id,
-        p_activity_type: activityType,
-        p_activity_value: activityValue,
+        p_activity_type: 'total_bets',
+        p_activity_value: amount,
         p_game_type: gameType,
-        p_metadata: metadata || {}
+        p_metadata: { timestamp: new Date().toISOString() }
       });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['daily-quests'] });
+    },
+  });
 
-      if (questError) {
-        console.error('Error updating quest progress:', questError);
-      }
-
-      // Check balance-based quests after any activity
-      const { error: balanceError } = await supabase.rpc('check_balance_quests', {
-        p_user_id: user.id
+  const trackGamePlay = useMutation({
+    mutationFn: async (gameType: string) => {
+      if (!user) return;
+      
+      const { error } = await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'play_game',
+          activity_value: 1,
+          game_type: gameType,
+          metadata: { timestamp: new Date().toISOString() }
+        });
+      
+      if (error) throw error;
+      
+      // Update quest progress
+      await supabase.rpc('update_quest_progress', {
+        p_user_id: user.id,
+        p_activity_type: 'play_game',
+        p_activity_value: 1,
+        p_game_type: gameType,
+        p_metadata: { timestamp: new Date().toISOString() }
       });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['daily-quests'] });
+    },
+  });
 
-      if (balanceError) {
-        console.error('Error checking balance quests:', balanceError);
-      }
+  const trackGameWin = useMutation({
+    mutationFn: async (amount: number, gameType: string) => {
+      if (!user) return;
+      
+      const { error } = await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'win_game',
+          activity_value: amount,
+          game_type: gameType,
+          metadata: { timestamp: new Date().toISOString() }
+        });
+      
+      if (error) throw error;
+      
+      // Update quest progress
+      await supabase.rpc('update_quest_progress', {
+        p_user_id: user.id,
+        p_activity_type: 'win_games',
+        p_activity_value: 1,
+        p_game_type: gameType,
+        p_metadata: { timestamp: new Date().toISOString() }
+      });
+      
+      // Also track daily winnings
+      await supabase.rpc('update_quest_progress', {
+        p_user_id: user.id,
+        p_activity_type: 'daily_winnings',
+        p_activity_value: amount,
+        p_game_type: gameType,
+        p_metadata: { timestamp: new Date().toISOString() }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['daily-quests'] });
+    },
+  });
 
-    } catch (error) {
-      console.error('Error tracking quest progress:', error);
-    }
-  }, [user]);
-
-  // Specific tracking functions for common activities
-  const trackGameWin = useCallback(async (winAmount: number, gameType: string) => {
-    await trackQuestProgress('win_game', winAmount, gameType);
-  }, [trackQuestProgress]);
-
-  const trackGameLoss = useCallback(async (gameType: string) => {
-    await trackQuestProgress('lose_game', 1, gameType);
-  }, [trackQuestProgress]);
-
-  const trackGamePlay = useCallback(async (gameType: string) => {
-    await trackQuestProgress('play_game', 1, gameType);
-  }, [trackQuestProgress]);
-
-  const trackBet = useCallback(async (betAmount: number, gameType: string) => {
-    await trackQuestProgress('place_bet', betAmount, gameType);
-  }, [trackQuestProgress]);
-
-  const trackDeposit = useCallback(async (amount: number, status: string = 'approved') => {
-    await trackQuestProgress('deposit', amount, undefined, { status });
-  }, [trackQuestProgress]);
-
-  const trackWithdraw = useCallback(async (amount: number, status: string = 'approved') => {
-    await trackQuestProgress('withdraw', amount, undefined, { status });
-  }, [trackQuestProgress]);
-
-  const trackFarmingClaim = useCallback(async () => {
-    await trackQuestProgress('claim_farming', 1);
-  }, [trackQuestProgress]);
+  const trackGameLoss = useMutation({
+    mutationFn: async (gameType: string) => {
+      if (!user) return;
+      
+      const { error } = await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'lose_game',
+          activity_value: 1,
+          game_type: gameType,
+          metadata: { timestamp: new Date().toISOString() }
+        });
+      
+      if (error) throw error;
+      
+      // Update quest progress for lose streak quests
+      await supabase.rpc('update_quest_progress', {
+        p_user_id: user.id,
+        p_activity_type: 'lose_streak_continue',
+        p_activity_value: 1,
+        p_game_type: gameType,
+        p_metadata: { timestamp: new Date().toISOString() }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['daily-quests'] });
+    },
+  });
 
   return {
-    trackQuestProgress,
-    trackGameWin,
-    trackGameLoss,
-    trackGamePlay,
-    trackBet,
-    trackDeposit,
-    trackWithdraw,
-    trackFarmingClaim
+    trackBet: trackBet.mutateAsync,
+    trackGamePlay: trackGamePlay.mutateAsync,
+    trackGameWin: trackGameWin.mutateAsync,
+    trackGameLoss: trackGameLoss.mutateAsync,
   };
 };
