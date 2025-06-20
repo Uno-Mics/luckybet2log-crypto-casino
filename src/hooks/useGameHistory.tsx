@@ -7,7 +7,7 @@ import { useAuth } from "./useAuth";
 type GameType = 'mines' | 'wheel-of-fortune' | 'fortune-reels' | 'blackjack' | 'dice-roll';
 type ResultType = 'win' | 'loss';
 
-interface GameHistoryEntry {
+export interface GameHistoryEntry {
   id: string;
   user_id: string;
   game_type: GameType;
@@ -30,22 +30,28 @@ interface AddHistoryEntryParams {
   game_details?: any;
 }
 
-export const useGameHistory = () => {
+export const useGameHistory = (gameType?: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const channelRef = useRef<any>(null);
 
-  const { data: gameHistory } = useQuery<GameHistoryEntry[]>({
-    queryKey: ['game-history', user?.id],
+  const { data: gameHistory, isLoading } = useQuery<GameHistoryEntry[]>({
+    queryKey: ['game-history', user?.id, gameType],
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('game_history')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
+      
+      if (gameType) {
+        query = query.eq('game_type', gameType);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as GameHistoryEntry[];
@@ -118,19 +124,75 @@ export const useGameHistory = () => {
     },
   });
 
-  const getGameHistory = (gameType?: GameType) => {
+  const clearHistory = useMutation({
+    mutationFn: async (gameType?: string) => {
+      if (!user) throw new Error("User not authenticated");
+
+      let query = supabase
+        .from('game_history')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (gameType) {
+        query = query.eq('game_type', gameType);
+      }
+
+      const { error } = await query;
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['game-history', user?.id] });
+    },
+  });
+
+  const getGameHistory = (filterGameType?: GameType) => {
     if (!gameHistory) return [];
     
-    if (gameType) {
-      return gameHistory.filter(entry => entry.game_type === gameType);
+    if (filterGameType) {
+      return gameHistory.filter(entry => entry.game_type === filterGameType);
     }
     
     return gameHistory;
   };
 
+  const getStats = () => {
+    const history = gameHistory || [];
+    const totalGames = history.length;
+    const wins = history.filter(entry => entry.result_type === 'win').length;
+    const losses = history.filter(entry => entry.result_type === 'loss').length;
+    const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
+    
+    const totalWinnings = history
+      .filter(entry => entry.result_type === 'win')
+      .reduce((sum, entry) => sum + entry.win_amount, 0);
+    
+    const totalLosses = history
+      .filter(entry => entry.result_type === 'loss')
+      .reduce((sum, entry) => sum + entry.loss_amount, 0);
+    
+    const netProfit = totalWinnings - totalLosses;
+
+    return {
+      totalGames,
+      wins,
+      losses,
+      winRate,
+      netProfit
+    };
+  };
+
+  const refreshHistory = () => {
+    queryClient.invalidateQueries({ queryKey: ['game-history', user?.id] });
+  };
+
   return {
     gameHistory: gameHistory || [],
+    history: gameHistory || [],
+    loading: isLoading,
     addHistoryEntry: addHistoryEntry.mutateAsync,
+    clearHistory: clearHistory.mutateAsync,
     getGameHistory,
+    getStats,
+    refreshHistory,
   };
 };

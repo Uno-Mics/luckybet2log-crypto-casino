@@ -29,6 +29,40 @@ export const usePetSystem = () => {
     enabled: !!user,
   });
 
+  // Get user's eggs
+  const { data: userEggs } = useQuery({
+    queryKey: ['user-eggs', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('user_eggs')
+        .select(`
+          *,
+          egg_type:egg_types (*)
+        `)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Get available egg types
+  const { data: eggTypes } = useQuery({
+    queryKey: ['egg-types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('egg_types')
+        .select('*')
+        .order('price', { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Get active pet boosts
   const { data: activePetBoosts } = useQuery({
     queryKey: ['active-pet-boosts', user?.id],
@@ -77,6 +111,18 @@ export const usePetSystem = () => {
           queryClient.invalidateQueries({ queryKey: ['active-pet-boosts', user.id] });
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_eggs',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['user-eggs', user.id] });
+        }
+      )
       .subscribe();
 
     channelRef.current = channel;
@@ -88,6 +134,73 @@ export const usePetSystem = () => {
       }
     };
   }, [user?.id, queryClient]);
+
+  const purchaseEgg = useMutation({
+    mutationFn: async (eggTypeId: number) => {
+      const { data, error } = await supabase
+        .rpc('purchase_egg', {
+          p_user_id: user?.id,
+          p_egg_type_id: eggTypeId
+        });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-eggs'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+  });
+
+  const startIncubation = useMutation({
+    mutationFn: async (eggId: string) => {
+      const { data, error } = await supabase
+        .rpc('start_incubation', {
+          p_user_id: user?.id,
+          p_egg_id: eggId
+        });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-eggs'] });
+    },
+  });
+
+  const hatchEgg = useMutation({
+    mutationFn: async (eggId: string) => {
+      const { data, error } = await supabase
+        .rpc('hatch_egg', {
+          p_user_id: user?.id,
+          p_egg_id: eggId
+        });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-eggs'] });
+      queryClient.invalidateQueries({ queryKey: ['user-pets'] });
+    },
+  });
+
+  const skipEggHatching = useMutation({
+    mutationFn: async (eggId: string) => {
+      const { data, error } = await supabase
+        .rpc('skip_egg_hatching', {
+          p_user_id: user?.id,
+          p_egg_id: eggId
+        });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-eggs'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+  });
 
   const placePetInGarden = useMutation({
     mutationFn: async ({ petId, position }: { petId: string; position: number }) => {
@@ -144,7 +257,13 @@ export const usePetSystem = () => {
 
   return {
     userPets: userPets || [],
+    userEggs: userEggs || [],
+    eggTypes: eggTypes || [],
     activePetBoosts: activePetBoosts || [],
+    purchaseEgg: purchaseEgg.mutateAsync,
+    startIncubation: startIncubation.mutateAsync,
+    hatchEgg: hatchEgg.mutateAsync,
+    skipEggHatching: skipEggHatching.mutateAsync,
     placePetInGarden,
     removePetFromGarden,
     sellPet,
