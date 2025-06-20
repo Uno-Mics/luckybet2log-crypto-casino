@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import Phaser from "phaser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,14 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useProfile } from "@/hooks/useProfile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { generatePetSpriteConfig, drawPetSprite } from "@/utils/petSpriteGenerator";
+import { generateModernPetConfig, drawModernPetSprite } from "@/utils/modernPetSpriteGenerator";
+import { ModernPetSpriteCanvas } from "@/components/ModernPetSpriteCanvas";
 
 const rarityColors = {
-  common: "bg-gray-500",
-  uncommon: "bg-green-500", 
-  rare: "bg-blue-500",
-  legendary: "bg-purple-500",
-  mythical: "bg-gold-500"
+  common: "bg-slate-600",
+  uncommon: "bg-emerald-600", 
+  rare: "bg-blue-600",
+  legendary: "bg-purple-600",
+  mythical: "bg-amber-600"
 };
 
 const basePrices = {
@@ -33,7 +33,7 @@ const rarityMultipliers = {
   mythical: 100
 };
 
-class PetGardenScene extends Phaser.Scene {
+class ModernPetGardenScene extends Phaser.Scene {
   private pets: Map<string, Phaser.GameObjects.Sprite> = new Map();
   private gardenSlots: Phaser.GameObjects.Rectangle[] = [];
   private selectedSlot: number | null = null;
@@ -41,111 +41,109 @@ class PetGardenScene extends Phaser.Scene {
   private onPetClick?: (petId: string) => void;
 
   constructor() {
-    super({ key: 'PetGardenScene' });
+    super({ key: 'ModernPetGardenScene' });
   }
 
   preload() {
-    this.createGardenBackground();
+    this.createModernGardenTextures();
   }
 
-  createPetTexture(petName: string, rarity: string, textureKey: string) {
-    const config = generatePetSpriteConfig(petName, rarity);
+  createModernGardenTextures() {
     const graphics = this.add.graphics();
     
-    drawPetSprite(graphics, config, 32);
+    // Modern seamless garden background
+    const bgGradient = this.add.graphics();
+    bgGradient.fillGradientStyle(0x1a4a3a, 0x2d5a4a, 0x1a4a3a, 0x2d5a4a);
+    bgGradient.fillRect(0, 0, 80, 80);
     
-    graphics.generateTexture(textureKey, 32, 32);
+    // Organic grass texture with modern styling
+    bgGradient.fillStyle(0x4a7c59, 0.6);
+    for (let i = 0; i < 30; i++) {
+      const x = Math.random() * 80;
+      const y = Math.random() * 80;
+      const size = Math.random() * 2 + 1;
+      bgGradient.fillCircle(x, y, size);
+    }
+    
+    // Modern flower accents
+    bgGradient.fillStyle(0x83d2e8, 0.4);
+    for (let i = 0; i < 15; i++) {
+      const x = Math.random() * 78 + 1;
+      const y = Math.random() * 78 + 1;
+      bgGradient.fillCircle(x, y, 1.5);
+    }
+    
+    bgGradient.fillStyle(0xf39c12, 0.3);
+    for (let i = 0; i < 10; i++) {
+      const x = Math.random() * 78 + 1;
+      const y = Math.random() * 78 + 1;
+      bgGradient.fillCircle(x, y, 1);
+    }
+    
+    bgGradient.generateTexture('modern_grass', 80, 80);
+    bgGradient.destroy();
+    
+    // Modern slot texture with sleek border
+    graphics.clear();
+    graphics.fillGradientStyle(0x2c5f6f, 0x4a90a4, 0x2c5f6f, 0x4a90a4);
+    graphics.fillRoundedRect(0, 0, 80, 80, 8);
+    
+    // Inner glow effect
+    graphics.fillStyle(0x83d2e8, 0.2);
+    graphics.fillRoundedRect(4, 4, 72, 72, 6);
+    
+    // Modern border with gradient
+    graphics.lineStyle(2, 0x83d2e8, 0.8);
+    graphics.strokeRoundedRect(2, 2, 76, 76, 8);
+    
+    graphics.generateTexture('modern_slot', 80, 80);
+    
+    // Empty slot with modern styling
+    graphics.clear();
+    graphics.fillStyle(0x1a1a1a, 0.1);
+    graphics.fillRoundedRect(0, 0, 80, 80, 8);
+    
+    // Subtle corner accents
+    graphics.fillStyle(0x83d2e8, 0.15);
+    graphics.fillRoundedRect(0, 0, 12, 12, 4);
+    graphics.fillRoundedRect(68, 0, 12, 12, 4);
+    graphics.fillRoundedRect(0, 68, 12, 12, 4);
+    graphics.fillRoundedRect(68, 68, 12, 12, 4);
+    
+    // Modern dashed border
+    graphics.lineStyle(1, 0x83d2e8, 0.3);
+    graphics.strokeRoundedRect(4, 4, 72, 72, 6);
+    
+    graphics.generateTexture('modern_empty_slot', 80, 80);
     graphics.destroy();
   }
 
-  createGardenBackground() {
+  createModernPetTexture(petName: string, rarity: string) {
+    const config = generateModernPetConfig(petName, rarity);
     const graphics = this.add.graphics();
     
-    // Create seamless grass texture without visible grid
-    graphics.fillStyle(0x2d5a27);
-    graphics.fillRect(0, 0, 64, 64);
+    drawModernPetSprite(graphics, config, 48);
     
-    // Add organic grass blades
-    graphics.fillStyle(0x4a7c59);
-    for (let i = 0; i < 25; i++) {
-      const x = Math.random() * 64;
-      const y = Math.random() * 64;
-      const height = Math.random() * 4 + 2;
-      graphics.fillRect(x, y, 1, height);
-    }
-    
-    graphics.fillStyle(0x6ab04c);
-    for (let i = 0; i < 30; i++) {
-      const x = Math.random() * 64;
-      const y = Math.random() * 64;
-      const height = Math.random() * 3 + 1;
-      graphics.fillRect(x, y, 1, height);
-    }
-    
-    // Add random flowers scattered naturally
-    graphics.fillStyle(0xffff00);
-    for (let i = 0; i < 12; i++) {
-      const x = Math.random() * 62 + 1;
-      const y = Math.random() * 62 + 1;
-      graphics.fillRect(x, y, 2, 2);
-    }
-    
-    graphics.fillStyle(0xff69b4);
-    for (let i = 0; i < 8; i++) {
-      const x = Math.random() * 62 + 1;
-      const y = Math.random() * 62 + 1;
-      graphics.fillRect(x, y, 2, 2);
-    }
-    
-    graphics.generateTexture('grass', 64, 64);
-    
-    // Create subtle garden plot texture
-    graphics.clear();
-    graphics.fillStyle(0x8B4513, 0.8);
-    graphics.fillRect(0, 0, 64, 64);
-    
-    // Add soil texture
-    graphics.fillStyle(0x654321);
-    for (let i = 0; i < 20; i++) {
-      const x = Math.random() * 64;
-      const y = Math.random() * 64;
-      graphics.fillRect(x, y, 1, 1);
-    }
-    
-    // Very subtle border
-    graphics.lineStyle(1, 0x8FBC8F, 0.3);
-    graphics.strokeRect(2, 2, 60, 60);
-    graphics.generateTexture('garden_slot', 64, 64);
-
-    // Empty slot with minimal visual
-    graphics.clear();
-    graphics.fillStyle(0x8B4513, 0.1);
-    graphics.fillRect(0, 0, 64, 64);
-    
-    // Subtle corner markers
-    graphics.fillStyle(0x666666, 0.2);
-    graphics.fillRect(0, 0, 4, 4);
-    graphics.fillRect(60, 0, 4, 4);
-    graphics.fillRect(0, 60, 4, 4);
-    graphics.fillRect(60, 60, 4, 4);
-    
-    graphics.generateTexture('empty_slot', 64, 64);
+    const textureKey = `modern_pet_${petName}_${rarity}`;
+    graphics.generateTexture(textureKey, 48, 48);
+    graphics.destroy();
+    return textureKey;
   }
 
   create() {
-    // Create seamless background
-    const bg = this.add.tileSprite(0, 0, 320, 320, 'grass');
+    // Modern seamless background
+    const bg = this.add.tileSprite(0, 0, 400, 400, 'modern_grass');
     bg.setOrigin(0, 0);
 
-    // Create 3x3 grid with natural spacing
+    // Create modern 3x3 grid with proper spacing
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
-        const x = 53 + col * 71;
-        const y = 53 + row * 71;
+        const x = 67 + col * 87;
+        const y = 67 + row * 87;
         const position = row * 3 + col;
 
-        const slot = this.add.rectangle(x, y, 64, 64, 0x000000, 0);
-        const slotBg = this.add.image(x, y, 'empty_slot');
+        const slot = this.add.rectangle(x, y, 80, 80, 0x000000, 0);
+        const slotBg = this.add.image(x, y, 'modern_empty_slot');
         
         slot.setInteractive();
         slot.on('pointerdown', () => {
@@ -155,11 +153,13 @@ class PetGardenScene extends Phaser.Scene {
         });
 
         slot.on('pointerover', () => {
-          slotBg.setTint(0xffff88);
+          slotBg.setTint(0x83d2e8);
+          slotBg.setScale(1.05);
         });
         
         slot.on('pointerout', () => {
           slotBg.clearTint();
+          slotBg.setScale(1);
         });
 
         this.gardenSlots[position] = slot;
@@ -178,21 +178,25 @@ class PetGardenScene extends Phaser.Scene {
   placePet(petId: string, position: number, petName: string, rarity: string) {
     const row = Math.floor(position / 3);
     const col = position % 3;
-    const x = 53 + col * 71;
-    const y = 53 + row * 71;
+    const x = 67 + col * 87;
+    const y = 67 + row * 87;
 
     this.removePet(petId);
 
-    const textureKey = `pet_${petId}`;
-    this.createPetTexture(petName || 'Unknown Pet', rarity || 'common', textureKey);
+    const textureKey = `modern_pet_${petName}_${rarity}`;
+    const existingTexture = this.textures.get(textureKey);
+
+    if (!existingTexture) {
+      this.createModernPetTexture(petName || 'Unknown Pet', rarity || 'common');
+    }
 
     const pet = this.add.sprite(x, y, textureKey);
-    pet.setScale(2);
+    pet.setScale(1.5);
     pet.setInteractive();
 
-    // Floating animation
-    const floatOffset = Math.random() * 2 + 3;
-    const floatSpeed = Math.random() * 1000 + 2000;
+    // Modern floating animation
+    const floatOffset = Math.random() * 4 + 6;
+    const floatSpeed = Math.random() * 1500 + 2500;
     
     this.tweens.add({
       targets: pet,
@@ -203,52 +207,35 @@ class PetGardenScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // Special animations for certain pets
+    // Modern breathing scale effect
+    this.tweens.add({
+      targets: pet,
+      scaleY: 1.55,
+      duration: 3000,
+      ease: 'Sine.easeInOut',
+      yoyo: true,
+      repeat: -1
+    });
+
+    // Enhanced animations for special pets
     if (petName && (petName.includes('phoenix') || petName.includes('angel') || petName.includes('cosmic'))) {
       this.tweens.add({
         targets: pet,
-        rotation: 0.1,
-        duration: 4000,
+        rotation: 0.15,
+        duration: 5000,
         ease: 'Sine.easeInOut',
         yoyo: true,
         repeat: -1
       });
     }
 
-    // Random idle movement
-    this.time.addEvent({
-      delay: 4000 + Math.random() * 3000,
-      callback: () => {
-        if (pet.active) {
-          const moveDistance = 15;
-          const randomX = x + (Math.random() - 0.5) * moveDistance;
-          const randomY = y + (Math.random() - 0.5) * moveDistance;
-          
-          this.tweens.add({
-            targets: pet,
-            x: randomX,
-            y: randomY,
-            duration: 1500,
-            ease: 'Power2',
-            yoyo: true,
-            onComplete: () => {
-              if (pet.active) {
-                pet.setPosition(x, y);
-              }
-            }
-          });
-        }
-      },
-      loop: true
-    });
-
-    // Sparkle effect for rare pets
+    // Modern particle system for legendary+ pets
     if (rarity && ['legendary', 'mythical'].includes(rarity)) {
       this.time.addEvent({
-        delay: 2000,
+        delay: 1500,
         callback: () => {
           if (pet.active) {
-            this.createSparkleEffect(x, y);
+            this.createModernParticles(x, y, rarity);
           }
         },
         loop: true
@@ -262,41 +249,58 @@ class PetGardenScene extends Phaser.Scene {
     });
 
     pet.on('pointerover', () => {
-      pet.setTint(0xdddddd);
-      pet.setScale(2.2);
+      pet.setTint(0xffffff);
+      pet.setScale(1.7);
+      
+      // Add modern glow effect
+      const glow = this.add.graphics();
+      glow.fillStyle(0x83d2e8, 0.3);
+      glow.fillCircle(x, y, 45);
+      
+      this.time.delayedCall(200, () => {
+        if (glow) glow.destroy();
+      });
     });
     
     pet.on('pointerout', () => {
       pet.clearTint();
-      pet.setScale(2);
+      pet.setScale(1.5);
     });
 
     this.pets.set(petId, pet);
   }
 
-  createSparkleEffect(x: number, y: number) {
-    const sparkle = this.add.graphics();
-    sparkle.fillStyle(0xffd700, 0.8);
+  createModernParticles(x: number, y: number, rarity: string) {
+    const particleColors = {
+      legendary: [0x9b59b6, 0xbb8fce, 0xf8c471],
+      mythical: [0xf39c12, 0xffd700, 0xffe135]
+    };
     
-    const sparkleX = x + (Math.random() - 0.5) * 40;
-    const sparkleY = y + (Math.random() - 0.5) * 40;
+    const colors = particleColors[rarity as keyof typeof particleColors] || particleColors.legendary;
     
-    sparkle.fillRect(sparkleX, sparkleY, 2, 2);
-    sparkle.fillRect(sparkleX - 1, sparkleY, 1, 1);
-    sparkle.fillRect(sparkleX + 1, sparkleY, 1, 1);
-    sparkle.fillRect(sparkleX, sparkleY - 1, 1, 1);
-    sparkle.fillRect(sparkleX, sparkleY + 1, 1, 1);
-    
-    this.tweens.add({
-      targets: sparkle,
-      alpha: 0,
-      y: sparkleY - 20,
-      duration: 1000,
-      ease: 'Power2',
-      onComplete: () => {
-        sparkle.destroy();
-      }
-    });
+    for (let i = 0; i < 5; i++) {
+      const particle = this.add.graphics();
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      particle.fillStyle(color, 0.8);
+      
+      const particleX = x + (Math.random() - 0.5) * 60;
+      const particleY = y + (Math.random() - 0.5) * 60;
+      
+      particle.fillCircle(particleX, particleY, Math.random() * 3 + 2);
+      
+      this.tweens.add({
+        targets: particle,
+        alpha: 0,
+        y: particleY - 30,
+        scaleX: 0,
+        scaleY: 0,
+        duration: 2000,
+        ease: 'Power2',
+        onComplete: () => {
+          particle.destroy();
+        }
+      });
+    }
   }
 
   removePet(petId: string) {
@@ -305,7 +309,7 @@ class PetGardenScene extends Phaser.Scene {
       pet.destroy();
       this.pets.delete(petId);
       
-      const textureKey = `pet_${petId}`;
+      const textureKey = `modern_pet_${petId}`;
       if (this.textures.exists(textureKey)) {
         this.textures.remove(textureKey);
       }
@@ -315,7 +319,7 @@ class PetGardenScene extends Phaser.Scene {
   highlightSlot(position: number) {
     this.gardenSlots.forEach((slot, index) => {
       if (index === position) {
-        slot.setFillStyle(0x90EE90, 0.4);
+        slot.setFillStyle(0x83d2e8, 0.3);
       } else {
         slot.setFillStyle(0x000000, 0);
       }
@@ -331,114 +335,9 @@ class PetGardenScene extends Phaser.Scene {
   }
 }
 
-// Pet Sprite Component for inventory
-const PetSpriteCanvas = ({ petName, rarity, size = 64 }: { petName: string, rarity: string, size?: number }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    if (!canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, size, size);
-
-    // Create temporary graphics object for drawing
-    const config = generatePetSpriteConfig(petName, rarity);
-    
-    // Simple pixel art drawing on canvas
-    const scale = size / 16;
-    const s = (value: number) => Math.floor(value * scale);
-    
-    // Draw body
-    ctx.fillStyle = `#${config.colors.primary.toString(16).padStart(6, '0')}`;
-    ctx.fillRect(s(4), s(6), s(8), s(6));
-    ctx.fillRect(s(6), s(4), s(4), s(2));
-    
-    // Draw legs
-    ctx.fillRect(s(5), s(12), s(2), s(3));
-    ctx.fillRect(s(9), s(12), s(2), s(3));
-    
-    // Draw pattern
-    if (config.features.pattern) {
-      ctx.fillStyle = `#${config.colors.secondary.toString(16).padStart(6, '0')}`;
-      switch (config.features.pattern) {
-        case 'stripes':
-          for (let i = 0; i < 3; i++) {
-            ctx.fillRect(s(4), s(7 + i * 2), s(8), s(1));
-          }
-          break;
-        case 'spots':
-          ctx.fillRect(s(5), s(7), s(1), s(1));
-          ctx.fillRect(s(8), s(9), s(1), s(1));
-          ctx.fillRect(s(10), s(7), s(1), s(1));
-          break;
-        case 'flames':
-          ctx.fillRect(s(5), s(6), s(1), s(2));
-          ctx.fillRect(s(7), s(7), s(1), s(2));
-          ctx.fillRect(s(9), s(6), s(1), s(2));
-          break;
-      }
-    }
-    
-    // Draw wings
-    if (config.features.hasWings) {
-      ctx.fillStyle = `#${config.colors.secondary.toString(16).padStart(6, '0')}`;
-      ctx.fillRect(s(2), s(7), s(2), s(3));
-      ctx.fillRect(s(1), s(8), s(1), s(1));
-      ctx.fillRect(s(12), s(7), s(2), s(3));
-      ctx.fillRect(s(14), s(8), s(1), s(1));
-    }
-    
-    // Draw horns
-    if (config.features.hasHorns) {
-      ctx.fillStyle = `#${config.colors.accent.toString(16).padStart(6, '0')}`;
-      ctx.fillRect(s(6), s(2), s(1), s(2));
-      ctx.fillRect(s(9), s(2), s(1), s(2));
-    }
-    
-    // Draw tail
-    if (config.features.hasTail) {
-      ctx.fillStyle = `#${config.colors.primary.toString(16).padStart(6, '0')}`;
-      ctx.fillRect(s(12), s(9), s(2), s(1));
-      ctx.fillRect(s(13), s(10), s(2), s(1));
-    }
-    
-    // Draw spikes
-    if (config.features.hasSpikes) {
-      ctx.fillStyle = `#${config.colors.accent.toString(16).padStart(6, '0')}`;
-      ctx.fillRect(s(5), s(5), s(1), s(1));
-      ctx.fillRect(s(7), s(4), s(1), s(2));
-      ctx.fillRect(s(9), s(5), s(1), s(1));
-    }
-    
-    // Draw eyes
-    ctx.fillStyle = `#${config.colors.eye.toString(16).padStart(6, '0')}`;
-    ctx.fillRect(s(6), s(5), s(1), s(1));
-    ctx.fillRect(s(9), s(5), s(1), s(1));
-    
-    // Draw accent details
-    ctx.fillStyle = `#${config.colors.accent.toString(16).padStart(6, '0')}`;
-    ctx.fillRect(s(7), s(6), s(2), s(1));
-    
-  }, [petName, rarity, size]);
-
-  return (
-    <canvas 
-      ref={canvasRef} 
-      width={size} 
-      height={size} 
-      className="pixel-sprite"
-      style={{ imageRendering: 'pixelated' }}
-    />
-  );
-};
-
 export const PixelPetGarden = () => {
   const gameRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<PetGardenScene | null>(null);
+  const sceneRef = useRef<ModernPetGardenScene | null>(null);
   const gameInstanceRef = useRef<Phaser.Game | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<number | null>(null);
   const [showSellDialog, setShowSellDialog] = useState(false);
@@ -455,12 +354,13 @@ export const PixelPetGarden = () => {
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
-      width: 320,
-      height: 320,
+      width: 400,
+      height: 400,
       parent: gameRef.current,
-      backgroundColor: '#1a4a1a',
-      scene: PetGardenScene,
+      backgroundColor: '#0a0a0a',
+      scene: ModernPetGardenScene,
       pixelArt: true,
+      antialias: false,
       scale: {
         mode: Phaser.Scale.NONE,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -471,7 +371,7 @@ export const PixelPetGarden = () => {
     gameInstanceRef.current = game;
 
     game.events.once('ready', () => {
-      const scene = game.scene.getScene('PetGardenScene') as PetGardenScene;
+      const scene = game.scene.getScene('ModernPetGardenScene') as ModernPetGardenScene;
       sceneRef.current = scene;
 
       scene.setSlotClickCallback((position: number) => {
@@ -586,21 +486,23 @@ export const PixelPetGarden = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-3xl">
       {/* Active Pet Boosts */}
       {activePetBoosts.length > 0 && (
-        <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+        <Card className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-xl border-purple-500/30 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-center">🌟 Active Pet Boosts 🌟</CardTitle>
+            <CardTitle className="text-center text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+              ✨ Active Pet Boosts ✨
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {activePetBoosts.map((boost, index) => (
-                <div key={index} className="text-center p-3 bg-green-500/10 rounded-lg">
-                  <p className="text-sm text-muted-foreground capitalize">
+                <div key={index} className="text-center p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-500/30">
+                  <p className="text-sm text-gray-300 capitalize font-medium">
                     {boost.trait_type.replace('_', ' ')}
                   </p>
-                  <p className="text-xl font-bold text-green-400">
+                  <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                     {boost.total_boost.toFixed(2)}x
                   </p>
                 </div>
@@ -610,72 +512,81 @@ export const PixelPetGarden = () => {
         </Card>
       )}
 
-      {/* Pixel Pet Garden */}
-      <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+      {/* Modern Pixel Pet Garden */}
+      <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 backdrop-blur-xl border-slate-600/30 shadow-2xl">
         <CardHeader>
-          <CardTitle className="text-center pixel-font">🌸 Pixel Pet Garden 🌸</CardTitle>
+          <CardTitle className="text-center text-3xl font-bold bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+            🌸 Modern Pet Garden 🌸
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex justify-center">
             <div 
               ref={gameRef} 
-              className="border-4 border-green-500/50 rounded-lg bg-gradient-to-br from-green-900/20 to-green-700/20"
+              className="border-4 border-gradient-to-r from-emerald-500/50 to-blue-500/50 rounded-2xl shadow-2xl bg-gradient-to-br from-slate-900/50 to-slate-800/50"
               style={{ 
                 imageRendering: 'pixelated',
-                width: '320px',
-                height: '320px'
+                width: '400px',
+                height: '400px',
+                boxShadow: '0 0 30px rgba(59, 130, 246, 0.3)'
               }}
             />
           </div>
-          <p className="text-center text-sm text-muted-foreground mt-4 pixel-font">
+          <p className="text-center text-gray-300 mt-6 text-lg font-medium">
             Click on an empty slot to place a pet, or click on a pet to remove it
           </p>
         </CardContent>
       </Card>
 
-      {/* Pet Inventory */}
-      <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+      {/* Modern Pet Inventory */}
+      <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 backdrop-blur-xl border-slate-600/30 shadow-2xl">
         <CardHeader>
-          <CardTitle className="text-center pixel-font">📦 Pet Inventory 📦</CardTitle>
+          <CardTitle className="text-center text-3xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+            📦 Pet Inventory 📦
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {inventoryPets.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8 pixel-font">
-              No pets in inventory. Hatch some eggs to get pets!
-            </p>
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">🥚</div>
+              <p className="text-xl text-gray-300 font-medium">
+                No pets in inventory. Hatch some eggs to get pets!
+              </p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {inventoryPets.map((pet) => (
-                <Card key={pet.id} className="border-2 border-gray-500/50 pixel-card">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-                      <PetSpriteCanvas 
+                <Card key={pet.id} className="bg-gradient-to-br from-slate-700/50 to-slate-600/50 border-2 border-slate-500/50 hover:border-slate-400/70 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-slate-600/30 to-slate-500/30 rounded-2xl border border-slate-400/30">
+                      <ModernPetSpriteCanvas 
                         petName={pet.pet_types?.name || 'Unknown Pet'}
                         rarity={pet.pet_types?.rarity || 'common'}
                         size={64}
+                        className="drop-shadow-lg"
                       />
                     </div>
-                    <h3 className="font-bold mb-2 pixel-font">{pet.pet_types?.name || 'Unknown Pet'}</h3>
-                    <Badge className={`mb-2 ${rarityColors[pet.pet_types?.rarity as keyof typeof rarityColors] || 'bg-gray-500'} text-white pixel-font`}>
+                    <h3 className="font-bold mb-3 text-xl bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                      {pet.pet_types?.name || 'Unknown Pet'}
+                    </h3>
+                    <Badge className={`mb-3 text-white font-bold px-4 py-1 ${rarityColors[pet.pet_types?.rarity as keyof typeof rarityColors] || 'bg-gray-600'} shadow-lg`}>
                       {pet.pet_types?.rarity?.toUpperCase() || 'UNKNOWN'}
                     </Badge>
-                    <p className="text-sm text-muted-foreground mb-3 pixel-font">
+                    <p className="text-sm text-gray-300 mb-4 font-medium">
                       {pet.pet_types?.trait_type}: +{pet.pet_types?.trait_value || 0}
                     </p>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Button
                         onClick={() => handlePlacePet(pet.id)}
                         disabled={selectedPosition === null}
-                        className="w-full h-12 pixel-button"
-                        style={{ fontFamily: 'monospace' }}
+                        className="w-full h-12 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300"
                       >
                         {selectedPosition !== null ? 'Place in Garden' : 'Select Position First'}
                       </Button>
                       <Button
                         onClick={() => openSellDialog(pet)}
                         variant="outline"
-                        className="w-full h-12 pixel-button border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                        style={{ fontFamily: 'monospace' }}
+                        className="w-full h-12 border-2 border-red-500/50 text-red-400 hover:bg-red-500/20 hover:border-red-400 font-bold transition-all duration-300"
                       >
                         Sell for {calculateSellPrice(pet)} $ITLOG
                       </Button>
@@ -688,47 +599,49 @@ export const PixelPetGarden = () => {
         </CardContent>
       </Card>
 
-      {/* Sell Confirmation Dialog */}
+      {/* Modern Sell Confirmation Dialog */}
       <Dialog open={showSellDialog} onOpenChange={setShowSellDialog}>
-        <DialogContent className="pixel-dialog">
+        <DialogContent className="bg-gradient-to-br from-slate-800 to-slate-700 border-slate-600/50 shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="pixel-font">Confirm Pet Sale</DialogTitle>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+              Confirm Pet Sale
+            </DialogTitle>
           </DialogHeader>
           {selectedPetForSale && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="text-center">
-                <div className="w-24 h-24 mx-auto mb-2 flex items-center justify-center">
-                  <PetSpriteCanvas 
+                <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-slate-600/30 to-slate-500/30 rounded-3xl border border-slate-400/30">
+                  <ModernPetSpriteCanvas 
                     petName={selectedPetForSale.pet_types?.name || 'Unknown Pet'}
                     rarity={selectedPetForSale.pet_types?.rarity || 'common'}
                     size={96}
+                    className="drop-shadow-xl"
                   />
                 </div>
-                <h3 className="text-xl font-bold pixel-font">{selectedPetForSale.pet_types?.name || 'Unknown Pet'}</h3>
-                <Badge className={`mt-2 ${rarityColors[selectedPetForSale.pet_types?.rarity as keyof typeof rarityColors] || 'bg-gray-500'} text-white pixel-font`}>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {selectedPetForSale.pet_types?.name || 'Unknown Pet'}
+                </h3>
+                <Badge className={`text-white font-bold px-4 py-2 ${rarityColors[selectedPetForSale.pet_types?.rarity as keyof typeof rarityColors] || 'bg-gray-600'} shadow-lg`}>
                   {selectedPetForSale.pet_types?.rarity?.toUpperCase() || 'UNKNOWN'}
                 </Badge>
               </div>
-              <div className="text-center">
-                <p className="text-lg pixel-font">You will receive:</p>
-                <p className="text-3xl font-bold text-gold-400 pixel-font">
+              <div className="text-center p-6 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-2xl border border-amber-500/30">
+                <p className="text-lg text-gray-300 mb-2">You will receive:</p>
+                <p className="text-4xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
                   {calculateSellPrice(selectedPetForSale)} $ITLOG
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <Button
                   onClick={() => setShowSellDialog(false)}
                   variant="outline"
-                  className="flex-1 pixel-button"
-                  style={{ fontFamily: 'monospace' }}
+                  className="flex-1 border-2 border-slate-500/50 text-slate-300 hover:bg-slate-600/20 font-bold"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={() => handleSellPet(selectedPetForSale.id)}
-                  variant="destructive"
-                  className="flex-1 pixel-button"
-                  style={{ fontFamily: 'monospace' }}
+                  className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold shadow-lg"
                 >
                   Sell Pet
                 </Button>
@@ -739,9 +652,9 @@ export const PixelPetGarden = () => {
       </Dialog>
 
       {/* Current Balance */}
-      <div className="text-center">
-        <p className="text-lg pixel-font">
-          Your $ITLOG Balance: <span className="text-gold-400 font-bold">
+      <div className="text-center p-6 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-2xl border border-amber-500/30">
+        <p className="text-xl font-bold text-gray-300">
+          Your $ITLOG Balance: <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent text-2xl">
             {profile?.itlog_tokens?.toLocaleString() || 0}
           </span>
         </p>
