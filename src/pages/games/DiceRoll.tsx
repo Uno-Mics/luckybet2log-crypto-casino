@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +12,10 @@ import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
+import { useGameSounds } from "@/hooks/useGameSounds";
 import GameHistory from "@/components/GameHistory";
 import BannedOverlay from "@/components/BannedOverlay";
-import { Sparkles, TrendingUp, Target, DollarSign, Dice1 } from "lucide-react";
+import { Sparkles, TrendingUp, Target, DollarSign, Dice1, Volume2 } from "lucide-react";
 
 const DiceRoll = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -33,6 +33,7 @@ const DiceRoll = () => {
   const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry, history } = useGameHistory('dice-roll');
+  const { playWheelSpinSound, playWheelStopSound, playWinSound, playLossSound, playJackpotSound, audioEnabled, enableAudio } = useGameSounds();
 
   // Debug: Log when history changes
   useEffect(() => {
@@ -72,6 +73,9 @@ const DiceRoll = () => {
     setGameEnded(false);
     setShowItlogDice(false);
     const betAmount = parseFloat(currentBet);
+
+    // Play rolling sound
+    playWheelSpinSound();
 
     // Update balance immediately and in database
     try {
@@ -115,6 +119,9 @@ const DiceRoll = () => {
       if (elapsed >= rollDuration) {
         clearInterval(animate);
         
+        // Play stop sound
+        playWheelStopSound();
+        
         // Generate final result
         let finalRoll = Math.floor(Math.random() * 100) + 1;
         
@@ -139,6 +146,9 @@ const DiceRoll = () => {
         }
         
         if (isItlogRoll) {
+          // Play jackpot sound
+          playJackpotSound();
+          
           // Force a winning roll for $ITLOG
           if (prediction === "over") {
             finalRoll = Math.max(targetNumber + 1, Math.floor(Math.random() * (100 - targetNumber)) + targetNumber + 1);
@@ -203,6 +213,9 @@ const DiceRoll = () => {
                      (prediction === "under" && finalRoll < targetNumber);
         
         if (isWin) {
+          // Play win sound
+          playWinSound();
+          
           const winnings = betAmount * multiplier;
           updateBalance.mutateAsync({
             coinsChange: winnings
@@ -240,6 +253,9 @@ const DiceRoll = () => {
             });
           });
         } else {
+          // Play loss sound
+          playLossSound();
+          
           // Add to game history for loss
           addHistoryEntry({
             game_type: 'dice-roll',
@@ -287,6 +303,15 @@ const DiceRoll = () => {
             <p className="casino-game-subtitle">
               Roll a number from 1-100 and customize your risk!
             </p>
+            {!audioEnabled && (
+              <Button 
+                onClick={enableAudio} 
+                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg"
+              >
+                <Volume2 className="w-5 h-5 mr-2" />
+                Enable Sound Effects
+              </Button>
+            )}
           </div>
 
           <div className="responsive-grid">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
@@ -6,6 +5,7 @@ import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
+import { useGameSounds } from "@/hooks/useGameSounds";
 import GameHistory from "@/components/GameHistory";
 import BannedOverlay from "@/components/BannedOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Sparkles, TrendingUp, Target, DollarSign } from "lucide-react";
+import { Sparkles, TrendingUp, Target, DollarSign, Volume2 } from "lucide-react";
 
 const FortuneReels = () => {
   const [currentBet, setCurrentBet] = useState("1");
@@ -28,6 +28,7 @@ const FortuneReels = () => {
   const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry } = useGameHistory();
+  const { playWheelSpinSound, playWheelStopSound, playWinSound, playLossSound, playJackpotSound, audioEnabled, enableAudio } = useGameSounds();
 
   useEffect(() => {
     if (profile) {
@@ -76,6 +77,9 @@ const FortuneReels = () => {
     setLastWin(0);
     const betAmount = parseFloat(currentBet);
 
+    // Play spin sound
+    playWheelSpinSound();
+
     // Update balance immediately and in database
     try {
       await updateBalance.mutateAsync({
@@ -114,6 +118,9 @@ const FortuneReels = () => {
       
       if (elapsed >= spinDuration) {
         clearInterval(animate);
+        
+        // Play stop sound
+        playWheelStopSound();
         
         // Generate final result with weighted probabilities based on your image
         // Apply luck boost from active pets
@@ -164,6 +171,9 @@ const FortuneReels = () => {
         const key = combination as keyof typeof payTable;
         
         if (key === "🪙🪙🪙") {
+          // Play jackpot sound
+          playJackpotSound();
+          
           // $ITLOG Jackpot: 10,000 to 1,000,000 tokens based on bet amount
           const baseReward = 10000;
           const maxReward = 1000000;
@@ -205,6 +215,9 @@ const FortuneReels = () => {
             });
           });
         } else if (payTable[key]) {
+          // Play win sound
+          playWinSound();
+          
           const winnings = betAmount * payTable[key];
           setLastWin(winnings);
           
@@ -243,6 +256,9 @@ const FortuneReels = () => {
             });
           });
         } else {
+          // Play loss sound
+          playLossSound();
+          
           // Track the loss for quest progress
           trackGameLoss('fortune-reels');
           
@@ -288,6 +304,15 @@ const FortuneReels = () => {
             <p className="casino-game-subtitle">
               Spin the reels and match symbols for big wins!
             </p>
+            {!audioEnabled && (
+              <Button 
+                onClick={enableAudio} 
+                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg"
+              >
+                <Volume2 className="w-5 h-5 mr-2" />
+                Enable Sound Effects
+              </Button>
+            )}
           </div>
 
           <div className="responsive-grid">

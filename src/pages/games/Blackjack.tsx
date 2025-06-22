@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
@@ -14,8 +13,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
+import { useGameSounds } from "@/hooks/useGameSounds";
 import GameHistory from "@/components/GameHistory";
-import { Spade, Heart, Diamond, Club, Sparkles, TrendingUp, Target } from "lucide-react";
+import { Spade, Heart, Diamond, Club, Sparkles, TrendingUp, Target, Volume2 } from "lucide-react";
 
 type CardType = {
   suit: string;
@@ -43,6 +43,7 @@ const Blackjack = () => {
   const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry } = useGameHistory();
+  const { playDiamondSound, playWinSound, playLossSound, audioEnabled, enableAudio } = useGameSounds();
 
   useEffect(() => {
     if (profile) {
@@ -144,6 +145,9 @@ const Blackjack = () => {
       return;
     }
 
+    // Play card dealing sound
+    playDiamondSound();
+
     try {
       await updateBalance.mutateAsync({
         coinsChange: -betAmount
@@ -199,6 +203,9 @@ const Blackjack = () => {
           });
         });
       } else if (playerBJ) {
+        // Play win sound for blackjack
+        playWinSound();
+        
         const winnings = betAmount * 2.5;
         setGameResult("blackjack");
         updateBalance.mutateAsync({
@@ -228,6 +235,9 @@ const Blackjack = () => {
           });
         });
       } else {
+        // Play loss sound for dealer blackjack
+        playLossSound();
+        
         setGameResult("dealer_blackjack");
         trackActivityGameLoss('blackjack', betAmount, sessionId);
         addHistoryEntry({
@@ -258,6 +268,9 @@ const Blackjack = () => {
   const hit = () => {
     if (!gameStarted) return;
 
+    // Play card dealing sound
+    playDiamondSound();
+
     const deck = createDeck();
     const [newCard] = dealCard(deck);
     const newPlayerCards = [...playerCards, newCard];
@@ -267,6 +280,9 @@ const Blackjack = () => {
     setPlayerTotal(newTotal);
 
     if (newTotal > 21) {
+      // Play loss sound for bust
+      playLossSound();
+      
       const betAmount = parseFloat(currentBet);
       setGameResult("bust");
       setGameStarted(false);
@@ -297,6 +313,9 @@ const Blackjack = () => {
     let currentDealerTotal = dealerTotal;
 
     while (currentDealerTotal < 17) {
+      // Play card dealing sound for dealer
+      playDiamondSound();
+      
       const deck = createDeck();
       const [newCard] = dealCard(deck);
       currentDealerCards = [...currentDealerCards, newCard];
@@ -308,6 +327,9 @@ const Blackjack = () => {
 
     const betAmount = parseFloat(currentBet);
     if (currentDealerTotal > 21) {
+      // Play win sound for dealer bust
+      playWinSound();
+      
       setGameResult("dealer_bust");
       const winnings = betAmount * 2;
       updateBalance.mutateAsync({
@@ -337,6 +359,9 @@ const Blackjack = () => {
         });
       });
     } else if (playerTotal > currentDealerTotal) {
+      // Play win sound
+      playWinSound();
+      
       setGameResult("win");
       const winnings = betAmount * 2;
       updateBalance.mutateAsync({
@@ -366,6 +391,9 @@ const Blackjack = () => {
         });
       });
     } else if (playerTotal < currentDealerTotal) {
+      // Play loss sound
+      playLossSound();
+      
       setGameResult("lose");
       trackActivityGameLoss('blackjack', betAmount, sessionId);
       addHistoryEntry({
@@ -458,6 +486,15 @@ const Blackjack = () => {
             <p className="casino-game-subtitle">
               Get as close to 21 as possible without going over!
             </p>
+            {!audioEnabled && (
+              <Button 
+                onClick={enableAudio} 
+                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg"
+              >
+                <Volume2 className="w-5 h-5 mr-2" />
+                Enable Sound Effects
+              </Button>
+            )}
           </div>
 
           <div className="responsive-grid">
