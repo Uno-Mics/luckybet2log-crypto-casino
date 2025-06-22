@@ -38,7 +38,7 @@ const Mines = () => {
   const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry } = useGameHistory();
-  const { playDiamondSound, playExplosionSound, playWinSound, playLossSound, playJackpotSound } = useGameSounds();
+  const { playDiamondSound, playExplosionSound, playWinSound, playLossSound, playJackpotSound, audioEnabled, enableAudio } = useGameSounds();
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
@@ -146,6 +146,7 @@ const Mines = () => {
     newBoard[index] = actualTileState;
 
     if (actualTileState === "mine") {
+      console.log('Mine hit! Playing explosion sound...');
       playExplosionSound();
       trackGameLoss('mines');
       
@@ -177,6 +178,7 @@ const Mines = () => {
       setCurrentMultiplier(1.0);
       
       setTimeout(() => {
+        console.log('Playing loss sound after delay...');
         playLossSound();
       }, 500);
       
@@ -186,6 +188,7 @@ const Mines = () => {
         variant: "destructive"
       });
     } else if (actualTileState === "itlog") {
+      console.log('ITLOG hit! Playing jackpot sound...');
       playJackpotSound();
       
       const betMultiplier = parseFloat(currentBet) * 5000;
@@ -231,6 +234,7 @@ const Mines = () => {
         description: `You found the exclusive $ITLOG token and won ${reward.toLocaleString()} tokens!`,
       });
     } else {
+      console.log('Safe tile revealed! Playing diamond sound...');
       playDiamondSound();
       const newRevealed = tilesRevealed + 1;
       setTilesRevealed(newRevealed);
@@ -273,6 +277,7 @@ const Mines = () => {
       setTilesRevealed(0);
       setCurrentMultiplier(1.0);
       
+      console.log('Cash out successful! Playing win sound...');
       playWinSound();
       
       toast({
@@ -335,6 +340,14 @@ const Mines = () => {
             <p className="casino-game-subtitle">
               Navigate through the minefield and cash out before hitting a mine!
             </p>
+            {!audioEnabled && (
+              <div className="text-center mt-4">
+                <Button onClick={enableAudio} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                  🔊 Enable Sound Effects
+                </Button>
+                <p className="text-sm text-gray-400 mt-2">Click to enable audio for the game</p>
+              </div>
+            )}
           </div>
 
           <div className="responsive-grid">

@@ -28,7 +28,7 @@ const WheelOfFortune = () => {
   const { trackGameWin, trackGamePlay, trackBet, trackGameLoss } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry } = useGameHistory();
-  const { playWheelSpinSound, playWheelStopSound, playWinSound, playLossSound, playJackpotSound } = useGameSounds();
+  const { playWheelSpinSound, playWheelStopSound, playWinSound, playLossSound, playJackpotSound, audioEnabled, enableAudio } = useGameSounds();
 
   useEffect(() => {
     if (profile) {
@@ -81,6 +81,7 @@ const WheelOfFortune = () => {
     const betAmount = parseFloat(currentBet);
 
     // Play wheel spinning sound
+    console.log('Starting wheel spin! Playing spin sound...');
     playWheelSpinSound();
 
     try {
@@ -180,6 +181,7 @@ const WheelOfFortune = () => {
       setIsSpinning(false);
       setGameEnded(true);
       
+      console.log('Wheel stopped! Playing stop sound...');
       playWheelStopSound();
 
       const normalizedRotation = finalRotation % 360;
@@ -192,6 +194,7 @@ const WheelOfFortune = () => {
       setLastResult(result);
 
       if (result === "itlog") {
+        console.log('ITLOG won! Playing jackpot sound...');
         playJackpotSound();
         
         const itlogReward = betAmount * 50;
@@ -236,6 +239,7 @@ const WheelOfFortune = () => {
           });
         }
       } else if (result === selectedBet) {
+        console.log('Player won! Playing win sound...');
         playWinSound();
         
         const winnings = betAmount * actualResult.multiplier;
@@ -273,6 +277,7 @@ const WheelOfFortune = () => {
           });
         }
       } else {
+        console.log('Player lost! Playing loss sound...');
         playLossSound();
         
         trackGameLoss('wheel-of-fortune');
@@ -319,6 +324,14 @@ const WheelOfFortune = () => {
             <p className="casino-game-subtitle">
               Place your bets and spin the wheel for instant wins!
             </p>
+            {!audioEnabled && (
+              <div className="text-center mt-4">
+                <Button onClick={enableAudio} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                  🔊 Enable Sound Effects
+                </Button>
+                <p className="text-sm text-gray-400 mt-2">Click to enable audio for the game</p>
+              </div>
+            )}
           </div>
 
           <div className="responsive-grid">
