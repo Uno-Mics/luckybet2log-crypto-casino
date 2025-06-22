@@ -1,5 +1,4 @@
 
-import { Howl } from 'howler';
 import { useCallback, useState, useEffect } from 'react';
 
 interface GameSounds {
