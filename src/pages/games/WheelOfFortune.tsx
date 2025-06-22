@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
@@ -12,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { useGameHistory } from "@/hooks/useGameHistory";
+import { useGameSounds } from "@/hooks/useGameSounds";
 import GameHistory from "@/components/GameHistory";
 import { Sparkles, TrendingUp, Target, DollarSign } from "lucide-react";
 
@@ -28,6 +28,7 @@ const WheelOfFortune = () => {
   const { trackGameWin, trackGamePlay, trackBet, trackGameLoss } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry } = useGameHistory();
+  const { playWheelSpinSound, playWheelStopSound, playWinSound, playLossSound, playJackpotSound } = useGameSounds();
 
   useEffect(() => {
     if (profile) {
@@ -79,14 +80,15 @@ const WheelOfFortune = () => {
     setGameEnded(false);
     const betAmount = parseFloat(currentBet);
 
-    // Update balance immediately and in database
+    // Play wheel spinning sound
+    playWheelSpinSound();
+
     try {
       await updateBalance.mutateAsync({
         coinsChange: -betAmount
       });
       setBalance(prev => prev - betAmount);
 
-      // Track bet and game play for quest progress
       await trackBet(betAmount, 'wheel-of-fortune');
       await trackGamePlay('wheel-of-fortune');
     } catch (error) {
@@ -99,20 +101,16 @@ const WheelOfFortune = () => {
       return;
     }
 
-    // Generate random result with weighted probabilities
-    // Apply luck boost from active pets
     const luckBoost = activePetBoosts.find(boost => boost.trait_type === 'luck_boost');
     const luckMultiplier = luckBoost ? luckBoost.total_boost : 1.0;
     
     const random = Math.random();
     let targetSectionIndex: number;
 
-    // If user has selected bet, improve their odds for that color
     if (selectedBet !== "itlog" && luckMultiplier > 1.0) {
       const baseOdds = random;
       const improvedOdds = baseOdds / luckMultiplier;
       
-      // Calculate if the improved odds should win the selected bet
       let shouldWinSelectedBet = false;
       if (selectedBet === "red" && improvedOdds >= 0.4125 && improvedOdds < 0.825) {
         shouldWinSelectedBet = true;
@@ -127,7 +125,6 @@ const WheelOfFortune = () => {
       }
       
       if (shouldWinSelectedBet) {
-        // Force a win on the selected bet
         if (selectedBet === "red") {
           targetSectionIndex = Math.random() < 0.5 ? 0 : 5;
         } else if (selectedBet === "black") {
@@ -139,66 +136,55 @@ const WheelOfFortune = () => {
         } else if (selectedBet === "purple") {
           targetSectionIndex = 4;
         } else {
-          // Fallback to normal probability
-          if (random < 0.000005) { // 0.0005% chance for $ITLOG (very low)
-      targetSectionIndex = 7; // $ITLOG section
-          } else if (random < 0.025) { // 2% chance for purple
-            targetSectionIndex = 4; // Purple section
-          } else if (random < 0.075) { // 5% chance for gold
-            targetSectionIndex = 3; // Gold section
-          } else if (random < 0.175) { // 10% chance for green
-            targetSectionIndex = 2; // Green section
-          } else if (random < 0.5875) { // 41.25% chance for red
-            targetSectionIndex = Math.random() < 0.5 ? 0 : 5; // Red sections (0 or 5)
-          } else { // 41.25% chance for black
-            targetSectionIndex = Math.random() < 0.5 ? 1 : 6; // Black sections (1 or 6)
+          if (random < 0.000005) {
+      targetSectionIndex = 7;
+          } else if (random < 0.025) {
+            targetSectionIndex = 4;
+          } else if (random < 0.075) {
+            targetSectionIndex = 3;
+          } else if (random < 0.175) {
+            targetSectionIndex = 2;
+          } else if (random < 0.5875) {
+            targetSectionIndex = Math.random() < 0.5 ? 0 : 5;
+          } else {
+            targetSectionIndex = Math.random() < 0.5 ? 1 : 6;
           }
         }
         return;
       }
     }
 
-    // Normal probability without luck boost forcing a win
-    if (random < 0.000005) { // 0.0005% chance for $ITLOG (very low)
-      targetSectionIndex = 7; // $ITLOG section
-    } else if (random < 0.025) { // 2% chance for purple
-      targetSectionIndex = 4; // Purple section
-    } else if (random < 0.075) { // 5% chance for gold
-      targetSectionIndex = 3; // Gold section
-    } else if (random < 0.175) { // 10% chance for green
-      targetSectionIndex = 2; // Green section
-    } else if (random < 0.5875) { // 41.25% chance for red
-      targetSectionIndex = Math.random() < 0.5 ? 0 : 5; // Red sections (0 or 5)
-    } else { // 41.25% chance for black
-      targetSectionIndex = Math.random() < 0.5 ? 1 : 6; // Black sections (1 or 6)
+    if (random < 0.000005) {
+      targetSectionIndex = 7;
+    } else if (random < 0.025) {
+      targetSectionIndex = 4;
+    } else if (random < 0.075) {
+      targetSectionIndex = 3;
+    } else if (random < 0.175) {
+      targetSectionIndex = 2;
+    } else if (random < 0.5875) {
+      targetSectionIndex = Math.random() < 0.5 ? 0 : 5;
+    } else {
+      targetSectionIndex = Math.random() < 0.5 ? 1 : 6;
     }
 
     const resultSection = wheelSections[targetSectionIndex];
 
-    // Calculate wheel rotation to land on the result section
-    // The pointer points down at 0 degrees (top), so we need to adjust
     const targetAngle = resultSection.angle;
-    const spins = 5 + Math.random() * 3; // 5-8 full spins
-    // Since the pointer is at the top (0 degrees) and points down, 
-    // we need the target section to be at the top when the wheel stops
+    const spins = 5 + Math.random() * 3;
     const finalRotation = rotation + (spins * 360) + (360 - targetAngle);
 
     setRotation(finalRotation);
 
-    // Handle results after 5 seconds of spinning
     setTimeout(async () => {
       setIsSpinning(false);
       setGameEnded(true);
+      
+      playWheelStopSound();
 
-      // Calculate the actual result based on final wheel position
       const normalizedRotation = finalRotation % 360;
-      const sectionSize = 360 / wheelSections.length; // 45 degrees per section
-
-      // The pointer is at the top (0 degrees), so we need to find which section is at the top
-      // We need to account for the wheel's rotation and find which section aligns with 0 degrees
+      const sectionSize = 360 / wheelSections.length;
       const pointerAngle = (360 - normalizedRotation) % 360;
-
-      // Find which section the pointer is pointing to
       const actualSectionIndex = Math.floor(pointerAngle / sectionSize) % wheelSections.length;
       const actualResult = wheelSections[actualSectionIndex];
       const result = actualResult.value;
@@ -206,22 +192,22 @@ const WheelOfFortune = () => {
       setLastResult(result);
 
       if (result === "itlog") {
-        const itlogReward = betAmount * 50; // 500x $ITLOG tokens
+        playJackpotSound();
+        
+        const itlogReward = betAmount * 50;
         try {
           await updateBalance.mutateAsync({
             itlogChange: itlogReward
           }).then(async () => {
-            // Track the win for quest progress (convert ITLOG to coin equivalent for tracking)
-            await trackGameWin(itlogReward * 0.01, 'wheel-of-fortune'); // Assuming 1 ITLOG = 0.01 coins equivalent
+            await trackGameWin(itlogReward * 0.01, 'wheel-of-fortune');
 
-            // Add to game history for $ITLOG win
             await addHistoryEntry({
               game_type: 'wheel-of-fortune',
               bet_amount: betAmount,
               result_type: 'win',
-              win_amount: itlogReward, // Store ITLOG amount in win_amount
+              win_amount: itlogReward,
               loss_amount: 0,
-              multiplier: 500, // 500x for $ITLOG
+              multiplier: 500,
               game_details: { 
                 selectedBet,
                 wheelResult: result,
@@ -250,6 +236,8 @@ const WheelOfFortune = () => {
           });
         }
       } else if (result === selectedBet) {
+        playWinSound();
+        
         const winnings = betAmount * actualResult.multiplier;
         try {
           await updateBalance.mutateAsync({
@@ -257,10 +245,8 @@ const WheelOfFortune = () => {
           });
           setBalance(prev => prev + winnings);
 
-          // Track the win for quest progress
           await trackGameWin(winnings, 'wheel-of-fortune');
 
-          // Add to game history
           await addHistoryEntry({
             game_type: 'wheel-of-fortune',
             bet_amount: betAmount,
@@ -287,10 +273,10 @@ const WheelOfFortune = () => {
           });
         }
       } else {
-        // Track the loss for quest progress
+        playLossSound();
+        
         trackGameLoss('wheel-of-fortune');
 
-        // Add to game history
         addHistoryEntry({
           game_type: 'wheel-of-fortune',
           bet_amount: betAmount,
@@ -349,14 +335,11 @@ const WheelOfFortune = () => {
                 </div>
 
                 <div className="flex flex-col items-center space-y-8">
-                  {/* Wheel Container */}
                   <div className="relative">
-                    {/* Pointer (Arrow pointing down at the top) */}
                     <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-20">
                       <div className="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[30px] border-l-transparent border-r-transparent border-t-white drop-shadow-2xl"></div>
                     </div>
 
-                    {/* Wheel */}
                     <div 
                       className="w-80 h-80 sm:w-96 sm:h-96 mx-auto rounded-full border-8 border-white shadow-2xl relative overflow-hidden transition-transform ease-out bg-gradient-to-br from-gray-800 to-gray-900"
                       style={{ 
@@ -401,14 +384,12 @@ const WheelOfFortune = () => {
                         );
                       })}
 
-                      {/* Center circle */}
                       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-br from-gray-200 to-white rounded-full border-4 border-gray-300 z-10 shadow-lg flex items-center justify-center">
                         <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full"></div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Last Result Display */}
                   {lastResult && (
                     <div className="text-center">
                       <Badge 
@@ -426,7 +407,6 @@ const WheelOfFortune = () => {
                     </div>
                   )}
 
-                  {/* Action Button */}
                   <div className="w-full max-w-md">
                     {!gameEnded ? (
                       <Button 

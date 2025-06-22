@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +11,7 @@ import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
+import { useGameSounds } from "@/hooks/useGameSounds";
 import GameHistory from "@/components/GameHistory";
 import BannedOverlay from "@/components/BannedOverlay";
 
@@ -38,6 +38,7 @@ const Mines = () => {
   const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry } = useGameHistory();
+  const { playDiamondSound, playExplosionSound, playWinSound, playLossSound, playJackpotSound } = useGameSounds();
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
@@ -145,6 +146,7 @@ const Mines = () => {
     newBoard[index] = actualTileState;
 
     if (actualTileState === "mine") {
+      playExplosionSound();
       trackGameLoss('mines');
       
       addHistoryEntry({
@@ -174,12 +176,18 @@ const Mines = () => {
       setTilesRevealed(0);
       setCurrentMultiplier(1.0);
       
+      setTimeout(() => {
+        playLossSound();
+      }, 500);
+      
       toast({
         title: "Game Over!",
         description: "You hit a mine! Better luck next time.",
         variant: "destructive"
       });
     } else if (actualTileState === "itlog") {
+      playJackpotSound();
+      
       const betMultiplier = parseFloat(currentBet) * 5000;
       const reward = Math.min(betMultiplier, 1000000);
       
@@ -223,6 +231,7 @@ const Mines = () => {
         description: `You found the exclusive $ITLOG token and won ${reward.toLocaleString()} tokens!`,
       });
     } else {
+      playDiamondSound();
       const newRevealed = tilesRevealed + 1;
       setTilesRevealed(newRevealed);
       setCurrentMultiplier(calculateMultiplier(newRevealed, parseInt(minesCount)));
@@ -263,6 +272,8 @@ const Mines = () => {
       setGameBoard(Array(25).fill("hidden"));
       setTilesRevealed(0);
       setCurrentMultiplier(1.0);
+      
+      playWinSound();
       
       toast({
         title: "Cashed out successfully!",
