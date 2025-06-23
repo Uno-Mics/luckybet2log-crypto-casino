@@ -191,7 +191,7 @@ const QuestSystem = () => {
                   <Button 
                     onClick={handleClaimRewards}
                     size="lg"
-                    className="w-full glow-gold bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-600 hover:to-amber-600 text-black font-semibold"
+                    className="w-full h-14 modern-button bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold text-lg"
                   >
                     <Gift className="w-5 h-5 mr-2" />
                     Claim Rewards
