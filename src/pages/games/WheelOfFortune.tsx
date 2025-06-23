@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
+import { useAuth } from "@/hooks/useAuth";
 import { useGameHistory } from "@/hooks/useGameHistory";
 import { useGameSounds } from "@/hooks/useGameSounds";
 import GameHistory from "@/components/GameHistory";
@@ -26,15 +28,29 @@ const WheelOfFortune = () => {
   const [gameEnded, setGameEnded] = useState(false);
   const { toast } = useToast();
   const { trackGameWin, trackGamePlay, trackBet, trackGameLoss } = useQuestTracker();
+  const { trackGameSession } = useActivityTracker();
+  const { user } = useAuth();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry } = useGameHistory();
   const { playWheelSpinSound, playWheelStopSound, playWinSound, playLossSound, playJackpotSound, audioEnabled, enableAudio } = useGameSounds();
+
+  const [sessionId] = useState(`wheel-of-fortune_session_${Date.now()}`);
+  const [sessionStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (profile) {
       setBalance(profile.coins);
     }
   }, [profile]);
+
+  useEffect(() => {
+    return () => {
+      if (user) {
+        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
+        trackGameSession('wheel-of-fortune', sessionDuration, sessionId);
+      }
+    };
+  }, [user, trackGameSession, sessionId, sessionStartTime]);
 
   const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
 
