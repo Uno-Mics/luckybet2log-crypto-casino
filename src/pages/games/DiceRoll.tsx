@@ -10,6 +10,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
+import { useAuth } from "@/hooks/useAuth";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
 import { useGameSounds } from "@/hooks/useGameSounds";
@@ -31,9 +33,14 @@ const DiceRoll = () => {
   const { profile, updateBalance } = useProfile();
   const { isBanned } = useBannedCheck();
   const { trackGameWin, trackGamePlay, trackBet } = useQuestTracker();
+  const { trackGameSession } = useActivityTracker();
+  const { user } = useAuth();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry, history } = useGameHistory('dice-roll');
   const { playWheelSpinSound, playWheelStopSound, playWinSound, playLossSound, playJackpotSound, audioEnabled, enableAudio } = useGameSounds();
+
+  const [sessionId] = useState(`dice-roll_session_${Date.now()}`);
+  const [sessionStartTime] = useState(Date.now());
 
   // Debug: Log when history changes
   useEffect(() => {
@@ -45,6 +52,15 @@ const DiceRoll = () => {
       setBalance(profile.coins);
     }
   }, [profile]);
+
+  useEffect(() => {
+    return () => {
+      if (user) {
+        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
+        trackGameSession('dice-roll', sessionDuration, sessionId);
+      }
+    };
+  }, [user, trackGameSession, sessionId, sessionStartTime]);
 
   const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
 
@@ -186,7 +202,8 @@ const DiceRoll = () => {
                 finalRoll,
                 isWin: true,
                 isItlogWin: true,
-                itlogReward: reward
+                itlogReward: reward,
+                sessionDuration: Math.floor((Date.now() - sessionStartTime) / 1000)
               }
             });
             
@@ -237,7 +254,8 @@ const DiceRoll = () => {
                 prediction, 
                 targetNumber, 
                 finalRoll,
-                isWin: true
+                isWin: true,
+                sessionDuration: Math.floor((Date.now() - sessionStartTime) / 1000)
               }
             });
             
@@ -268,7 +286,8 @@ const DiceRoll = () => {
               prediction, 
               targetNumber, 
               finalRoll,
-              isWin: false
+              isWin: false,
+              sessionDuration: Math.floor((Date.now() - sessionStartTime) / 1000)
             }
           });
           
