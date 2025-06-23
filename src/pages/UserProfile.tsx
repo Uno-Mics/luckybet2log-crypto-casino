@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   User, 
   Wallet, 
@@ -18,15 +21,147 @@ import {
   Sparkles,
   Trophy,
   Target,
-  Zap
+  Zap,
+  Edit,
+  Key,
+  Save,
+  X
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const UserProfile = () => {
   const { user } = useAuth();
   const { profile, isLoading } = useProfile();
+  const { toast } = useToast();
+  
+  // Edit profile states
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [isUsernameLoading, setIsUsernameLoading] = useState(false);
+  
+  // Change password states
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+
+  // Update username function
+  const handleUpdateUsername = async () => {
+    if (!newUsername.trim() || !profile) return;
+    
+    if (newUsername.trim() === profile.username) {
+      setIsEditingUsername(false);
+      return;
+    }
+
+    setIsUsernameLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ username: newUsername.trim() })
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Username updated successfully!",
+      });
+      
+      setIsEditingUsername(false);
+      // The profile will be automatically updated via the real-time subscription
+    } catch (error: any) {
+      console.error('Username update error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update username",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUsernameLoading(false);
+    }
+  };
+
+  // Change password function
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all password fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords don't match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPasswordLoading(true);
+    try {
+      // First verify current password by attempting to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: currentPassword
+      });
+
+      if (signInError) {
+        throw new Error('Current password is incorrect');
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Success!",
+        description: "Password changed successfully!",
+      });
+      
+      setIsPasswordDialogOpen(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      console.error('Password change error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to change password",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPasswordLoading(false);
+    }
+  };
+
+  // Initialize username when editing starts
+  const startEditingUsername = () => {
+    setNewUsername(profile?.username || "");
+    setIsEditingUsername(true);
+  };
 
   if (isLoading) {
     return (
@@ -158,7 +293,53 @@ const UserProfile = () => {
                     </div>
                   </div>
                   
-                  <CardTitle className="text-xl sm:text-2xl font-bold mb-2 break-words">{profile.username}</CardTitle>
+                  {isEditingUsername ? (
+                    <div className="space-y-3">
+                      <Input
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        placeholder="Enter new username"
+                        className="text-center"
+                        maxLength={20}
+                      />
+                      <div className="flex gap-2 justify-center">
+                        <Button
+                          size="sm"
+                          onClick={handleUpdateUsername}
+                          disabled={isUsernameLoading || !newUsername.trim()}
+                          className="bg-green-500 hover:bg-green-600"
+                        >
+                          {isUsernameLoading ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Save className="w-4 h-4" />
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setIsEditingUsername(false)}
+                          disabled={isUsernameLoading}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <CardTitle className="text-xl sm:text-2xl font-bold break-words">{profile.username}</CardTitle>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={startEditingUsername}
+                          className="text-muted-foreground hover:text-purple-400"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   <p className="text-sm text-muted-foreground break-all">Player ID: {profile.wallet_id.slice(0, 8)}...</p>
                 </CardHeader>
                 
@@ -205,6 +386,80 @@ const UserProfile = () => {
                           Play Games
                         </Button>
                       </Link>
+                      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10">
+                            <Key className="w-4 h-4 mr-2" />
+                            Change Password
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <Key className="w-5 h-5 text-orange-400" />
+                              Change Password
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="current-password">Current Password</Label>
+                              <Input
+                                id="current-password"
+                                type="password"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                placeholder="Enter current password"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="new-password">New Password</Label>
+                              <Input
+                                id="new-password"
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                placeholder="Enter new password"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="confirm-password">Confirm New Password</Label>
+                              <Input
+                                id="confirm-password"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Confirm new password"
+                              />
+                            </div>
+                            <div className="flex gap-2 pt-4">
+                              <Button
+                                onClick={handleChangePassword}
+                                disabled={isPasswordLoading}
+                                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                              >
+                                {isPasswordLoading ? (
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                ) : (
+                                  <Key className="w-4 h-4 mr-2" />
+                                )}
+                                Change Password
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => {
+                                  setIsPasswordDialogOpen(false);
+                                  setCurrentPassword("");
+                                  setNewPassword("");
+                                  setConfirmPassword("");
+                                }}
+                                disabled={isPasswordLoading}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 </CardContent>
