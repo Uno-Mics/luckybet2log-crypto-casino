@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -286,6 +285,19 @@ const Admin = () => {
             p_user_id: withdrawal.user_id,
             p_php_change: -withdrawal.amount,
           });
+
+          // Track withdrawal quest progress
+          const { error: questError } = await supabase.rpc('update_quest_progress', {
+            p_user_id: withdrawal.user_id,
+            p_activity_type: 'withdraw',
+            p_activity_value: withdrawal.amount,
+            p_game_type: null,
+            p_metadata: { status: 'approved', admin_processed: true }
+          });
+
+          if (questError) {
+            console.error('Error tracking withdrawal quest progress:', questError);
+          }
         }
 
         // Create notification
@@ -398,13 +410,13 @@ const Admin = () => {
     },
     onSuccess: (data) => {
       console.log('Delete user success:', data);
-      
+
       if (data?.success) {
         queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
         queryClient.invalidateQueries({ queryKey: ['admin', 'deposits'] });
         queryClient.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
         queryClient.invalidateQueries({ queryKey: ['admin', 'appeals'] });
-        
+
         toast({
           title: "User deleted successfully",
           description: `User and all associated data have been permanently deleted.`,
@@ -442,7 +454,7 @@ const Admin = () => {
       itlogAmount: number; 
     }) => {
       const results = [];
-      
+
       for (const userId of userIds) {
         const { error } = await supabase.rpc('update_user_balance', {
           p_user_id: userId,
@@ -457,29 +469,29 @@ const Admin = () => {
           results.push({ userId, success: true });
         }
       }
-      
+
       return results;
     },
     onSuccess: (results) => {
       const successCount = results.filter(r => r.success).length;
       const failureCount = results.filter(r => !r.success).length;
-      
+
       // Invalidate all relevant queries to update UI immediately
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      
+
       // Invalidate profile queries for all affected users to update navbar and other components
       results.forEach(result => {
         if (result.success) {
           queryClient.invalidateQueries({ queryKey: ['profile', result.userId] });
         }
       });
-      
+
       // Also invalidate the general profile query to ensure current user's data is fresh
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      
+
       // Invalidate any wallet-related queries
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
-      
+
       toast({
         title: "Custom amounts distributed",
         description: `Successfully updated ${successCount} users${failureCount > 0 ? `, ${failureCount} failed` : ''}. Balances have been updated.`,
@@ -491,9 +503,9 @@ const Admin = () => {
   const resetAllBalances = useMutation({
     mutationFn: async ({ balanceType }: { balanceType: 'php' | 'coins' | 'itlog' | 'all' }) => {
       console.log('Attempting to reset balances for type:', balanceType);
-      
+
       let result;
-      
+
       try {
         switch (balanceType) {
           case 'php':
@@ -511,16 +523,16 @@ const Admin = () => {
           default:
             throw new Error('Invalid balance type');
         }
-        
+
         console.log('Reset result details:', {
           data: result.data,
           error: result.error,
           status: result.status,
           statusText: result.statusText
         });
-        
+
         const { data, error } = result;
-        
+
         if (error) {
           console.error('Supabase RPC error details:', {
             message: error.message,
@@ -530,15 +542,15 @@ const Admin = () => {
           });
           throw new Error(`Database error: ${error.message}${error.details ? ` - ${error.details}` : ''}`);
         }
-        
+
         if (data === false) {
           throw new Error('Reset operation failed - the database function returned false. Check server logs for details.');
         }
-        
+
         if (data !== true) {
           console.warn('Unexpected response from reset function:', data);
         }
-        
+
         return { success: true, balanceType, result: data };
       } catch (error) {
         console.error('Reset balances error:', error);
@@ -547,18 +559,18 @@ const Admin = () => {
     },
     onSuccess: (result, variables) => {
       console.log('Reset balances success:', result);
-      
+
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      
+
       const balanceTypeMap = {
         'php': 'PHP balances',
         'coins': 'Coins',
         'itlog': 'ITLOG tokens',
         'all': 'all balances'
       };
-      
+
       toast({
         title: "Balances reset successfully",
         description: `All user ${balanceTypeMap[variables.balanceType]} have been reset to zero.`,
@@ -566,9 +578,9 @@ const Admin = () => {
     },
     onError: (error: Error) => {
       console.error('Reset balances mutation error:', error);
-      
+
       let errorMessage = "Failed to reset balances. Please try again.";
-      
+
       if (error.message.includes('function') && error.message.includes('does not exist')) {
         errorMessage = "Reset function not found. Please ensure database migrations are applied.";
       } else if (error.message.includes('Database error')) {
@@ -576,7 +588,7 @@ const Admin = () => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       toast({
         title: "Error resetting balances",
         description: errorMessage,
@@ -589,19 +601,19 @@ const Admin = () => {
   const clearUserData = useMutation({
     mutationFn: async ({ userId }: { userId: string }) => {
       console.log('Clearing user data for:', userId);
-      
+
       try {
         const { data, error } = await supabase.rpc('clear_user_data', { 
           p_user_id: userId 
         });
-        
+
         console.log('Clear user data response:', { data, error });
-        
+
         if (error) {
           console.error('Supabase RPC error:', error);
           throw new Error(`Database error: ${error.message || error.details || 'Unknown database error'}`);
         }
-        
+
         // Check if the operation was successful
         if (data === true) {
           return { success: true, message: 'User data cleared successfully' };
@@ -617,13 +629,13 @@ const Admin = () => {
     },
     onSuccess: (data) => {
       console.log('Clear user data success:', data);
-      
+
       // Invalidate all relevant queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'deposits'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'appeals'] });
-      
+
       toast({
         title: "User data cleared successfully",
         description: data?.message || "All user progress and data have been cleared successfully.",
@@ -631,10 +643,10 @@ const Admin = () => {
     },
     onError: (error: Error) => {
       console.error('Clear user data mutation error:', error);
-      
+
       // Provide more specific error messages based on the error
       let errorMessage = "Failed to clear user data. Please try again.";
-      
+
       if (error.message.includes('user may not exist')) {
         errorMessage = "User not found or may have already been deleted.";
       } else if (error.message.includes('Database error')) {
@@ -642,7 +654,7 @@ const Admin = () => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       toast({
         title: "Error clearing user data",
         description: errorMessage,
@@ -668,13 +680,13 @@ const Admin = () => {
               <Shield className="w-5 h-5 text-red-400" />
               <span className="text-sm font-medium text-gradient">Administrative Control</span>
             </div>
-            
+
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4">
               <span className="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
                 Admin Dashboard
               </span>
             </h1>
-            
+
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               Comprehensive platform management with advanced user controls and system monitoring.
             </p>
@@ -805,7 +817,7 @@ const Admin = () => {
                                     ₱{Number(user.php_balance).toFixed(2)}
                                   </Badge>
                                 </div>
-                              </div>
+</div>
                             </div>
                           </div>
                           <div className="flex space-x-2 lg:space-x-3">
@@ -1262,7 +1274,7 @@ const Admin = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div className="space-y-6">
                       <h3 className="text-xl font-bold">Reset User Balances</h3>
-                      
+
                       <div className="space-y-4">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -1343,7 +1355,7 @@ const Admin = () => {
 
                     <div className="space-y-6">
                       <h3 className="text-xl font-bold text-red-400">Nuclear Options</h3>
-                      
+
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" className="w-full h-16 text-lg bg-red-700 hover:bg-red-800 font-bold">
