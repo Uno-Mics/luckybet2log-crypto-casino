@@ -70,11 +70,11 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen gradient-bg pb-20 lg:pb-0">
-      {/* Enhanced Modern Navigation */}
+      {/* Enhanced Modern Navigation - Fixed mobile background issues */}
       <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ease-out ${
         scrolled 
-          ? 'glass backdrop-blur-xl border-b border-white/10 py-2' 
-          : 'bg-transparent py-4'
+          ? 'bg-slate-900/95 backdrop-blur-xl border-b border-white/10 py-2' 
+          : 'bg-slate-900/80 backdrop-blur-sm py-4'
       }`}>
         <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="flex items-center justify-between h-16 w-full">
@@ -126,9 +126,9 @@ const Layout = ({ children }: LayoutProps) => {
 
             {/* Enhanced Right Side */}
             <div className="flex items-center space-x-1">
-              {/* Compact Balance Display */}
+              {/* Compact Balance Display - Fixed mobile background */}
               <div className="hidden lg:flex items-center space-x-1">
-                <div className="glass rounded-lg px-2 py-1 border border-white/10">
+                <div className="bg-slate-800/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10">
                   <div className="flex items-center space-x-2 text-xs">
                     <div className="flex items-center space-x-1">
                       <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
@@ -147,8 +147,8 @@ const Layout = ({ children }: LayoutProps) => {
                 </div>
               </div>
               
-              {/* Mobile Balance Indicator */}
-              <div className="lg:hidden glass rounded-lg px-2 py-1 border border-white/10">
+              {/* Mobile Balance Indicator - Fixed background */}
+              <div className="lg:hidden bg-slate-800/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10">
                 <div className="flex flex-col text-xs space-y-1">
                   <span className="text-green-400 font-bold">₱{profile?.php_balance.toFixed(0) || "0"}</span>
                   <span className="text-gradient-gold font-bold">{profile?.itlog_tokens?.toFixed(2) || "0.00"}</span>
@@ -163,12 +163,12 @@ const Layout = ({ children }: LayoutProps) => {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="lg:hidden glass rounded-lg p-2 hover:bg-white/10 border border-white/10"
+                    className="lg:hidden bg-slate-800/80 backdrop-blur-sm rounded-lg p-2 hover:bg-slate-700/80 border border-white/10"
                   >
                     <Menu className="w-4 h-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[280px] sm:w-80 glass border-l border-white/10 backdrop-blur-2xl z-[200]">
+                <SheetContent side="right" className="w-[280px] sm:w-80 bg-slate-900/95 backdrop-blur-2xl border-l border-white/10 z-[200]">
                   <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   <SheetDescription className="sr-only">Navigate through your casino dashboard</SheetDescription>
                   <div className="flex flex-col h-full">
@@ -190,8 +190,8 @@ const Layout = ({ children }: LayoutProps) => {
                       </SheetClose>
                     </div>
                     
-                    {/* Enhanced Balance Display */}
-                    <div className="glass rounded-xl p-4 mb-4 border border-white/10">
+                    {/* Enhanced Balance Display - Fixed background for mobile */}
+                    <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl p-4 mb-4 border border-white/10">
                       <h3 className="font-semibold mb-3 text-sm text-gradient">Your Balance</h3>
                       <div className="space-y-3">
                         <div className="flex items-center justify-between p-2 bg-green-500/10 rounded-lg border border-green-500/20">
@@ -264,7 +264,7 @@ const Layout = ({ children }: LayoutProps) => {
                 variant="ghost" 
                 size="sm" 
                 onClick={handleLogout} 
-                className="hidden lg:flex glass rounded-lg hover:bg-red-500/10 hover:text-red-400 border border-white/10 p-2"
+                className="hidden lg:flex bg-slate-800/80 backdrop-blur-sm rounded-lg hover:bg-red-500/10 hover:text-red-400 border border-white/10 p-2"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
@@ -280,8 +280,8 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       </main>
 
-      {/* Redesigned Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass backdrop-blur-2xl border-t border-white/10 safe-area-pb">
+      {/* Redesigned Mobile Bottom Navigation - Fixed background */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-2xl border-t border-white/10 safe-area-pb">
         <div className="grid grid-cols-5 gap-1 p-2">
           {navigation.slice(0, 5).map((item) => {
             const Icon = item.icon;
