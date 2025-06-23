@@ -19,7 +19,7 @@ const NotificationBell = () => {
     unreadCount: withdrawalUnreadCount, 
     markAsRead: markWithdrawalAsRead 
   } = useWithdrawalNotifications();
-  
+
   const { 
     notifications: depositNotifications, 
     unreadCount: depositUnreadCount, 
@@ -50,11 +50,11 @@ const NotificationBell = () => {
     try {
       const unreadWithdrawals = withdrawalNotifications.filter(n => !n.is_read);
       const unreadDeposits = depositNotifications.filter(n => !n.is_read);
-      
+
       for (const notification of unreadWithdrawals) {
         await markWithdrawalAsRead.mutateAsync(notification.id);
       }
-      
+
       for (const notification of unreadDeposits) {
         await markDepositAsRead.mutateAsync(notification.id);
       }
@@ -66,28 +66,28 @@ const NotificationBell = () => {
   // Helper function to determine notification type display
   const getNotificationTypeDisplay = (notification: any) => {
     const isAdmin = profile?.is_admin;
-    
+
     if (isAdmin) {
       // For admins, check if the message contains request language
       if (notification.message.includes('has requested') || notification.message.includes('has submitted')) {
         return notification.type === 'deposit' ? 'Deposit Request' : 'Withdrawal Request';
       }
     }
-    
+
     // For regular users or admin approval/rejection notifications
     return notification.type === 'deposit' ? 'Deposit' : 'Withdrawal';
   };
 
   const getNotificationColor = (notification: any) => {
     const isAdmin = profile?.is_admin;
-    
+
     if (isAdmin && (notification.message.includes('has requested') || notification.message.includes('has submitted'))) {
       // Admin notifications for new requests
       return notification.type === 'deposit' 
         ? 'bg-orange-500/10 text-orange-400 border-orange-500/30' 
         : 'bg-purple-500/10 text-purple-400 border-purple-500/30';
     }
-    
+
     // Regular user notifications
     return notification.type === 'deposit' 
       ? 'bg-green-500/10 text-green-400 border-green-500/30' 
@@ -109,7 +109,7 @@ const NotificationBell = () => {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-80 p-0 z-[150]" align="end">
         <div className="border-b p-4">
           <div className="flex items-center justify-between">
             <h4 className="font-semibold">Notifications</h4>
