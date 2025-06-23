@@ -343,7 +343,7 @@ const UserProfile = () => {
                       </div>
                     </div>
                   )}
-                  <p className="text-sm text-muted-foreground break-all">Player ID: {profile.wallet_id.slice(0, 8)}...</p>
+                  <p className="text-sm text-gray-300 font-mono bg-gray-800/50 px-3 py-1 rounded-md border border-gray-600/30 mt-2 break-all">Player ID: {profile.wallet_id}</p>
                 </CardHeader>
                 
                 <CardContent className="space-y-6">
