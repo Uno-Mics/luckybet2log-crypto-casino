@@ -1,5 +1,5 @@
 
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 
 interface GameSounds {
   playDiamondSound: () => void;
@@ -9,6 +9,7 @@ interface GameSounds {
   playJackpotSound: () => void;
   playWheelSpinSound: () => void;
   playWheelStopSound: () => void;
+  playCardDealSound: () => void;
   audioEnabled: boolean;
   enableAudio: () => void;
 }
@@ -16,14 +17,25 @@ interface GameSounds {
 export const useGameSounds = (): GameSounds => {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const soundBuffersRef = useRef<Map<string, AudioBuffer>>(new Map());
 
-  // Check if user has interacted with the page (required for audio in most browsers)
+  // Initialize audio context once
   useEffect(() => {
-    const handleUserInteraction = () => {
-      setUserInteracted(true);
-      console.log('User interaction detected - audio can now play');
+    const initAudioContext = () => {
+      if (!audioContextRef.current && (window.AudioContext || (window as any).webkitAudioContext)) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log('Audio context initialized');
+      }
     };
 
+    const handleUserInteraction = () => {
+      setUserInteracted(true);
+      initAudioContext();
+      console.log('User interaction detected - audio ready');
+    };
+
+    // Add event listeners for user interaction
     document.addEventListener('click', handleUserInteraction, { once: true });
     document.addEventListener('keydown', handleUserInteraction, { once: true });
     document.addEventListener('touchstart', handleUserInteraction, { once: true });
@@ -37,145 +49,221 @@ export const useGameSounds = (): GameSounds => {
 
   const enableAudio = useCallback(() => {
     setAudioEnabled(true);
+    if (!audioContextRef.current && (window.AudioContext || (window as any).webkitAudioContext)) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
     console.log('Audio manually enabled by user');
   }, []);
 
-  const createSound = useCallback((frequency: number, duration: number, volume: number = 0.3, type: 'sine' | 'square' | 'sawtooth' | 'triangle' = 'sine') => {
-    if (!userInteracted) {
-      console.warn('Cannot play audio - user has not interacted with page yet');
-      return null;
-    }
+  // Create audio buffer for a specific sound
+  const createAudioBuffer = useCallback((frequency: number, duration: number, type: OscillatorType = 'sine'): AudioBuffer | null => {
+    if (!audioContextRef.current) return null;
 
     try {
-      // Create audio context and generate tone
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+      const sampleRate = audioContextRef.current.sampleRate;
+      const numSamples = Math.floor(sampleRate * duration);
+      const buffer = audioContextRef.current.createBuffer(1, numSamples, sampleRate);
+      const channelData = buffer.getChannelData(0);
 
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        let sample = 0;
 
-      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-      oscillator.type = type;
+        switch (type) {
+          case 'sine':
+            sample = Math.sin(2 * Math.PI * frequency * t);
+            break;
+          case 'square':
+            sample = Math.sin(2 * Math.PI * frequency * t) > 0 ? 1 : -1;
+            break;
+          case 'sawtooth':
+            sample = 2 * (frequency * t - Math.floor(frequency * t + 0.5));
+            break;
+          case 'triangle':
+            sample = 2 * Math.abs(2 * (frequency * t - Math.floor(frequency * t + 0.5))) - 1;
+            break;
+        }
 
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+        // Apply envelope (fade in/out) for smoother sound
+        const fadeTime = Math.min(0.01, duration * 0.1);
+        const fadeInSamples = Math.floor(fadeTime * sampleRate);
+        const fadeOutSamples = Math.floor(fadeTime * sampleRate);
 
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + duration);
+        if (i < fadeInSamples) {
+          sample *= i / fadeInSamples;
+        } else if (i > numSamples - fadeOutSamples) {
+          sample *= (numSamples - i) / fadeOutSamples;
+        }
 
-      console.log(`Playing ${type} sound at ${frequency}Hz for ${duration}s`);
-      return oscillator;
+        channelData[i] = sample * 0.3; // Lower base volume
+      }
+
+      return buffer;
     } catch (error) {
-      console.error('Error creating sound:', error);
+      console.error('Error creating audio buffer:', error);
       return null;
     }
-  }, [userInteracted]);
+  }, []);
+
+  // Play audio buffer
+  const playBuffer = useCallback((buffer: AudioBuffer | null, volume: number = 0.5) => {
+    if (!buffer || !audioContextRef.current || !audioEnabled || !userInteracted) return;
+
+    try {
+      const source = audioContextRef.current.createBufferSource();
+      const gainNode = audioContextRef.current.createGain();
+
+      source.buffer = buffer;
+      source.connect(gainNode);
+      gainNode.connect(audioContextRef.current.destination);
+
+      gainNode.gain.setValueAtTime(volume, audioContextRef.current.currentTime);
+      source.start(0);
+
+      // Clean up after playback
+      source.onended = () => {
+        source.disconnect();
+        gainNode.disconnect();
+      };
+    } catch (error) {
+      console.error('Error playing audio buffer:', error);
+    }
+  }, [audioEnabled, userInteracted]);
+
+  // Pre-generate sound buffers
+  const generateSoundBuffers = useCallback(() => {
+    if (!audioContextRef.current) return;
+
+    const sounds = {
+      diamond: { freq: 880, duration: 0.2, type: 'sine' as OscillatorType },
+      explosion: { freq: 150, duration: 0.4, type: 'sawtooth' as OscillatorType },
+      win1: { freq: 523, duration: 0.15, type: 'sine' as OscillatorType },
+      win2: { freq: 659, duration: 0.15, type: 'sine' as OscillatorType },
+      win3: { freq: 784, duration: 0.2, type: 'sine' as OscillatorType },
+      loss1: { freq: 300, duration: 0.2, type: 'triangle' as OscillatorType },
+      loss2: { freq: 250, duration: 0.2, type: 'triangle' as OscillatorType },
+      loss3: { freq: 200, duration: 0.3, type: 'triangle' as OscillatorType },
+      jackpot1: { freq: 523, duration: 0.25, type: 'sine' as OscillatorType },
+      jackpot2: { freq: 659, duration: 0.25, type: 'sine' as OscillatorType },
+      jackpot3: { freq: 784, duration: 0.25, type: 'sine' as OscillatorType },
+      jackpot4: { freq: 1047, duration: 0.3, type: 'sine' as OscillatorType },
+      wheelSpin: { freq: 220, duration: 0.1, type: 'square' as OscillatorType },
+      wheelStop: { freq: 400, duration: 0.15, type: 'triangle' as OscillatorType },
+      cardDeal: { freq: 600, duration: 0.1, type: 'sine' as OscillatorType }
+    };
+
+    Object.entries(sounds).forEach(([name, config]) => {
+      const buffer = createAudioBuffer(config.freq, config.duration, config.type);
+      if (buffer) {
+        soundBuffersRef.current.set(name, buffer);
+      }
+    });
+
+    console.log('Sound buffers generated:', soundBuffersRef.current.size);
+  }, [createAudioBuffer]);
+
+  // Generate buffers when audio is enabled
+  useEffect(() => {
+    if (audioEnabled && userInteracted && audioContextRef.current) {
+      generateSoundBuffers();
+    }
+  }, [audioEnabled, userInteracted, generateSoundBuffers]);
 
   const playDiamondSound = useCallback(() => {
-    if (!audioEnabled && !userInteracted) {
-      console.log('Diamond sound requested but audio not ready');
-      return;
-    }
-    
+    if (!audioEnabled || !userInteracted) return;
     console.log('Playing diamond sound');
-    createSound(800, 0.2, 0.3, 'sine');
-    setTimeout(() => createSound(1000, 0.1, 0.2, 'sine'), 100);
-  }, [audioEnabled, userInteracted, createSound]);
+    const buffer = soundBuffersRef.current.get('diamond');
+    playBuffer(buffer, 0.6);
+  }, [audioEnabled, userInteracted, playBuffer]);
 
   const playExplosionSound = useCallback(() => {
-    if (!audioEnabled && !userInteracted) {
-      console.log('Explosion sound requested but audio not ready');
-      return;
-    }
-
+    if (!audioEnabled || !userInteracted) return;
     console.log('Playing explosion sound');
-    createSound(150, 0.3, 0.5, 'sawtooth');
-    setTimeout(() => createSound(100, 0.2, 0.4, 'square'), 50);
-    setTimeout(() => createSound(80, 0.3, 0.3, 'sawtooth'), 100);
-  }, [audioEnabled, userInteracted, createSound]);
+    const buffer = soundBuffersRef.current.get('explosion');
+    playBuffer(buffer, 0.8);
+  }, [audioEnabled, userInteracted, playBuffer]);
 
   const playWinSound = useCallback(() => {
-    if (!audioEnabled && !userInteracted) {
-      console.log('Win sound requested but audio not ready');
-      return;
-    }
-
+    if (!audioEnabled || !userInteracted) return;
     console.log('Playing win sound');
-    createSound(523, 0.2, 0.4, 'sine'); // C5
-    setTimeout(() => createSound(659, 0.2, 0.4, 'sine'), 150); // E5
-    setTimeout(() => createSound(784, 0.3, 0.4, 'sine'), 300); // G5
-  }, [audioEnabled, userInteracted, createSound]);
-
-  const playLossSound = useCallback(() => {
-    if (!audioEnabled && !userInteracted) {
-      console.log('Loss sound requested but audio not ready');
-      return;
-    }
-
-    console.log('Playing loss sound');
-    createSound(300, 0.3, 0.3, 'triangle');
-    setTimeout(() => createSound(250, 0.3, 0.3, 'triangle'), 200);
-    setTimeout(() => createSound(200, 0.4, 0.3, 'triangle'), 400);
-  }, [audioEnabled, userInteracted, createSound]);
-
-  const playJackpotSound = useCallback(() => {
-    if (!audioEnabled && !userInteracted) {
-      console.log('Jackpot sound requested but audio not ready');
-      return;
-    }
-
-    console.log('Playing jackpot sound');
-    // Celebratory ascending melody
-    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
-    notes.forEach((note, index) => {
+    
+    // Play ascending melody
+    const buffers = ['win1', 'win2', 'win3'];
+    buffers.forEach((name, index) => {
       setTimeout(() => {
-        createSound(note, 0.3, 0.6, 'sine');
-        createSound(note * 2, 0.3, 0.3, 'sine'); // Octave harmony
+        const buffer = soundBuffersRef.current.get(name);
+        playBuffer(buffer, 0.7);
       }, index * 150);
     });
+  }, [audioEnabled, userInteracted, playBuffer]);
+
+  const playLossSound = useCallback(() => {
+    if (!audioEnabled || !userInteracted) return;
+    console.log('Playing loss sound');
     
-    // Extra celebration sounds
+    // Play descending melody
+    const buffers = ['loss1', 'loss2', 'loss3'];
+    buffers.forEach((name, index) => {
+      setTimeout(() => {
+        const buffer = soundBuffersRef.current.get(name);
+        playBuffer(buffer, 0.5);
+      }, index * 200);
+    });
+  }, [audioEnabled, userInteracted, playBuffer]);
+
+  const playJackpotSound = useCallback(() => {
+    if (!audioEnabled || !userInteracted) return;
+    console.log('Playing jackpot sound');
+    
+    // Play celebratory ascending melody
+    const buffers = ['jackpot1', 'jackpot2', 'jackpot3', 'jackpot4'];
+    buffers.forEach((name, index) => {
+      setTimeout(() => {
+        const buffer = soundBuffersRef.current.get(name);
+        playBuffer(buffer, 0.8);
+      }, index * 120);
+    });
+
+    // Add sparkle effects
     setTimeout(() => {
       for (let i = 0; i < 5; i++) {
-        setTimeout(() => createSound(1200 + Math.random() * 400, 0.1, 0.4, 'sine'), i * 100);
+        setTimeout(() => {
+          const buffer = soundBuffersRef.current.get('diamond');
+          playBuffer(buffer, 0.4);
+        }, i * 100);
       }
-    }, 600);
-  }, [audioEnabled, userInteracted, createSound]);
+    }, 500);
+  }, [audioEnabled, userInteracted, playBuffer]);
 
   const playWheelSpinSound = useCallback(() => {
-    if (!audioEnabled && !userInteracted) {
-      console.log('Wheel spin sound requested but audio not ready');
-      return;
-    }
-
+    if (!audioEnabled || !userInteracted) return;
     console.log('Playing wheel spin sound');
     
-    let frequency = 200;
-    const interval = setInterval(() => {
-      createSound(frequency, 0.1, 0.2, 'square');
-      frequency += Math.random() * 50 - 25; // Slight variation
-      frequency = Math.max(150, Math.min(300, frequency)); // Keep in range
-    }, 100);
+    // Create spinning effect with multiple quick sounds
+    const playSpinTick = () => {
+      const buffer = soundBuffersRef.current.get('wheelSpin');
+      playBuffer(buffer, 0.3);
+    };
 
-    // Stop after 4.5 seconds
-    setTimeout(() => {
-      clearInterval(interval);
-      console.log('Wheel spin sound stopped');
-    }, 4500);
-  }, [audioEnabled, userInteracted, createSound]);
+    // Play multiple ticks to simulate spinning
+    for (let i = 0; i < 20; i++) {
+      setTimeout(playSpinTick, i * 200);
+    }
+  }, [audioEnabled, userInteracted, playBuffer]);
 
   const playWheelStopSound = useCallback(() => {
-    if (!audioEnabled && !userInteracted) {
-      console.log('Wheel stop sound requested but audio not ready');
-      return;
-    }
-
+    if (!audioEnabled || !userInteracted) return;
     console.log('Playing wheel stop sound');
-    createSound(400, 0.2, 0.2, 'triangle');
-    setTimeout(() => createSound(300, 0.3, 0.1, 'triangle'), 100);
-  }, [audioEnabled, userInteracted, createSound]);
+    const buffer = soundBuffersRef.current.get('wheelStop');
+    playBuffer(buffer, 0.6);
+  }, [audioEnabled, userInteracted, playBuffer]);
+
+  const playCardDealSound = useCallback(() => {
+    if (!audioEnabled || !userInteracted) return;
+    console.log('Playing card deal sound');
+    const buffer = soundBuffersRef.current.get('cardDeal');
+    playBuffer(buffer, 0.4);
+  }, [audioEnabled, userInteracted, playBuffer]);
 
   return {
     playDiamondSound,
@@ -185,7 +273,8 @@ export const useGameSounds = (): GameSounds => {
     playJackpotSound,
     playWheelSpinSound,
     playWheelStopSound,
-    audioEnabled: audioEnabled || userInteracted,
+    playCardDealSound,
+    audioEnabled: audioEnabled && userInteracted,
     enableAudio
   };
 };
