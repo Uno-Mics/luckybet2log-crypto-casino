@@ -30,6 +30,7 @@ import {
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -38,6 +39,7 @@ const UserProfile = () => {
   const { user } = useAuth();
   const { profile, isLoading } = useProfile();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Edit profile states
   const [isEditingUsername, setIsEditingUsername] = useState(false);
@@ -75,7 +77,8 @@ const UserProfile = () => {
       });
       
       setIsEditingUsername(false);
-      // The profile will be automatically updated via the real-time subscription
+      // Immediately invalidate and refetch the profile to update the UI
+      queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
     } catch (error: any) {
       console.error('Username update error:', error);
       toast({
