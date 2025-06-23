@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Gamepad2, 
   TrendingUp, 
@@ -18,6 +20,107 @@ import {
 } from "lucide-react";
 
 const Index = () => {
+  // Fetch real-time statistics from database
+  const { data: statsData } = useQuery({
+    queryKey: ['homepage-stats'],
+    queryFn: async () => {
+      // Get total users count
+      const { count: totalUsers } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      // Get active users (non-banned users)
+      const { count: activeUsers } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_banned', false);
+
+      // Get total games played from game_history
+      const { count: gamesPlayed } = await supabase
+        .from('game_history')
+        .select('*', { count: 'exact', head: true });
+
+      // Calculate total winnings as sum of all users' portfolio values
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('php_balance, coins, itlog_tokens');
+
+      const totalWinnings = profilesData?.reduce((sum, profile) => {
+        // Convert everything to PHP equivalent for total portfolio value
+        const phpValue = profile.php_balance || 0;
+        const coinsValue = (profile.coins || 0) * 0.01; // Assuming 1 coin = 0.01 PHP
+        const itlogValue = (profile.itlog_tokens || 0) * 0.02; // Assuming 1 ITLOG = 0.02 PHP
+        return sum + phpValue + coinsValue + itlogValue;
+      }, 0) || 0;
+
+      // Get total ITLOG tokens distributed from multiple sources
+      let totalItlogDistributed = 0;
+
+      // From earning_history table
+      const { data: earningData } = await supabase
+        .from('earning_history')
+        .select('tokens_earned');
+      
+      const earningItlog = earningData?.reduce((sum, earning) => sum + (earning.tokens_earned || 0), 0) || 0;
+
+      // From game_history where ITLOG tokens were won
+      const { data: gameItlogData } = await supabase
+        .from('game_history')
+        .select('win_amount, game_details')
+        .eq('result_type', 'win')
+        .not('game_details', 'is', null);
+
+      const gameItlog = gameItlogData?.reduce((sum, game) => {
+        // Check if this was an ITLOG win based on game_details
+        const details = game.game_details as any;
+        if (details && (details.isItlogWin || details.itlogReward)) {
+          return sum + (details.itlogReward || game.win_amount || 0);
+        }
+        return sum;
+      }, 0) || 0;
+
+      // From quest rewards (quest_rewards_claimed table)
+      const { data: questRewardsData } = await supabase
+        .from('quest_rewards_claimed')
+        .select('total_reward');
+
+      const questItlog = questRewardsData?.reduce((sum, reward) => sum + (reward.total_reward || 0), 0) || 0;
+
+      totalItlogDistributed = earningItlog + gameItlog + questItlog;
+
+      return {
+        totalUsers: totalUsers || 0,
+        activeUsers: activeUsers || 0,
+        gamesPlayed: gamesPlayed || 0,
+        totalWinnings,
+        totalItlogDistributed
+      };
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 10000, // Consider data stale after 10 seconds
+  });
+
+  // Format numbers for display
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
+
+  const formatCurrency = (num: number) => {
+    if (num >= 1000000) {
+      return '₱' + (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+      return '₱' + (num / 1000).toFixed(1) + 'K';
+    }
+    return '₱' + num.toFixed(2);
+  };
+
   const featuredGames = [
     {
       id: "mines",
@@ -74,7 +177,7 @@ const Index = () => {
   const stats = [
     { 
       label: "Active Players", 
-      value: "12,847", 
+      value: statsData ? formatNumber(statsData.activeUsers) : "Loading...", 
       icon: Users, 
       color: "text-blue-400",
       bg: "from-blue-500/10 to-cyan-500/10",
@@ -82,7 +185,7 @@ const Index = () => {
     },
     { 
       label: "Games Played", 
-      value: "2.4M", 
+      value: statsData ? formatNumber(statsData.gamesPlayed) : "Loading...", 
       icon: Gamepad2, 
       color: "text-purple-400",
       bg: "from-purple-500/10 to-pink-500/10",
@@ -90,7 +193,7 @@ const Index = () => {
     },
     { 
       label: "Total Winnings", 
-      value: "₱45.2M", 
+      value: statsData ? formatCurrency(statsData.totalWinnings) : "Loading...", 
       icon: Trophy, 
       color: "text-green-400",
       bg: "from-green-500/10 to-emerald-500/10",
@@ -98,7 +201,7 @@ const Index = () => {
     },
     { 
       label: "$ITLOG Distributed", 
-      value: "8,432", 
+      value: statsData ? formatNumber(statsData.totalItlogDistributed) : "Loading...", 
       icon: Sparkles, 
       color: "text-yellow-400",
       bg: "from-yellow-500/10 to-orange-500/10",
