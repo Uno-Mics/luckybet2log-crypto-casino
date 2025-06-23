@@ -9,6 +9,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
+import { useAuth } from "@/hooks/useAuth";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
 import { useGameSounds } from "@/hooks/useGameSounds";
@@ -36,9 +38,14 @@ const Mines = () => {
   const { profile, updateBalance } = useProfile();
   const { isBanned } = useBannedCheck();
   const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
+  const { trackGameSession } = useActivityTracker();
+  const { user } = useAuth();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry } = useGameHistory();
   const { playDiamondSound, playExplosionSound, playWinSound, playLossSound, playJackpotSound, audioEnabled, enableAudio } = useGameSounds();
+
+  const [sessionId] = useState(`mines_session_${Date.now()}`);
+  const [sessionStartTime] = useState(Date.now());
 
   const betAmounts = ["0.25", "0.50", "1.00", "1.50", "2.00", "5.00", "10.00", "50.00", "100.00", "500.00", "1000.00"];
   const minesOptions = ["3", "5", "7", "10"];
@@ -327,6 +334,15 @@ const Mines = () => {
       </div>
     );
   };
+
+  useEffect(() => {
+    return () => {
+      if (user) {
+        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
+        trackGameSession('mines', sessionDuration, sessionId);
+      }
+    };
+  }, [user, trackGameSession, sessionId, sessionStartTime]);
 
   return (
     <Layout>
