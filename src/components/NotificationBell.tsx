@@ -7,10 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWithdrawalNotifications } from "@/hooks/useWithdrawalNotifications";
 import { useDepositNotifications } from "@/hooks/useDepositNotifications";
+import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
 
 const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { profile } = useAuth();
   const { 
     notifications: withdrawalNotifications, 
     unreadCount: withdrawalUnreadCount, 
@@ -58,6 +60,37 @@ const NotificationBell = () => {
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
+  };
+
+  // Helper function to determine notification type display
+  const getNotificationTypeDisplay = (notification: any) => {
+    const isAdmin = profile?.is_admin;
+    
+    if (isAdmin) {
+      // For admins, check if the message contains request language
+      if (notification.message.includes('has requested') || notification.message.includes('has submitted')) {
+        return notification.type === 'deposit' ? 'Deposit Request' : 'Withdrawal Request';
+      }
+    }
+    
+    // For regular users or admin approval/rejection notifications
+    return notification.type === 'deposit' ? 'Deposit' : 'Withdrawal';
+  };
+
+  const getNotificationColor = (notification: any) => {
+    const isAdmin = profile?.is_admin;
+    
+    if (isAdmin && (notification.message.includes('has requested') || notification.message.includes('has submitted'))) {
+      // Admin notifications for new requests
+      return notification.type === 'deposit' 
+        ? 'bg-orange-500/10 text-orange-400 border-orange-500/30' 
+        : 'bg-purple-500/10 text-purple-400 border-purple-500/30';
+    }
+    
+    // Regular user notifications
+    return notification.type === 'deposit' 
+      ? 'bg-green-500/10 text-green-400 border-green-500/30' 
+      : 'bg-blue-500/10 text-blue-400 border-blue-500/30';
   };
 
   return (
@@ -113,13 +146,9 @@ const NotificationBell = () => {
                       <div className="flex items-center gap-2">
                         <Badge 
                           variant="outline" 
-                          className={`text-xs ${
-                            notification.type === 'deposit' 
-                              ? 'bg-green-500/10 text-green-400 border-green-500/30' 
-                              : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-                          }`}
+                          className={`text-xs ${getNotificationColor(notification)}`}
                         >
-                          {notification.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
+                          {getNotificationTypeDisplay(notification)}
                         </Badge>
                       </div>
                       <p className={`text-sm ${
