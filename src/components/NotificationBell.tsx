@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Bell, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,11 +7,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWithdrawalNotifications } from "@/hooks/useWithdrawalNotifications";
 import { useDepositNotifications } from "@/hooks/useDepositNotifications";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { formatDistanceToNow } from "date-fns";
 
 const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { profile } = useAuth();
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const { 
     notifications: withdrawalNotifications, 
     unreadCount: withdrawalUnreadCount, 
