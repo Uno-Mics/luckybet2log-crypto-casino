@@ -3,6 +3,8 @@ import { useProfile } from "@/hooks/useProfile";
 import Layout from "@/components/Layout";
 import { useBannedCheck } from "@/hooks/useBannedCheck";
 import { useQuestTracker } from "@/hooks/useQuestTracker";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
+import { useAuth } from "@/hooks/useAuth";
 import { usePetSystem } from "@/hooks/usePetSystem";
 import { useGameHistory } from "@/hooks/useGameHistory";
 import { useGameSounds } from "@/hooks/useGameSounds";
@@ -26,15 +28,29 @@ const FortuneReels = () => {
   const { toast } = useToast();
   const { isBanned } = useBannedCheck();
   const { trackGameWin, trackGameLoss, trackGamePlay, trackBet } = useQuestTracker();
+  const { trackGameSession } = useActivityTracker();
+  const { user } = useAuth();
   const { activePetBoosts } = usePetSystem();
   const { addHistoryEntry } = useGameHistory();
   const { playWheelSpinSound, playWheelStopSound, playWinSound, playLossSound, playJackpotSound, audioEnabled, enableAudio } = useGameSounds();
+
+  const [sessionId] = useState(`fortune-reels_session_${Date.now()}`);
+  const [sessionStartTime] = useState(Date.now());
 
   useEffect(() => {
     if (profile) {
       setBalance(profile.coins);
     }
   }, [profile]);
+
+  useEffect(() => {
+    return () => {
+      if (user) {
+        const sessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
+        trackGameSession('fortune-reels', sessionDuration, sessionId);
+      }
+    };
+  }, [user, trackGameSession, sessionId, sessionStartTime]);
 
   const betAmounts = ["1", "5", "10", "25", "50", "100", "250", "500", "1000", "2500", "5000"];
 
